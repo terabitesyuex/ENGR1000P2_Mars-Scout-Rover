@@ -17,14 +17,16 @@ def main() -> int:
     )
     synthetic.add_argument("--scans", type=int, default=1)
     synthetic.add_argument("--angle-step-deg", type=float, default=1.0)
-    synthetic.add_argument("--noise-std-mm", type=float, default=5.0)
+    synthetic.add_argument("--room-length-mm", type=int, default=6000)
+    synthetic.add_argument("--room-width-mm", type=int, default=4000)
 
     args = parser.parse_args()
     if args.command == "synthetic-room":
         config = SyntheticRoomConfig(
             scan_count=args.scans,
             angle_step_deg=args.angle_step_deg,
-            noise_std_mm=args.noise_std_mm,
+            room_length_mm=args.room_length_mm,
+            room_width_mm=args.room_width_mm,
         )
         for scan in SyntheticScanSource(config).scans():
             print(scan_to_json(scan))

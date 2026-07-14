@@ -2,8 +2,39 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Iterator, Protocol
+
+
+MetadataValue = str | int | float | bool | None
+
+
+@dataclass(frozen=True, slots=True)
+class ScanPoint:
+    """Unified scan point in the rover frame.
+
+    `angle_deg` is measured in degrees, with 0 degrees forward and positive
+    rotation counterclockwise. `distance_mm` is measured in millimeters.
+    """
+
+    angle_deg: float
+    distance_mm: int
+    quality: int | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class ScanFrame:
+    """Completed scan frame shared by synthetic, replay, and future live input."""
+
+    timestamp_us: int
+    points: list[ScanPoint]
+    frame_id: int | None = None
+    source: str = "unknown"
+    metadata: dict[str, MetadataValue] = field(default_factory=dict)
+
+    @property
+    def point_count(self) -> int:
+        return len(self.points)
 
 
 @dataclass(frozen=True, slots=True)
@@ -82,6 +113,6 @@ class LidarStatistics:
 class ScanSource(Protocol):
     """Common interface for live, replay, CSV, and synthetic scan sources."""
 
-    def scans(self) -> Iterator[LidarScan]:
+    def scans(self) -> Iterator[ScanFrame]:
         """Yield completed scans without exposing the source transport."""
         ...

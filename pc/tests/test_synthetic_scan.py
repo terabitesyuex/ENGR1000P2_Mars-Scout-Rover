@@ -1,37 +1,53 @@
 from __future__ import annotations
 
-from rplidar_c1_tools.synthetic_scan import SyntheticRoomConfig, SyntheticScanSource
+from rplidar_c1_tools.data_models import ScanFrame
+from rplidar_c1_tools.synthetic_scan import (
+    SyntheticRoomConfig,
+    SyntheticScanSource,
+    generate_circle_scan,
+    generate_room_scan,
+)
 
 
-def test_synthetic_source_yields_completed_scan_without_hardware() -> None:
-    source = SyntheticScanSource(SyntheticRoomConfig(scan_count=1, noise_std_mm=0.0))
-    scan = next(source.scans())
+def test_circle_scan_generation_returns_scan_frame() -> None:
+    scan = generate_circle_scan(point_count=8, radius_mm=1500)
 
-    assert scan.complete
-    assert scan.scan_id == 0
-    assert scan.received_point_count > 300
-    assert scan.valid_point_count > 250
-    assert scan.rejected_point_count >= 3
-    assert scan.samples[0].scan_start
-    assert all(not sample.scan_start for sample in scan.samples[1:])
+    assert isinstance(scan, ScanFrame)
+    assert scan.source == "synthetic_circle"
+    assert scan.point_count == 8
+    assert [point.distance_mm for point in scan.points] == [1500] * 8
+    assert scan.points[0].angle_deg == 0.0
+    assert scan.points[-1].angle_deg == 315.0
 
 
-def test_synthetic_source_is_deterministic() -> None:
-    config = SyntheticRoomConfig(scan_count=1, noise_std_mm=2.0, random_seed=123)
-    first = next(SyntheticScanSource(config).scans())
-    second = next(SyntheticScanSource(config).scans())
+def test_room_scan_cardinal_distances_are_reasonable() -> None:
+    scan = generate_room_scan(
+        point_count=4,
+        room_length_mm=6000,
+        room_width_mm=4000,
+    )
 
-    first_distances = [sample.distance_mm for sample in first.samples]
-    second_distances = [sample.distance_mm for sample in second.samples]
-    assert first_distances == second_distances
+    assert isinstance(scan, ScanFrame)
+    assert scan.source == "synthetic_room"
+    assert [point.angle_deg for point in scan.points] == [0.0, 90.0, 180.0, 270.0]
+    assert [point.distance_mm for point in scan.points] == [3000, 2000, 3000, 2000]
 
 
-def test_synthetic_scan_contains_missing_and_invalid_data() -> None:
-    scan = next(SyntheticScanSource(SyntheticRoomConfig(noise_std_mm=0.0)).scans())
-    angles = {round(sample.angle_clockwise_deg) for sample in scan.samples}
-    distances = [sample.distance_mm for sample in scan.samples]
+def test_synthetic_room_scan_is_deterministic() -> None:
+    first = generate_room_scan(point_count=16)
+    second = generate_room_scan(point_count=16)
 
-    assert 210 not in angles
-    assert 0 in distances
-    assert 14000 in distances
-    assert any(not sample.filter_valid for sample in scan.samples)
+    assert first.points == second.points
+    assert first.metadata == second.metadata
+
+
+def test_synthetic_scan_source_yields_configured_frames() -> None:
+    source = SyntheticScanSource(
+        SyntheticRoomConfig(scan_count=2, angle_step_deg=90.0)
+    )
+    scans = list(source.scans())
+
+    assert len(scans) == 2
+    assert all(isinstance(scan, ScanFrame) for scan in scans)
+    assert [scan.frame_id for scan in scans] == [0, 1]
+    assert all(scan.point_count == 4 for scan in scans)

@@ -21,11 +21,19 @@ All notable subsystem changes are recorded here. Track protocol, GPIO, power, da
 - Kept ESP32 GPIO values unset pending physical verification.
 - Kept live LiDAR communication out of scope.
 
+## 2026-07-14 - Phase 2.1 Synthetic Scan Pipeline
+
+- Added unified PC-side `ScanPoint` and `ScanFrame` data models.
+- Implemented deterministic `generate_circle_scan()` and `generate_room_scan()` synthetic sources.
+- Implemented `scan_builder.py` validation and frame construction helpers.
+- Updated synthetic scan and scan-builder tests.
+- Kept real LiDAR UART communication, serial access, mapping, SLAM, and visualization out of scope.
+
 ## Change Categories
 
-- Protocol changes: none in Phase 0 or current Phase 1.
+- Protocol changes: none in Phase 0, Phase 1, or Phase 2.1.
 - GPIO changes: GPIO values remain unset.
 - Power changes: hardware values documented; supply model unverified.
-- Data-format changes: recording and transport formats documented as planned interfaces.
+- Data-format changes: Phase 2.1 adds the PC-side `ScanFrame` software interface.
 - Firmware changes: PlatformIO structure created only; current Phase 1 adds no live hardware behavior.
 - Calibration changes: calibration process documented only.

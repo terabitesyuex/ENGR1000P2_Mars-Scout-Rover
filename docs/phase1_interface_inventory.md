@@ -78,3 +78,17 @@ This inventory records the interfaces present after Phase 0 and audited in curre
 - ESP32 UART receive loop.
 - ESP32-to-PC binary transport implementation.
 - Visualization beyond existing synthetic data scaffolding.
+
+## Phase 2.1 Interface Update
+
+- `pc/src/rplidar_c1_tools/data_models.py`
+  - Adds `ScanPoint` and `ScanFrame`.
+  - Uses rover-frame degrees for `ScanPoint.angle_deg`: 0 degrees forward, positive counterclockwise.
+  - Uses millimeters for `ScanPoint.distance_mm`.
+
+- `pc/src/rplidar_c1_tools/scan_builder.py`
+  - Validates scan points and builds `ScanFrame` objects.
+  - Does not parse hardware packets.
+
+- `pc/src/rplidar_c1_tools/synthetic_scan.py`
+  - Produces deterministic `ScanFrame` data for circle and room environments.
