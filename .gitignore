@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+uv.lock
+dist/
+build/
+*.egg-info/
+
+# PlatformIO
+.pio/
+.vscode/
+
+# Generated data
+data/raw/*
+data/decoded/*
+data/maps/*
+data/synthetic/*
+!data/raw/.gitkeep
+!data/decoded/.gitkeep
+!data/maps/.gitkeep
+!data/synthetic/.gitkeep
+!data/test_vectors/.gitkeep
+
+# Local machine files
+*.log
+*.tmp
+Thumbs.db
