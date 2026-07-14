@@ -29,11 +29,21 @@ All notable subsystem changes are recorded here. Track protocol, GPIO, power, da
 - Updated synthetic scan and scan-builder tests.
 - Kept real LiDAR UART communication, serial access, mapping, SLAM, and visualization out of scope.
 
+## 2026-07-14 - Phase 2.2 Coordinate Transforms
+
+- Added `CartesianPoint` and `Transform2D` data models.
+- Updated coordinate transforms to use the rover-frame `ScanPoint.angle_deg` convention directly.
+- Added explicit `native_c1_angle_to_rover_deg()` for future clockwise-positive C1 packet input.
+- Added scan point, scan frame, and 2D rigid transform conversion helpers.
+- Updated coordinate-frame documentation with units, frame names, and unverified mounting-offset status.
+- Added coordinate transform and synthetic integration tests.
+- Kept hardware communication, plotting, mapping, odometry, and SLAM out of scope.
+
 ## Change Categories
 
-- Protocol changes: none in Phase 0, Phase 1, or Phase 2.1.
+- Protocol changes: none in Phase 0, Phase 1, Phase 2.1, or Phase 2.2.
 - GPIO changes: GPIO values remain unset.
 - Power changes: hardware values documented; supply model unverified.
-- Data-format changes: Phase 2.1 adds the PC-side `ScanFrame` software interface.
+- Data-format changes: Phase 2.1 adds the PC-side `ScanFrame` software interface; Phase 2.2 adds Cartesian transform models.
 - Firmware changes: PlatformIO structure created only; current Phase 1 adds no live hardware behavior.
 - Calibration changes: calibration process documented only.

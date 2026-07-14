@@ -1,44 +1,62 @@
 # Coordinate Frames
 
-The project uses two coordinate systems: the native C1 scan convention and the internal rover convention.
+Phase 2.2 freezes the coordinate convention used by PC-side scan processing.
+
+## Project Convention
+
+- `+x` points forward from the rover.
+- `+y` points left.
+- `+z` points upward.
+- Positive yaw is counterclockwise.
+- `ScanPoint.angle_deg` is measured in degrees.
+- `ScanPoint.angle_deg` is already in the rover-frame convention: `0` degrees forward, positive counterclockwise.
+- LiDAR input distance is stored in millimetres.
+- Internal Cartesian distances use metres.
 
 ## Native C1 Convention
 
-- Origin at the LiDAR rotation center.
-- Positive x points forward.
-- Angle increases clockwise.
-- Native system is left-handed.
-
-## Rover Convention
-
-- Positive x points forward.
-- Positive y points left.
-- Positive angle is counterclockwise.
-- Right-handed 2D robotics convention.
-
-## Conversion
-
-Convert native clockwise angle to rover angle:
+Native RPLIDAR C1 packets may report clockwise-positive angles. Native angles must be converted explicitly before they are stored as `ScanPoint.angle_deg`:
 
 ```text
-robot_angle_deg = normalize_angle(-native_clockwise_angle_deg)
+rover_angle_deg = normalize_angle_deg(-native_angle_deg)
 ```
 
-Then convert polar range to Cartesian position:
+Do not apply this native conversion to synthetic `ScanPoint` values. Phase 2.1 synthetic scans already use the rover-frame convention.
+
+## Polar-To-Cartesian Formula
+
+For a normalized rover-frame point:
 
 ```text
-angle_rad = robot_angle_deg * pi / 180
+angle_rad = radians(angle_deg)
 x_m = distance_mm / 1000.0 * cos(angle_rad)
 y_m = distance_mm / 1000.0 * sin(angle_rad)
 ```
 
-## Expected Cardinal Directions
+Worked example:
 
-| Native clockwise angle | Rover angle | Cartesian direction |
-| --- | --- | --- |
-| 0 degrees | 0 degrees | +x forward |
-| 90 degrees | 270 degrees | -y right |
-| 180 degrees | 180 degrees | -x rear |
-| 270 degrees | 90 degrees | +y left |
+- angle: `90` degrees;
+- distance: `1000` mm;
+- result: `x_m` approximately `0` m, `y_m` approximately `1` m.
 
-Do not mix millimetres and metres. Store distances in millimetres in scan samples and convert to metres only when computing Cartesian coordinates.
+Tiny values such as `6.123233995736766e-17` are normal floating-point approximations of zero.
+
+## Cardinal Directions
+
+| Rover angle | Cartesian direction |
+| --- | --- |
+| 0 degrees | +x forward |
+| 90 degrees | +y left |
+| 180 degrees | -x rear |
+| 270 degrees | -y right |
+
+## Frame Names
+
+- `lidar_frame`: coordinate frame at the LiDAR optical rotation center.
+- `base_link`: future rover body frame.
+
+The physical LiDAR mounting translation and yaw from `lidar_frame` to `base_link` remain UNVERIFIED. Phase 2.2 provides only mathematical transform helpers and does not apply any physical mounting offset.
+
+Phase 2.2 does not implement odometry, `odom`, `map`, occupancy-grid mapping, or SLAM transforms.
+
+Do not mix millimetres and metres. Store LiDAR range in millimetres in scan models and convert to metres only when computing Cartesian coordinates.

@@ -38,6 +38,27 @@ class ScanFrame:
 
 
 @dataclass(frozen=True, slots=True)
+class CartesianPoint:
+    """Cartesian point in metres derived from one `ScanPoint`."""
+
+    x_m: float
+    y_m: float
+    source_angle_deg: float
+    source_distance_mm: float
+    signal_quality: int | None = None
+    valid: bool = True
+
+
+@dataclass(frozen=True, slots=True)
+class Transform2D:
+    """Planar rigid transform in metres and radians."""
+
+    translation_x_m: float = 0.0
+    translation_y_m: float = 0.0
+    yaw_rad: float = 0.0
+
+
+@dataclass(frozen=True, slots=True)
 class LidarDeviceInfo:
     model_identifier: str
     firmware_major: int

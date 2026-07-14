@@ -1,11 +1,18 @@
 """PC tools for the Mars Scout Rover RPLIDAR C1 subsystem."""
 
 from .coordinate_transform import (
+    native_c1_angle_to_rover_deg,
     native_clockwise_to_robot_angle_deg,
     normalize_angle_deg,
+    normalize_angle_rad,
+    polar_to_cartesian,
     polar_to_cartesian_m,
+    scan_frame_to_cartesian,
+    scan_point_to_cartesian,
+    transform_point_2d,
 )
-from .data_models import LidarSample, LidarScan, RawLidarSample, ScanFrame, ScanPoint
+from .data_models import CartesianPoint, LidarSample, LidarScan, RawLidarSample
+from .data_models import ScanFrame, ScanPoint, Transform2D
 from .data_models import ScanSource
 from .scan_builder import ScanValidationError, build_scan_frame, create_scan_point
 from .synthetic_scan import (
@@ -16,6 +23,7 @@ from .synthetic_scan import (
 )
 
 __all__ = [
+    "CartesianPoint",
     "LidarSample",
     "LidarScan",
     "RawLidarSample",
@@ -29,7 +37,14 @@ __all__ = [
     "create_scan_point",
     "generate_circle_scan",
     "generate_room_scan",
+    "native_c1_angle_to_rover_deg",
     "native_clockwise_to_robot_angle_deg",
     "normalize_angle_deg",
+    "normalize_angle_rad",
+    "polar_to_cartesian",
     "polar_to_cartesian_m",
+    "scan_frame_to_cartesian",
+    "scan_point_to_cartesian",
+    "transform_point_2d",
+    "Transform2D",
 ]

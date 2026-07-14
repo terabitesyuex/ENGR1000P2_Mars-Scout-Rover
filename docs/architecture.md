@@ -50,4 +50,4 @@ Synthetic and replay sources feed the same PC scan interfaces.
 
 ## Current Phase Scope
 
-Phase 0 created structure and documentation plus a deterministic Python synthetic scan interface. Current Phase 1 adds repository audit, hardware-fact validation, interface inventory, and documentation consistency checks. No live serial ports are opened, no C1 command bytes are emitted, and no binary C1 parser is implemented.
+Phase 0 created structure and documentation plus a deterministic Python synthetic scan interface. Phase 1 added repository audit, hardware-fact validation, interface inventory, and documentation consistency checks. Phase 2.1 added unified synthetic `ScanFrame` data. Phase 2.2 adds pure coordinate transforms from `ScanPoint` to Cartesian metres. No live serial ports are opened, no C1 command bytes are emitted, no binary C1 parser is implemented, and no mapping or plotting is implemented.
