@@ -1,3 +1,7 @@
+# SUPERSEDED HISTORICAL COPY
+
+Use repository-root `docs/test_plan.md` for current Phase 2.4 verification and future validation planning. Historical statements below may be stale.
+
 # Test Plan
 
 ## Phase 0 Tests

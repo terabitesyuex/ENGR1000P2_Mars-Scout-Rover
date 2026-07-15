@@ -1,3 +1,7 @@
+# SUPERSEDED HISTORICAL COPY
+
+Use repository-root `docs/communication_protocol.md` for current communication planning. Historical statements below may be stale.
+
 # Communication Protocol
 
 This document describes the planned ESP32-to-PC transport. It is not the SLAMTEC C1 LiDAR protocol.

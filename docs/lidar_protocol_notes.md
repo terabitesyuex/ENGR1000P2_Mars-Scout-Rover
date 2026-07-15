@@ -2,9 +2,9 @@
 
 Official SLAMTEC RPLIDAR protocol documentation is the source of truth for all C1 packet layouts, command bytes, checksums, response descriptors, and scan data formats.
 
-## Phase 0 Rule
+## Current Phase 2.4 Rule
 
-The final C1 binary protocol parser is not implemented in Phase 0. This file records constraints only.
+The final C1 binary protocol parser is not implemented in Phase 2.4. This file records constraints for later hardware phases only. Phase 2.4 records and replays already-built `ScanFrame` objects and synthetic multi-sensor records.
 
 ## Required Distinctions
 

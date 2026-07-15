@@ -1,3 +1,7 @@
+# SUPERSEDED HISTORICAL COPY
+
+This nested document is not the current hardware lock. Use the repository-root `HARDWARE_LOCK.md` for confirmed inventory, preserved electrical facts, planned responsibilities, and UNVERIFIED values. Historical statements below may describe earlier single-C1 assumptions.
+
 # Hardware Lock
 
 This file records hardware facts that must not drift silently during development. Unknown values remain explicit until physically verified.

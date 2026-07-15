@@ -38,13 +38,14 @@ REQUIRED_TEXTS: tuple[RequiredText, ...] = (
     RequiredText("HARDWARE_LOCK.md", "3.3 V TTL", "UART voltage"),
     RequiredText("HARDWARE_LOCK.md", "460800", "UART baud rate"),
     RequiredText("HARDWARE_LOCK.md", "8 data bits, no parity, 1 stop bit", "UART format"),
-    RequiredText("HARDWARE_LOCK.md", "Selected ESP32 RX pin: UNSET", "unverified RX pin"),
-    RequiredText("HARDWARE_LOCK.md", "Selected ESP32 TX pin: UNSET", "unverified TX pin"),
-    RequiredText("HARDWARE_LOCK.md", "External motor PWM pin: VERIFIED not present", "motor PWM absence"),
-    RequiredText("HARDWARE_LOCK.md", "Power-supply model: UNVERIFIED", "unverified supply model"),
+    RequiredText("HARDWARE_LOCK.md", "exact ESP32 GPIOs: UNVERIFIED", "unverified GPIOs"),
+    RequiredText("HARDWARE_LOCK.md", "exact UART assignment: UNVERIFIED", "unverified UART assignment"),
+    RequiredText("HARDWARE_LOCK.md", "External motor PWM conductor: VERIFIED not present", "motor PWM absence"),
+    RequiredText("HARDWARE_LOCK.md", "RPLIDAR C1 x2", "two C1 inventory"),
+    RequiredText("HARDWARE_LOCK.md", "BH1750 x1", "BH1750 inventory"),
+    RequiredText("HARDWARE_LOCK.md", "BMP280 x1", "BMP280 inventory"),
     RequiredText("HARDWARE_LOCK.md", "Physical wiring verification date: UNVERIFIED", "unverified wiring date"),
-    RequiredText("HARDWARE_LOCK.md", "Device firmware version: UNVERIFIED", "unverified firmware version"),
-    RequiredText("HARDWARE_LOCK.md", "Redacted device serial number: UNVERIFIED", "redacted serial status"),
+    RequiredText("HARDWARE_LOCK.md", "Individual C1 serial IDs: UNVERIFIED", "unverified serial status"),
     RequiredText("docs/phase1_hardware_audit.md", "Documentation Conflicts", "conflict log"),
     RequiredText("docs/phase1_hardware_audit.md", "UNVERIFIED Values", "unverified value log"),
     RequiredText("docs/phase1_interface_inventory.md", "LidarInterface", "firmware interface inventory"),
@@ -99,12 +100,12 @@ def _validate_phase_scope(contents: Mapping[str, str], errors: list[str]) -> Non
     readme = contents.get("README.md")
     project_spec = contents.get("PROJECT_SPEC.md")
     test_plan = contents.get("docs/test_plan.md")
-    if readme is not None and "Current Phase 1 is repository audit" not in readme:
-        errors.append("README.md: current audit-only Phase 1 scope is not stated")
-    if project_spec is not None and "No live LiDAR communication is implemented." not in project_spec:
-        errors.append("PROJECT_SPEC.md: Phase 1 live-communication exclusion is missing")
-    if test_plan is not None and "python tools\\\\validate_hardware_lock.py" not in test_plan:
-        errors.append("docs/test_plan.md: Phase 1 validation command is missing")
+    if readme is not None and "Phase 2.4" not in readme:
+        errors.append("README.md: current Phase 2.4 scope is not stated")
+    if project_spec is not None and "Phase 2.4 is software-only" not in project_spec:
+        errors.append("PROJECT_SPEC.md: Phase 2.4 software-only exclusion is missing")
+    if test_plan is not None and "test_hardware_lock_validation.py" not in test_plan:
+        errors.append("docs/test_plan.md: hardware-lock regression test is missing")
 
 
 def _validate_firmware_sources(

@@ -1,3 +1,7 @@
+# SUPERSEDED HISTORICAL COPY
+
+Use repository-root `docs/troubleshooting.md` for current Phase 2.4 troubleshooting. Historical statements below may be stale.
+
 # Troubleshooting
 
 ## No Power Or Motor Does Not Start

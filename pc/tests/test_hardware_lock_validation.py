@@ -49,10 +49,10 @@ def test_validation_reports_missing_required_hardware_fact() -> None:
 def test_validation_rejects_concrete_unverified_gpio() -> None:
     validator, contents, firmware_sources = loaded_repository_texts()
     contents["HARDWARE_LOCK.md"] = contents["HARDWARE_LOCK.md"].replace(
-        "Selected ESP32 RX pin: UNSET",
-        "Selected ESP32 RX pin: GPIO20",
+        "exact ESP32 GPIOs: UNVERIFIED",
+        "exact ESP32 GPIOs: GPIO20",
     )
 
     errors = validator.validate_text_contents(contents, firmware_sources)
 
-    assert any("unverified RX pin" in error for error in errors)
+    assert any("unverified GPIOs" in error for error in errors)

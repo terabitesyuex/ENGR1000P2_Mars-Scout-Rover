@@ -58,11 +58,26 @@ All notable subsystem changes are recorded here. Track protocol, GPIO, power, da
 - Extended automated phase verification to support `phase2.3` and generate manual acceptance images.
 - Kept real LiDAR communication, serial access, mapping, SLAM, odometry, and hardware validation out of scope.
 
+## 2026-07-15 - Phase 2.4 Multi-Sensor Recording Replay And Plan Rebaseline
+
+- Added versioned UTF-8 JSONL schema `mars_scout_multisensor_recording` version `1`.
+- Added streaming multi-sensor recorder support for existing `ScanFrame` objects.
+- Added neutral two-C1 sensor ID support for `c1_1` and `c1_2`.
+- Added optional rover-pose records.
+- Added IMU, HC-SR04 ultrasonic, TCRT5000 ground/edge, Hall-landmark, BH1750 illuminance, and BMP280 temperature/pressure record support.
+- Added lazy recording reading, line-number corruption errors, deterministic replay, recording inspection, and replay-to-visualization export.
+- Added CLI commands `record-synthetic`, `inspect-recording`, `replay-recording`, and `render-recording`.
+- Added current-plan consistency validation.
+- Updated hardware inventory to include RPLIDAR C1 x2, HC-SR04 x3, TCRT5000 x2, BH1750 x1, BMP280 x1, MPU6050 x1, Hall sensor module x1, STM32 x1, ESP32 x1, battery/power system, four encoded motors, and four mecanum wheels.
+- Rebaselined project guidance around WiFi, one-C1 baseline integration, optional dual-C1 feasibility, environmental-change indication, and the revised Phase 2.4 through Phase 8 plan.
+- Preserved verified C1 voltage, current, UART, connector, wire, and no-external-motor-PWM facts.
+- Kept real hardware access, WiFi sockets, firmware changes, mapping, SLAM, odometry, ROS, and obstacle-avoidance implementation out of scope.
+
 ## Change Categories
 
 - Protocol changes: none in Phase 0, Phase 1, Phase 2.1, Phase 2.2, Phase 2.2.5, or Phase 2.3.
 - GPIO changes: GPIO values remain unset.
 - Power changes: hardware values documented; supply model unverified.
-- Data-format changes: Phase 2.1 adds the PC-side `ScanFrame` software interface; Phase 2.2 adds Cartesian transform models; Phase 2.3 adds PNG visualization export.
+- Data-format changes: Phase 2.1 adds the PC-side `ScanFrame` software interface; Phase 2.2 adds Cartesian transform models; Phase 2.3 adds PNG visualization export; Phase 2.4 adds the multi-sensor JSONL recording format.
 - Firmware changes: PlatformIO structure created only; no live hardware behavior added.
 - Calibration changes: calibration process documented only.

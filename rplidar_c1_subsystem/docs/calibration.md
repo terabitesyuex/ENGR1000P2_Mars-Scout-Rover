@@ -1,3 +1,7 @@
+# SUPERSEDED HISTORICAL COPY
+
+Use repository-root `docs/calibration.md` for current calibration planning. Historical statements below may be stale.
+
 # Calibration
 
 Calibration is not performed in Phase 0. This file records the future calibration responsibilities.

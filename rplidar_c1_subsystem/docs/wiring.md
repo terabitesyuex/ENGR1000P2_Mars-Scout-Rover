@@ -1,3 +1,7 @@
+# SUPERSEDED HISTORICAL COPY
+
+Use repository-root `docs/wiring.md` for current wiring guidance. Historical statements below may be stale.
+
 # Wiring
 
 Electrical safety is the first project priority. Do not connect the LiDAR until the wiring checklist is complete.

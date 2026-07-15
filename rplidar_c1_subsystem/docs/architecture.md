@@ -1,3 +1,7 @@
+# SUPERSEDED HISTORICAL COPY
+
+Use repository-root `docs/architecture.md` for the current Phase 2.4 architecture. Historical statements below may be stale.
+
 # Architecture
 
 The subsystem is split into independently testable layers. Live hardware is only one possible scan source.

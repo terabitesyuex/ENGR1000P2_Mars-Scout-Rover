@@ -1,8 +1,61 @@
 # Hardware Lock
 
-This file records hardware facts that must not drift silently during development. Unknown values remain explicit until physically verified.
+This file records hardware facts that must not drift silently. Unknown values remain explicit until physically verified.
 
-## VERIFIED LiDAR Facts
+## 2026-07-15 Inventory Update
+
+The project inventory was rebaselined for Phase 2.4. This update adds newly confirmed available sensors and controller/chassis hardware while preserving earlier verified RPLIDAR C1 electrical facts.
+
+## CONFIRMED INVENTORY
+
+Ranging:
+
+- RPLIDAR C1 x2.
+- HC-SR04 ultrasonic sensor x3.
+
+Motion and pose:
+
+- Wheel encoders associated with the four drive motors.
+- MPU6050 inertial measurement unit x1.
+
+Ground and landmark:
+
+- TCRT5000 reflective infrared sensor x2 for edge/drop detection.
+- Hall sensor module x1 for magnetic landmark/checkpoint detection.
+
+Environment:
+
+- BH1750 illuminance sensor x1.
+- BH1750 x1.
+- BMP280 temperature/pressure sensor x1.
+- BMP280 x1.
+
+Controllers and chassis:
+
+- STM32 controller board x1.
+- ESP32 board x1. Existing authoritative files previously use ESP32-C3 SuperMini language; do not silently change the model.
+- Battery/power system.
+- Four encoded motors.
+- Four mecanum wheels.
+- Existing rover chassis.
+
+Neutral planned sensor IDs:
+
+- `c1_1`
+- `c1_2`
+- `ultrasonic_1`
+- `ultrasonic_2`
+- `ultrasonic_3`
+- `tcrt5000_1`
+- `tcrt5000_2`
+- `bh1750_1`
+- `bmp280_1`
+- `mpu6050_1`
+- `hall_1`
+
+## CONFIRMED ELECTRICAL FACTS
+
+Verified RPLIDAR C1 facts from earlier hardware lock work:
 
 - Exact model: SLAMTEC RPLIDAR C1M1-R2.
 - Connector type: XH2.54-5P.
@@ -14,19 +67,6 @@ This file records hardware facts that must not drift silently during development
 - Maximum sample rate: approximately 5000 samples per second.
 - White-object range: approximately 50 mm to 12000 mm.
 - Low-reflectivity black-object range: approximately 50 mm to 6000 mm.
-
-## VERIFIED Wire Functions
-
-| Wire color | Function | Connection rule |
-| --- | --- | --- |
-| Red | VCC, 5 V supply | Independent regulated 5 V supply |
-| Yellow | LiDAR TX | ESP32 UART RX |
-| Green | LiDAR RX | ESP32 UART TX |
-| Black | GND | ESP32 GND and power-supply ground |
-| Unused position | None | Leave unused |
-
-## VERIFIED Electrical Values
-
 - Supply voltage: 4.8 V to 5.2 V.
 - Typical supply voltage: 5.0 V.
 - Typical startup current: approximately 800 mA.
@@ -36,45 +76,92 @@ This file records hardware facts that must not drift silently during development
 - UART voltage: 3.3 V TTL.
 - UART baud rate: 460800.
 - UART format: 8 data bits, no parity, 1 stop bit.
+- External motor PWM conductor: VERIFIED not present and not allowed.
 
-## MIXED ESP32-C3 SuperMini Configuration
+Verified RPLIDAR C1 wire functions:
 
-- Selected ESP32 RX pin: UNSET. Candidate GPIO20 only after board label and documentation verification.
-- Selected ESP32 TX pin: UNSET. Candidate GPIO21 only after board label and documentation verification.
-- External motor PWM pin: VERIFIED not present and not allowed.
-- LiDAR red wire to ESP32 3.3 V: prohibited.
-- LiDAR TX to ESP32 TX: prohibited.
-- LiDAR RX to ESP32 RX: prohibited.
-- LiDAR and ESP32 common ground: required.
+| Wire color | Function | Connection rule |
+| --- | --- | --- |
+| Red | VCC, 5 V supply | Independent regulated 5 V supply |
+| Yellow | LiDAR TX | Receiver UART RX |
+| Green | LiDAR RX | Transmitter UART TX |
+| Black | GND | Common ground with controller and power supply |
+| Unused position | None | Leave unused |
 
-## PC Transport
+These wire facts are preserved from the verified C1 harness profile. They do not prove that either physical C1 is currently wired, powered, mounted, or operational.
 
-- PC-direct transport for Phase 1: supplied USB-to-UART adapter at 460800 baud.
-- ESP32-to-PC transport for later phases: native USB CDC when available, framed binary protocol.
-- CSV point-per-line transport: not allowed for normal high-rate operation.
+## PLANNED RESPONSIBILITIES
 
-## UNVERIFIED Physical Values
+STM32 planned responsibilities:
 
-- Power-supply model: UNVERIFIED.
+- Four-mecanum-wheel motor control.
+- Wheel encoder acquisition.
+- Low-level motor safety.
+- Command-timeout stop.
+- MPU6050 acquisition.
+- HC-SR04 acquisition.
+- TCRT5000 edge/drop detection.
+- Hall landmark detection.
+- BH1750 and BMP280 acquisition unless later interface testing requires a different assignment.
+- Low-rate sensor preprocessing.
+- Basic odometry support.
+- Local stop/turn obstacle-avoidance state machine.
+
+ESP32 planned responsibilities:
+
+- WiFi communication with the computer.
+- Receive STM32 rover and sensor information.
+- Package and transmit data.
+- Receive limited configuration/control messages.
+- Interface with at least one RPLIDAR C1 in a later phase.
+
+PC planned responsibilities:
+
+- Polar visualization.
+- Cartesian visualization.
+- Recording.
+- Replay.
+- Experiment inspection.
+- Later short-range accumulated mapping.
+- Data and figure export.
+
+## UNVERIFIED VALUES
+
+- Individual C1 serial IDs: UNVERIFIED.
+- Individual C1 revisions: UNVERIFIED.
+- Both C1 units' operational status: UNVERIFIED.
+- Final C1 placement and orientation: UNVERIFIED.
+- Simultaneous dual-C1 architecture: UNVERIFIED and optional.
+- exact ESP32 GPIOs: UNVERIFIED.
+- exact UART assignment: UNVERIFIED.
+- exact STM32-ESP32 connector: UNVERIFIED.
+- exact HC-SR04 level-shifting requirements on the physical board: UNVERIFIED.
+- actual BH1750 I2C address: UNVERIFIED.
+- actual BMP280 I2C address: UNVERIFIED.
+- actual MPU6050 I2C address: UNVERIFIED.
+- physical TCRT5000 active polarity: UNVERIFIED.
+- physical Hall active polarity: UNVERIFIED.
+- battery voltage and capacity: UNVERIFIED unless measured.
+- final power-distribution topology: UNVERIFIED.
+- final sensor mounting offsets: UNVERIFIED.
 - Physical wiring verification date: UNVERIFIED.
-- Device firmware version: UNVERIFIED.
-- Device hardware revision: UNVERIFIED.
-- Redacted device serial number: UNVERIFIED. Never publish the complete serial number.
-- Successful PC-direct test date: NOT RUN.
+- Successful PC-direct test date for either C1: NOT RUN.
 
-## Phase 1 Audit Status
+## FUTURE TESTS
 
-- Repository audit date: 2026-07-14.
-- Current Phase 1 scope: repository audit, hardware-fact locking, interface inventory, documentation consistency, and validation tooling.
-- Live PC-direct LiDAR communication: NOT IMPLEMENTED in current Phase 1.
-- Hardware lock validation command: `python tools/validate_hardware_lock.py`.
-- Hardware lock validation test: `python -m pytest pc/tests/test_hardware_lock_validation.py -v`.
+- Test `c1_1` PC-direct through the supplied adapter.
+- Test `c1_2` PC-direct through the supplied adapter.
+- Record device information with only redacted serial identifiers.
+- Measure distance and orientation against known references.
+- Verify supply voltage, polarity, current margin, ripple, and common ground before controller wiring.
+- Verify ESP32 GPIO and UART assignment before live integration.
+- Verify STM32-ESP32 physical link before relying on rover sensor data.
+- Verify HC-SR04 level interface, TCRT5000 polarity, Hall polarity, I2C addresses, and sensor mounting offsets.
 
-## Verification Checklist
+## Safety Rules
 
-- Confirm LiDAR wire colors against the original harness.
-- Confirm ESP32-C3 SuperMini GPIO20 and GPIO21 availability before use.
-- Confirm independent 5 V regulator can supply at least 1 A.
-- Confirm grounds are common before connecting UART.
-- Confirm USB adapter and ESP32 do not drive LiDAR RX at the same time.
-- Confirm serial port is released after PC-direct tests.
+- Do not connect the LiDAR red wire to ESP32 3.3 V.
+- Do not connect LiDAR TX to transmitter TX or LiDAR RX to receiver RX.
+- Do not drive LiDAR RX from a USB adapter and ESP32 at the same time.
+- Do not mark physical wiring safe until voltage, polarity, connector orientation, and common ground are directly checked.
+- Do not publish full device serial numbers.

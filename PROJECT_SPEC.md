@@ -1,158 +1,140 @@
 # Project Specification
 
-This document defines the scope and acceptance criteria for the Mars Scout Rover RPLIDAR C1 subsystem. The project uses the SLAMTEC RPLIDAR C1M1-R2 and must remain maintainable, independently testable, and safe for beginner integration work.
+This is the authoritative scope document for the ENGR1000P2 Mars Scout Rover repository.
 
-## Required Functions
+## Current Objective
 
-- PC-direct verification through the supplied USB adapter.
-- ESP32-C3 communication with the RPLIDAR C1M1-R2.
-- Device information query.
-- Device health query.
-- Scan-mode discovery where supported.
-- Start, stop, reset, and bounded recovery.
-- Incremental binary protocol parsing.
-- Full-scan assembly.
-- Range and quality filtering.
-- Local obstacle-distance extraction.
-- ESP32-to-PC framed binary data transmission.
-- Real-time polar and Cartesian visualization.
-- Raw and decoded data recording.
-- Offline deterministic replay.
-- Static occupancy-grid mapping with the LiDAR fixed.
-- Diagnostics and fault recovery.
-- Synthetic data generation and unit tests.
+Build a low-cost Mars Scout Rover using an STM32 mecanum-wheel chassis, an ESP32 communication layer, multiple sensors, and PC visualization tools. The system must support safe beginner integration, reproducible test evidence, and clear separation between verified hardware facts, planned responsibilities, and unverified implementation details.
 
-## Optional Functions
+## Mandatory Requirements
 
-- Scan frequency adjustment when supported by official SLAMTEC commands.
-- High-speed or capsule scan decoding after basic scan mode is verified.
-- CSV debug mode for low-rate inspection.
-- Screenshot export from visualization views.
+- Detect nearby obstacles.
+- Stop or turn automatically to avoid collision.
+- Acquire rover, ranging, ground, landmark, motion, and environmental data.
+- Transmit data wirelessly to a computer using WiFi as the current communication baseline.
+- Display real-time single-frame 2D LiDAR/radar-style information on the computer.
+- Preserve data for testing, replay, validation, and presentation evidence.
+- Remain safe when communication or sensors fail.
 
-## Excluded Functions
+## Major Enhancements
 
-- STM32 communication.
-- Motor commands for the rover.
-- Wheel encoders.
-- TCRT5000 sensors.
-- Hall sensor.
-- MPU6050.
-- BMP280.
-- BH1750.
-- Moving-rover mapping.
-- Global localization.
-- Autonomous navigation.
-- Full SLAM.
-- ROS as a required dependency.
-- External LiDAR motor PWM control.
+- Encoder/IMU-assisted rover pose estimation.
+- Short-range accumulated 2D environment mapping.
+- Use of two RPLIDAR C1 units if hardware feasibility is verified.
+- Environmental-change indication using illuminance, temperature, and atmospheric-pressure measurements.
 
-## Phase Acceptance Criteria
+## Optional Future Extensions
 
-### Phase 0
+These are not baseline requirements: reusable global SLAM mapping, loop closure, global path planning, autonomous frontier exploration, ROS, ROS 2, Nav2, AMCL, Gmapping, `slam_toolbox`, Raspberry Pi, Jetson, and a vehicle-mounted Linux computer.
 
-- Repository skeleton exists.
-- `HARDWARE_LOCK.md` contains C1M1-R2.
-- Verified electrical values are documented.
-- GPIO values remain explicit user-configurable settings.
-- No live LiDAR communication is implemented.
+## Non-Goals
 
-### Phase 1
+- Reliable real-world dust-storm detection is not claimed.
+- ROS and a vehicle-mounted Linux computer are not required.
+- Reusable global SLAM mapping is not mandatory.
+- Simultaneous dual-C1 operation is not required until feasibility is proven.
+- Final GPIO, UART, I2C address, connector order, voltage-interface, polarity, and mounting-offset values are not invented.
 
-- Repository audit is documented.
-- Hardware facts are clearly separated from unverified values.
-- Hardware conflicts are recorded in `docs/phase1_hardware_audit.md`.
-- Firmware and PC interfaces are inventoried in `docs/phase1_interface_inventory.md`.
-- Documentation is consistent with the current audit-only Phase 1 scope.
-- `python tools/validate_hardware_lock.py` succeeds.
-- `python -m pytest pc/tests/test_hardware_lock_validation.py -v` succeeds.
-- No live LiDAR communication is implemented.
+## Confirmed Inventory
 
-### Phase 2
+Ranging:
 
-- Synthetic polar view works.
-- Synthetic Cartesian view works.
-- Coordinate orientation is correct.
-- No hardware is required.
+- RPLIDAR C1 x2.
+- HC-SR04 ultrasonic sensor x3.
 
-### Phase 3
+Motion and pose:
 
-- ESP32 UART operates at 460800 baud.
-- Device information is read.
-- Health is read.
-- Start and stop commands work.
-- No blocking receive loop exists.
+- Four wheel encoders associated with the four drive motors.
+- MPU6050 inertial measurement unit x1.
 
-### Phase 4
+Ground and landmark:
 
-- Valid samples are decoded.
-- Scan boundaries are detected.
-- Parser recovers from injected corruption.
-- No unbounded memory growth occurs.
+- TCRT5000 reflective infrared sensor x2 for edge/drop detection.
+- Hall sensor module x1 for magnetic landmark/checkpoint detection.
 
-### Phase 5
+Environment:
 
-- Batched binary frames reach the PC.
-- CRC is verified.
-- Sequence gaps are detected.
-- Live full scans are displayed.
+- BH1750 illuminance sensor x1.
+- BMP280 temperature/pressure sensor x1.
 
-### Phase 6
+Controllers and chassis:
 
-- Polar and Cartesian views are smooth.
-- Display refresh is bounded.
-- Scan statistics are visible.
+- STM32 controller board x1.
+- ESP32 board x1.
+- Battery/power system.
+- Four encoded motors.
+- Four mecanum wheels.
+- Existing rover chassis.
 
-### Phase 7
+## Confirmed Electrical Facts
 
-- Live data can be recorded.
-- Recording can be replayed.
-- Replay reproduces the same scan geometry.
+Preserved verified RPLIDAR C1 facts:
 
-### Phase 8
+- Exact model in earlier verified files: SLAMTEC RPLIDAR C1M1-R2.
+- Connector: XH2.54-5P, four active conductors and one unused position.
+- UART: 3.3 V TTL, 460800 baud, 8 data bits, no parity, 1 stop bit.
+- Supply: 4.8 V to 5.2 V, typical 5.0 V.
+- Startup current: approximately 800 mA.
+- Typical operating current: approximately 230 mA at 10 Hz.
+- Maximum normal operating current: approximately 260 mA.
+- Maximum specified supply ripple: 150 mV.
+- External motor PWM conductor: not present.
 
-- Synthetic room produces four walls.
-- Fixed real LiDAR produces a recognizable room outline.
-- Free and occupied cells are distinguishable.
-- Map can be saved and loaded.
+These facts do not verify the wiring, mounting, serial identifiers, revisions, or operation of either physical C1 unit.
 
-### Phase 9
+## Planned Architecture
 
-- Continuous scan runs for at least 30 minutes.
-- No crash.
-- No unbounded memory growth.
-- No persistent parser loss after corrupt data.
-- Temporary USB interruption is reported.
-- Recovery behavior is documented.
+- STM32 planned responsibilities: existing four-mecanum-wheel motor control, wheel encoder acquisition, low-level motor safety, command-timeout stop, MPU6050 acquisition, HC-SR04 acquisition, TCRT5000 edge/drop detection, Hall landmark detection, BH1750 and BMP280 acquisition unless later interface testing requires a different assignment, low-rate sensor preprocessing, basic odometry support, and local stop/turn obstacle-avoidance state machine.
+- ESP32 planned responsibilities: WiFi communication with the computer, receive STM32 rover and sensor information, package and transmit data, receive limited configuration/control messages, and interface with at least one RPLIDAR C1 in a later phase.
+- PC responsibilities: real-time polar visualization, real-time Cartesian visualization, recording, replay, experiment inspection, later short-range accumulated mapping, and data/figure export.
 
-## Final Demonstration Procedure
+## Two-C1 Policy
 
-1. Show the hardware lock and wiring checklist.
-2. Run the PC-direct adapter test and capture device information and health.
-3. Run the ESP32 firmware, identify the LiDAR, and start scanning.
-4. Display live polar and Cartesian scans.
-5. Record a session and stop scanning cleanly.
-6. Replay the same session deterministically.
-7. Generate a static occupancy grid with the LiDAR fixed.
-8. Demonstrate fault diagnostics with a controlled interruption.
+- Sensor IDs remain neutral: `c1_1` and `c1_2`.
+- Both C1 units must be tested independently in Phase 2.5.
+- One stable C1 is required for the baseline integration target.
+- Simultaneous dual-C1 operation is optional pending UART, GPIO, bandwidth, buffering, timing, and power feasibility.
+- No final front/rear/upper/lower mounting names may be used until installation is physically verified.
 
-## Phase 0 Test Method
+## Environmental-Sensing Policy
 
-Phase 0 is verified by checking the file tree, reviewing the unresolved hardware values in `HARDWARE_LOCK.md`, and running the PC-side unit tests:
+- BH1750 records illuminance in lux.
+- BMP280 records temperature in degrees Celsius and atmospheric pressure in pascals.
+- Simulated environmental-anomaly experiments are allowed.
+- Reliable real-world dust-storm detection is not claimed.
 
-```powershell
-cd rplidar_c1_subsystem
-pip install -e .\\pc
-pytest .\\pc\\tests
-```
+## Unverified Integration Details
 
-## Phase 1 Test Method
+- Individual C1 serial IDs.
+- Individual C1 revisions.
+- Operational status of either physical C1.
+- Final C1 placement and orientation.
+- Simultaneous dual-C1 architecture.
+- Exact ESP32 GPIOs.
+- Exact UART assignment.
+- Exact STM32-ESP32 connector.
+- Exact HC-SR04 level-shifting requirements on the physical board.
+- Actual BH1750, BMP280, and MPU6050 I2C addresses.
+- Physical TCRT5000 and Hall active polarity.
+- Battery voltage and capacity unless measured.
+- Final power-distribution topology.
+- Final sensor mounting offsets.
 
-Phase 1 is verified from the subsystem root:
+## Phase Order
 
-```powershell
-cd rplidar_c1_subsystem
-python tools\\validate_hardware_lock.py
-python -m pytest pc\\tests\\test_hardware_lock_validation.py -v
-```
+- Phase 2.4: multi-sensor recording, replay, reproducible datasets, current hardware inventory update, and project-plan rebaseline.
+- Phase 2.5: PC-direct testing of both RPLIDAR C1 units separately, real scan acquisition, distance/orientation checks, device identification, recording, and visualization.
+- Phase 3: STM32 integration of HC-SR04, TCRT5000, Hall, BH1750, and BMP280, including low-level sensor safety and environmental-data acquisition.
+- Phase 4: wheel encoders, MPU6050, mecanum kinematics, closed-loop motion, and odometry.
+- Phase 5: STM32-ESP32-computer communication, WiFi transport, one-C1 baseline integration, then optional dual-C1 feasibility evaluation.
+- Phase 6: real-time computer visualization, rover trajectory, and short-range encoder/IMU-assisted accumulated 2D mapping.
+- Phase 7: local autonomous obstacle stop/turn behavior.
+- Phase 8: full Mars-like venue integration, environmental experiments, validation, reliability testing, and final presentation evidence.
 
-These commands validate the hardware lock, unresolved GPIO policy, documentation consistency, and validation-tool behavior. They do not open serial ports.
+## Phase 2.4 Acceptance Philosophy
+
+Phase 2.4 is software-only. It accepts deterministic synthetic recordings and replay as evidence that the PC data interfaces are ready for later real hardware drivers. It does not prove wiring, physical safety, sensor calibration, WiFi operation, odometry, mapping, SLAM, or autonomous avoidance.
+
+## Course Validation Evidence
+
+Evidence should include software test logs, deterministic JSONL recordings, replay output, rendered figures, future bench hardware logs, future stationary physical tests, future moving-rover tests, safety test outcomes, and final presentation artifacts. Physical validations must not be marked complete until they are actually performed.

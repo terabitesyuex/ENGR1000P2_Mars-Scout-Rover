@@ -1,3 +1,7 @@
+# SUPERSEDED HISTORICAL COPY
+
+Use repository-root `docs/coordinate_frames.md` for current coordinate-frame rules. Historical statements below may be stale.
+
 # Coordinate Frames
 
 The project uses two coordinate systems: the native C1 scan convention and the internal rover convention.

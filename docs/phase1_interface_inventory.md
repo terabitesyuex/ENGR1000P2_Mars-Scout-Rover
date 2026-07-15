@@ -92,3 +92,21 @@ This inventory records the interfaces present after Phase 0 and audited in curre
 
 - `pc/src/rplidar_c1_tools/synthetic_scan.py`
   - Produces deterministic `ScanFrame` data for circle and room environments.
+
+## Phase 2.4 Interface Update
+
+- `pc/src/rplidar_c1_tools/recording_models.py`
+  - Defines the versioned multi-sensor recording schema constants, sensor inventory models, rover pose, IMU, ultrasonic, ground/edge, Hall, illuminance, and barometer sample models.
+
+- `pc/src/rplidar_c1_tools/recorder.py`
+  - Implements streaming UTF-8 JSONL recording for existing `ScanFrame` objects and auxiliary synthetic sensor records.
+  - Does not open serial ports, use WiFi sockets, or access hardware.
+
+- `pc/src/rplidar_c1_tools/replay.py`
+  - Implements lazy JSONL reading, line-number corruption errors, deterministic LiDAR scan replay, and recording inspection.
+
+- `pc/src/rplidar_c1_tools/cli.py`
+  - Adds `record-synthetic`, `inspect-recording`, `replay-recording`, and `render-recording`.
+
+- `tools/validate_current_plan.py`
+  - Validates selected explicit current-plan anchors in authoritative documentation.

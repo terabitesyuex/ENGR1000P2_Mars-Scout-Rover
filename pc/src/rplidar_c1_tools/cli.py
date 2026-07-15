@@ -4,9 +4,22 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+import sys
 
 from .point_cloud_view import save_point_cloud_view
 from .polar_view import save_polar_view
+from .recorder import MultiSensorRecorder
+from .recording_models import (
+    BarometerSample,
+    GroundEdgeSample,
+    HallLandmarkSample,
+    IlluminanceSample,
+    ImuSample,
+    RoverPose,
+    UltrasonicSample,
+    default_sensor_inventory,
+)
+from .replay import RecordingFormatError, inspect_recording, last_lidar_scan_by_sensor, replay_lidar_scans
 from .synthetic_scan import SyntheticRoomConfig, SyntheticScanSource, scan_to_json
 from .synthetic_scan import generate_circle_scan, generate_room_scan
 
@@ -53,26 +66,109 @@ def main() -> int:
     )
     render.set_defaults(show=False)
 
+    record = subparsers.add_parser(
+        "record-synthetic",
+        help="Write a deterministic Phase 2.4 multi-sensor JSONL recording.",
+    )
+    record.add_argument("--scene", choices=("circle", "room"), default="room")
+    record.add_argument("--output", type=Path, required=True)
+    record.add_argument("--frames", type=_positive_int, default=3)
+    record.add_argument("--lidar-count", type=int, choices=(1, 2), default=2)
+    record.add_argument("--point-count", type=_positive_int, default=360)
+    record.add_argument("--include-aux", action="store_true")
+    record.add_argument("--overwrite", action="store_true")
+
+    inspect = subparsers.add_parser(
+        "inspect-recording",
+        help="Inspect a Phase 2.4 JSONL recording without loading scan geometry.",
+    )
+    inspect.add_argument("recording", type=Path)
+    inspect.add_argument("--output", type=Path)
+
+    replay = subparsers.add_parser(
+        "replay-recording",
+        help="Replay recorded LiDAR scans immediately by default.",
+    )
+    replay.add_argument("recording", type=Path)
+    replay.add_argument("--sensor-id")
+    replay.add_argument("--limit", type=_positive_int)
+    replay.add_argument("--timed", action="store_true")
+    replay.add_argument("--speed", type=float, default=1.0)
+    replay.add_argument("--output", type=Path)
+
+    render_recording = subparsers.add_parser(
+        "render-recording",
+        help="Render final replayed LiDAR frames as polar and point-cloud PNGs.",
+    )
+    render_recording.add_argument("recording", type=Path)
+    render_recording.add_argument("--sensor-id", action="append", dest="sensor_ids")
+    render_recording.add_argument("--output-dir", type=Path, required=True)
+
     args = parser.parse_args()
-    if args.command == "synthetic-room":
-        config = SyntheticRoomConfig(
-            scan_count=args.scans,
-            angle_step_deg=args.angle_step_deg,
-            room_length_mm=args.room_length_mm,
-            room_width_mm=args.room_width_mm,
-        )
-        for scan in SyntheticScanSource(config).scans():
-            print(scan_to_json(scan))
-        return 0
-    if args.command == "render-synthetic":
-        paths = render_synthetic(
-            scene=args.scene,
-            output_dir=args.output_dir,
-            show=args.show,
-        )
-        for path in paths:
+    try:
+        if args.command == "synthetic-room":
+            config = SyntheticRoomConfig(
+                scan_count=args.scans,
+                angle_step_deg=args.angle_step_deg,
+                room_length_mm=args.room_length_mm,
+                room_width_mm=args.room_width_mm,
+            )
+            for scan in SyntheticScanSource(config).scans():
+                print(scan_to_json(scan))
+            return 0
+        if args.command == "render-synthetic":
+            paths = render_synthetic(
+                scene=args.scene,
+                output_dir=args.output_dir,
+                show=args.show,
+            )
+            for path in paths:
+                print(path)
+            return 0
+        if args.command == "record-synthetic":
+            path = record_synthetic_session(
+                output_path=args.output,
+                scene=args.scene,
+                frames=args.frames,
+                lidar_count=args.lidar_count,
+                point_count=args.point_count,
+                include_auxiliary=args.include_aux,
+                overwrite=args.overwrite,
+            )
             print(path)
-        return 0
+            return 0
+        if args.command == "inspect-recording":
+            text = inspect_recording(args.recording).to_text()
+            if args.output:
+                args.output.parent.mkdir(parents=True, exist_ok=True)
+                args.output.write_text(text, encoding="utf-8")
+            print(text, end="")
+            return 0
+        if args.command == "replay-recording":
+            text = replay_recording_text(
+                args.recording,
+                sensor_id=args.sensor_id,
+                limit=args.limit,
+                timed=args.timed,
+                speed=args.speed,
+            )
+            if args.output:
+                args.output.parent.mkdir(parents=True, exist_ok=True)
+                args.output.write_text(text, encoding="utf-8")
+            print(text, end="")
+            return 0
+        if args.command == "render-recording":
+            paths = render_recording_last_frames(
+                args.recording,
+                output_dir=args.output_dir,
+                sensor_ids=tuple(args.sensor_ids or ()),
+            )
+            for path in paths:
+                print(path)
+            return 0
+    except (OSError, ValueError, RecordingFormatError) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
     parser.error(f"unsupported command: {args.command}")
     return 2
 
@@ -115,6 +211,115 @@ def render_synthetic(scene: str, output_dir: Path, show: bool = False) -> list[P
     return paths
 
 
+def record_synthetic_session(
+    *,
+    output_path: Path,
+    scene: str,
+    frames: int,
+    lidar_count: int,
+    point_count: int,
+    include_auxiliary: bool,
+    overwrite: bool,
+) -> Path:
+    """Create a deterministic software-only multi-sensor recording."""
+    if frames <= 0:
+        raise ValueError("frames must be positive")
+    if lidar_count not in (1, 2):
+        raise ValueError("lidar_count must be 1 or 2")
+    sensor_inventory = default_sensor_inventory(
+        lidar_count=lidar_count,
+        include_auxiliary=include_auxiliary,
+    )
+    lidar_ids = ("c1_1", "c1_2")[:lidar_count]
+    with MultiSensorRecorder(
+        output_path,
+        sensor_inventory=sensor_inventory,
+        metadata={
+            "generator": "rplidar_c1_tools.cli record-synthetic",
+            "scene": scene,
+            "hardware_access": "none",
+        },
+        overwrite=overwrite,
+    ) as recorder:
+        for frame_id in range(frames):
+            timestamp_us = frame_id * 100_000
+            pose = _synthetic_pose(timestamp_us, frame_id) if include_auxiliary else None
+            for sensor_id in lidar_ids:
+                scan = _scan_for_scene(
+                    scene,
+                    point_count=point_count,
+                    timestamp_us=timestamp_us,
+                    frame_id=frame_id,
+                )
+                recorder.write_lidar_scan(sensor_id, scan, pose=pose)
+            if include_auxiliary and pose is not None:
+                _write_synthetic_auxiliary(recorder, timestamp_us, frame_id, pose)
+    return output_path
+
+
+def replay_recording_text(
+    recording_path: Path,
+    *,
+    sensor_id: str | None = None,
+    limit: int | None = None,
+    timed: bool = False,
+    speed: float = 1.0,
+) -> str:
+    """Return compact text for replayed LiDAR scans."""
+    lines: list[str] = []
+    count = 0
+    for record in replay_lidar_scans(
+        recording_path,
+        sensor_id=sensor_id,
+        timed=timed,
+        speed=speed,
+    ):
+        lines.append(
+            "sensor_id={0} sequence={1} timestamp_us={2} points={3}".format(
+                record.sensor_id,
+                record.sequence,
+                record.scan_frame.timestamp_us,
+                record.scan_frame.point_count,
+            )
+        )
+        count += 1
+        if limit is not None and count >= limit:
+            break
+    lines.append(f"replayed_lidar_scans={count}")
+    return "\n".join(lines) + "\n"
+
+
+def render_recording_last_frames(
+    recording_path: Path,
+    *,
+    output_dir: Path,
+    sensor_ids: tuple[str, ...] = (),
+) -> list[Path]:
+    """Render final recorded LiDAR frame for each selected sensor."""
+    output_dir.mkdir(parents=True, exist_ok=True)
+    records = last_lidar_scan_by_sensor(recording_path, sensor_ids=sensor_ids or None)
+    if not records:
+        raise ValueError("recording contains no matching LiDAR scans")
+    paths: list[Path] = []
+    for sensor_id in sorted(records):
+        frame = records[sensor_id].scan_frame
+        paths.append(
+            save_polar_view(
+                frame,
+                output_dir / f"{sensor_id}_last_polar.png",
+                title=f"{sensor_id} replayed polar scan",
+            )
+        )
+        paths.append(
+            save_point_cloud_view(
+                frame,
+                output_dir / f"{sensor_id}_last_point_cloud.png",
+                title=f"{sensor_id} replayed point cloud",
+            )
+        )
+    return paths
+
+
 def _selected_scenes(scene: str) -> tuple[str, ...]:
     if scene == "both":
         return ("circle", "room")
@@ -123,12 +328,103 @@ def _selected_scenes(scene: str) -> tuple[str, ...]:
     raise ValueError("scene must be one of: circle, room, both")
 
 
-def _scan_for_scene(scene: str):
+def _scan_for_scene(
+    scene: str,
+    *,
+    point_count: int = 360,
+    timestamp_us: int = 0,
+    frame_id: int | None = 0,
+):
     if scene == "circle":
-        return generate_circle_scan(point_count=360, radius_mm=2000)
+        return generate_circle_scan(
+            point_count=point_count,
+            radius_mm=2000,
+            timestamp_us=timestamp_us,
+            frame_id=frame_id,
+        )
     if scene == "room":
-        return generate_room_scan(point_count=360, room_length_mm=6000, room_width_mm=4000)
+        return generate_room_scan(
+            point_count=point_count,
+            room_length_mm=6000,
+            room_width_mm=4000,
+            timestamp_us=timestamp_us,
+            frame_id=frame_id,
+        )
     raise ValueError("scene must be one of: circle, room, both")
+
+
+def _synthetic_pose(timestamp_us: int, frame_id: int) -> RoverPose:
+    return RoverPose(
+        timestamp_us=timestamp_us,
+        x_m=frame_id * 0.05,
+        y_m=0.0,
+        yaw_rad=frame_id * 0.01,
+    )
+
+
+def _write_synthetic_auxiliary(
+    recorder: MultiSensorRecorder,
+    timestamp_us: int,
+    frame_id: int,
+    pose: RoverPose,
+) -> None:
+    recorder.write_rover_pose(pose)
+    recorder.write_imu_sample(
+        ImuSample(
+            timestamp_us=timestamp_us,
+            accel_x_mps2=0.0,
+            accel_y_mps2=0.0,
+            accel_z_mps2=9.80665,
+            gyro_x_radps=0.0,
+            gyro_y_radps=0.0,
+            gyro_z_radps=0.01 * frame_id,
+            temperature_c=24.0,
+        )
+    )
+    for index, distance_mm in enumerate((600, 700, 800), start=1):
+        recorder.write_ultrasonic_sample(
+            UltrasonicSample(
+                timestamp_us=timestamp_us,
+                sensor_id=f"ultrasonic_{index}",
+                distance_mm=distance_mm + frame_id,
+            )
+        )
+    for index in (1, 2):
+        recorder.write_ground_edge_sample(
+            GroundEdgeSample(
+                timestamp_us=timestamp_us,
+                sensor_id=f"tcrt5000_{index}",
+                edge_detected=False,
+                reflectance_raw=700 + index,
+            )
+        )
+    recorder.write_hall_landmark_sample(
+        HallLandmarkSample(
+            timestamp_us=timestamp_us,
+            detected=(frame_id % 3 == 0),
+            raw_value=1 if frame_id % 3 == 0 else 0,
+        )
+    )
+    recorder.write_illuminance_sample(
+        IlluminanceSample(
+            timestamp_us=timestamp_us,
+            illuminance_lux=320.0 + frame_id,
+        )
+    )
+    recorder.write_barometer_sample(
+        BarometerSample(
+            timestamp_us=timestamp_us,
+            temperature_c=24.0 + frame_id * 0.1,
+            pressure_pa=101_325.0 - frame_id,
+        )
+    )
+
+
+def _positive_int(value: str) -> int:
+    parsed = int(value)
+    if parsed <= 0:
+        raise argparse.ArgumentTypeError("value must be a positive integer")
+    return parsed
 
 
 if __name__ == "__main__":

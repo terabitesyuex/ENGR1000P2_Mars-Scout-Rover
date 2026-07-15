@@ -1,39 +1,220 @@
 # Recording Format
 
-Recording is implemented in a later phase. This file defines the intended session layout.
+Phase 2.4 implements a human-readable, streamable UTF-8 JSON Lines format.
 
-## Session Directory
+## Rationale
 
-```text
-data/raw/YYYY-MM-DD_HHMMSS/
-    metadata.json
-    wire_stream.bin
-    samples.csv
-    scans.jsonl
-    events.jsonl
+JSONL allows incremental writing, lazy reading, line-number corruption reports, easy diffing, and simple test fixtures. It is not pickle, marshal, a database, ROS bag, or an opaque binary format.
+
+The Phase 2.4 JSONL recording format is not the future on-wire protocol between ESP32 and PC.
+
+## Schema
+
+- Schema name: `mars_scout_multisensor_recording`.
+- Schema version: `1`.
+- Encoding: UTF-8.
+- One complete JSON object per line.
+- First line: `header`.
+- Later lines: sensor or replay records.
+
+## Header
+
+Required fields:
+
+- `record_type`: `header`.
+- `schema_name`: `mars_scout_multisensor_recording`.
+- `schema_version`: `1`.
+- `created_unix_us`: integer.
+- `sensor_inventory`: list of sensor definitions.
+- `coordinate_convention`: object.
+- `metadata`: object.
+
+Example:
+
+```json
+{"record_type":"header","schema_name":"mars_scout_multisensor_recording","schema_version":1,"sensor_inventory":[{"sensor_id":"c1_1","sensor_type":"rplidar_c1","units":["angle_deg","distance_mm","quality"]}]}
 ```
 
-## Metadata
+## Sensor Inventory
 
-`metadata.json` must contain:
+Neutral IDs are used until mounting is physically verified:
 
-- recording version;
-- date and time;
-- LiDAR model;
-- firmware version;
-- hardware revision;
-- redacted serial identifier;
-- ESP32 firmware version;
-- transport configuration;
-- filter configuration;
-- coordinate convention;
-- map configuration.
+- `c1_1`
+- `c1_2`
+- `ultrasonic_1`
+- `ultrasonic_2`
+- `ultrasonic_3`
+- `tcrt5000_1`
+- `tcrt5000_2`
+- `bh1750_1`
+- `bmp280_1`
+- `mpu6050_1`
+- `hall_1`
+- `rover_pose`
 
-## Files
+Duplicate sensor IDs are rejected. Unknown sensor IDs in later records are rejected.
 
-- `wire_stream.bin`: exact ESP32-to-PC binary frames.
-- `samples.csv`: decoded samples for inspection.
-- `scans.jsonl`: completed scans.
-- `events.jsonl`: connection, disconnection, scan start, scan stop, health changes, parser errors, timeouts, recovery attempts, and configuration changes.
+## Common Record Fields
 
-The recorder must create directories safely, preserve partial recordings, flush periodically, close cleanly on Ctrl+C, and never overwrite an existing session accidentally.
+All non-header records include:
+
+- `record_type`
+- `schema_name`
+- `schema_version`
+- `sequence`
+- `timestamp_us`
+- `sensor_id`
+
+`sequence` must increase. `timestamp_us` must be non-negative and nondecreasing in file order.
+
+## Coordinate Convention And Units
+
+- `ScanPoint.angle_deg`: rover-frame degrees, `0` forward, positive counterclockwise.
+- `ScanPoint.distance_mm`: millimetres.
+- Cartesian distances: metres.
+- `+x`: rover forward.
+- `+y`: rover left.
+- Native C1 clockwise conversion must happen before `ScanFrame` creation.
+
+## Record Types
+
+### `lidar_scan`
+
+Fields:
+
+- `sensor_id`: `c1_1` or `c1_2`.
+- `frame_id`
+- `source`
+- `metadata`
+- `points`
+- `rover_pose`
+
+Each point stores `angle_deg`, `distance_mm`, and optional `quality`. Point order is preserved.
+
+Short example:
+
+```json
+{"record_type":"lidar_scan","sensor_id":"c1_1","timestamp_us":0,"sequence":1,"points":[{"angle_deg":0.0,"distance_mm":2000,"quality":100}]}
+```
+
+### `rover_pose`
+
+Fields:
+
+- `x_m`
+- `y_m`
+- `yaw_rad`
+- `source`
+
+Phase 2.4 pose records are optional replay data. They are not proof of encoder odometry.
+
+### `imu`
+
+Fields:
+
+- `sensor_id`: `mpu6050_1`.
+- `accel_x_mps2`
+- `accel_y_mps2`
+- `accel_z_mps2`
+- `gyro_x_radps`
+- `gyro_y_radps`
+- `gyro_z_radps`
+- optional `temperature_c`
+
+### `ultrasonic`
+
+Fields:
+
+- `sensor_id`: `ultrasonic_1`, `ultrasonic_2`, or `ultrasonic_3`.
+- `distance_mm`
+- `valid`
+
+### `ground_edge`
+
+Fields:
+
+- `sensor_id`: `tcrt5000_1` or `tcrt5000_2`.
+- `edge_detected`
+- optional `reflectance_raw`
+
+### `hall_landmark`
+
+Fields:
+
+- `sensor_id`: `hall_1`.
+- `detected`
+- optional `raw_value`
+
+The Hall module is for magnetic landmark/checkpoint detection, not wheel odometry.
+
+### `illuminance`
+
+Fields:
+
+- `sensor_id`: `bh1750_1`.
+- `illuminance_lux`
+
+### `barometer`
+
+Fields:
+
+- `sensor_id`: `bmp280_1`.
+- `temperature_c`
+- `pressure_pa`
+
+BH1750 and BMP280 support environmental-change indication. Reliable real-world dust-storm detection is not claimed.
+
+## Corruption Behavior
+
+Readers reject:
+
+- Missing header.
+- Duplicate header.
+- Unsupported schema name or version.
+- Blank lines.
+- Non-object JSON values.
+- Invalid JSON.
+- Duplicate sensor IDs.
+- Unknown sensor IDs.
+- Non-increasing sequence numbers.
+- Decreasing timestamps.
+- Invalid scan points.
+
+Errors include useful line numbers when a line is involved.
+
+## Forward Compatibility
+
+New record types may be added in a later schema version. Phase 2.4 readers reject unsupported schema versions instead of silently guessing.
+
+## CLI Examples
+
+Create a deterministic two-C1 room session with auxiliary streams:
+
+```powershell
+python -m rplidar_c1_tools.cli record-synthetic --scene room --frames 3 --lidar-count 2 --include-aux --output .verification\phase2.4\synthetic_multisensor_room.jsonl
+```
+
+Inspect:
+
+```powershell
+python -m rplidar_c1_tools.cli inspect-recording .verification\phase2.4\synthetic_multisensor_room.jsonl --output .verification\phase2.4\inspection.txt
+```
+
+Replay:
+
+```powershell
+python -m rplidar_c1_tools.cli replay-recording .verification\phase2.4\synthetic_multisensor_room.jsonl
+```
+
+Render final replayed frames:
+
+```powershell
+python -m rplidar_c1_tools.cli render-recording .verification\phase2.4\synthetic_multisensor_room.jsonl --output-dir .verification\phase2.4
+```
+
+## Limitations
+
+- Phase 2.4 data is synthetic unless a future phase writes real hardware records.
+- No real serial, WiFi, firmware, mapping, SLAM, odometry, or obstacle avoidance is implemented.
+- No mounting transforms are recorded or applied.
+- No sensor calibration is implied.

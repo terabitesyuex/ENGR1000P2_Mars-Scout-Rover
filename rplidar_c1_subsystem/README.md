@@ -1,3 +1,7 @@
+# SUPERSEDED HISTORICAL COPY
+
+This nested document is not current authoritative guidance. Use the repository-root `README.md`, `PROJECT_SPEC.md`, `HARDWARE_LOCK.md`, `AGENTS.md`, and `docs/` files for the Phase 2.4 plan. Historical statements below may describe earlier single-C1 or Phase 0 assumptions.
+
 # RPLIDAR C1 Subsystem
 
 Maintainable LiDAR subsystem for the Mars Scout Rover undergraduate engineering project. The subsystem targets safe PC-direct verification, ESP32-C3 communication, deterministic replay, visualization, and later stationary occupancy-grid mapping for an RPLIDAR C1M1-R2.

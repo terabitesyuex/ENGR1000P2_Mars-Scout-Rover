@@ -3,7 +3,8 @@
     "phase1",
     "phase2.1",
     "phase2.2",
-    "phase2.3"
+    "phase2.3",
+    "phase2.4"
   ],
   "phases": {
     "phase1": {
@@ -71,6 +72,93 @@
             ".verification/phase2.3_visuals/room_point_cloud.png"
           ],
           "warning": "Manual visual orientation inspection is still required."
+        }
+      ]
+    },
+    "phase2.4": {
+      "display_name": "Phase 2.4",
+      "targeted": [
+        "pc/tests/test_recording.py",
+        "pc/tests/test_replay.py",
+        "pc/tests/test_current_plan.py"
+      ],
+      "regression": [
+        "pc/tests/test_visualization.py",
+        "pc/tests/test_coordinate_transform.py",
+        "pc/tests/test_synthetic_scan.py",
+        "pc/tests/test_scan_builder.py",
+        "pc/tests/test_hardware_lock_validation.py"
+      ],
+      "full": [
+        "pc/tests"
+      ],
+      "python_commands": [
+        {
+          "label": "Phase 2.4 record synthetic session",
+          "args": [
+            "-m",
+            "rplidar_c1_tools.cli",
+            "record-synthetic",
+            "--scene",
+            "room",
+            "--frames",
+            "3",
+            "--lidar-count",
+            "2",
+            "--include-aux",
+            "--output",
+            ".verification/phase2.4/synthetic_multisensor_room.jsonl",
+            "--overwrite"
+          ],
+          "expected_files": [
+            ".verification/phase2.4/synthetic_multisensor_room.jsonl"
+          ]
+        },
+        {
+          "label": "Phase 2.4 inspect recording",
+          "args": [
+            "-m",
+            "rplidar_c1_tools.cli",
+            "inspect-recording",
+            ".verification/phase2.4/synthetic_multisensor_room.jsonl",
+            "--output",
+            ".verification/phase2.4/inspection.txt"
+          ],
+          "expected_files": [
+            ".verification/phase2.4/inspection.txt"
+          ]
+        },
+        {
+          "label": "Phase 2.4 replay recording",
+          "args": [
+            "-m",
+            "rplidar_c1_tools.cli",
+            "replay-recording",
+            ".verification/phase2.4/synthetic_multisensor_room.jsonl",
+            "--output",
+            ".verification/phase2.4/replay.txt"
+          ],
+          "expected_files": [
+            ".verification/phase2.4/replay.txt"
+          ]
+        },
+        {
+          "label": "Phase 2.4 render replay frames",
+          "args": [
+            "-m",
+            "rplidar_c1_tools.cli",
+            "render-recording",
+            ".verification/phase2.4/synthetic_multisensor_room.jsonl",
+            "--output-dir",
+            ".verification/phase2.4"
+          ],
+          "expected_files": [
+            ".verification/phase2.4/c1_1_last_polar.png",
+            ".verification/phase2.4/c1_1_last_point_cloud.png",
+            ".verification/phase2.4/c1_2_last_polar.png",
+            ".verification/phase2.4/c1_2_last_point_cloud.png"
+          ],
+          "warning": "Manual replay visualization inspection is still required."
         }
       ]
     }

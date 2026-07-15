@@ -1,3 +1,7 @@
+# SUPERSEDED HISTORICAL COPY
+
+Use repository-root `docs/lidar_hardware_profile.md` for current LiDAR hardware notes. Historical statements below may be stale.
+
 # LiDAR Hardware Profile
 
 ## Device

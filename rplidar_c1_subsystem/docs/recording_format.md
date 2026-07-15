@@ -1,3 +1,7 @@
+# SUPERSEDED HISTORICAL COPY
+
+Use repository-root `docs/recording_format.md` for the current Phase 2.4 JSONL schema. Historical statements below may be stale.
+
 # Recording Format
 
 Recording is implemented in a later phase. This file defines the intended session layout.

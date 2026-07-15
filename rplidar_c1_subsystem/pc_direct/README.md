@@ -1,3 +1,7 @@
+# SUPERSEDED HISTORICAL COPY
+
+This nested document is not current PC-direct guidance. Use repository-root `pc_direct/README.md`; Phase 2.5 must test `c1_1` and `c1_2` independently.
+
 # PC-Direct Verification
 
 Phase 1 verifies the RPLIDAR C1M1-R2 directly from the PC through the supplied USB-to-UART adapter before any ESP32 development.

@@ -1,3 +1,7 @@
+# SUPERSEDED HISTORICAL COPY
+
+Use repository-root `docs/lidar_protocol_notes.md` for current protocol notes. Historical statements below may be stale.
+
 # LiDAR Protocol Notes
 
 Official SLAMTEC RPLIDAR protocol documentation is the source of truth for all C1 packet layouts, command bytes, checksums, response descriptors, and scan data formats.
