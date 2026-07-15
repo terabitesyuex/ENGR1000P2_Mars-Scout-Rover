@@ -2,9 +2,11 @@
 
 Official SLAMTEC RPLIDAR protocol documentation is the source of truth for all C1 packet layouts, command bytes, checksums, response descriptors, and scan data formats.
 
-## Current Phase 2.4 Rule
+## Current Phase 2.5 Rule
 
-The final C1 binary protocol parser is not implemented in Phase 2.4. This file records constraints for later hardware phases only. Phase 2.4 records and replays already-built `ScanFrame` objects and synthetic multi-sensor records.
+Phase 2.5 implements a bounded PC-direct software parser for standard 5-byte scan nodes and a driver boundary that converts native C1 angles before `ScanPoint` creation. Automated tests use fixture bytes only and do not prove either physical C1 unit operates.
+
+The parser is intentionally separated from serial hardware access and recording. Future protocol extensions such as high-speed or capsule scan modes must be added as separate parser paths with tests.
 
 ## Required Distinctions
 
@@ -23,16 +25,14 @@ The implementation must distinguish:
 
 ## Initial Minimum Command Set
 
-Later phases must begin with the minimum reliable subset:
+Phase 2.5 begins with the minimum reliable PC-direct subset:
 
 - stop;
-- reset;
-- device information;
-- health information;
 - start scan;
-- stop scan;
-- one verified scan mode.
+- standard scan-node parsing path, pending physical validation.
+
+Device information, health information, reset behavior, and additional scan modes remain future manual hardware validation items until documented.
 
 ## Parser Requirements
 
-The ESP32 parser must be incremental and non-blocking. It must accept arbitrary byte chunks, recover from random prefix bytes, validate every length field, and never assume that a serial read returns a complete packet.
+The PC-side parser must be incremental. It must accept arbitrary byte chunks, recover from response-descriptor prefixes, validate sample invariants, and never assume that a read returns a complete packet. Embedded ESP32 parsing remains a future phase.

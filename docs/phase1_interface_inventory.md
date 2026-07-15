@@ -110,3 +110,17 @@ This inventory records the interfaces present after Phase 0 and audited in curre
 
 - `tools/validate_current_plan.py`
   - Validates selected explicit current-plan anchors in authoritative documentation.
+
+## Phase 2.5 Interface Update
+
+- `pc/src/rplidar_c1_tools/c1_pc_direct.py`
+  - Adds the transport-injected `C1PcDirectDriver` boundary with `connect()`, `disconnect()`, `start_scan()`, `iter_scan_points()`, and bounded frame capture.
+  - Adds `C1StandardScanParser` for standard 5-byte C1 scan-node fixtures and future PC-direct byte streams.
+  - Adds `BytesBufferTransport` for tests and verifier smoke workflows without serial access.
+  - Adds `PySerialByteTransport` for manual PC-direct capture using an explicit user-provided port.
+
+- `pc/src/rplidar_c1_tools/cli.py`
+  - Adds `capture-c1` for saving one PC-direct C1 stream into the existing Phase 2.4 JSONL recording format.
+
+- `tools/verification/phase_manifest.json`
+  - Adds `phase2.5` targeted tests, regression tests, full PC suite execution, and fixture-only capture/replay/render smoke workflows.

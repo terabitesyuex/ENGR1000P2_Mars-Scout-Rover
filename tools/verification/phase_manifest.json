@@ -4,7 +4,8 @@
     "phase2.1",
     "phase2.2",
     "phase2.3",
-    "phase2.4"
+    "phase2.4",
+    "phase2.5"
   ],
   "phases": {
     "phase1": {
@@ -159,6 +160,141 @@
             ".verification/phase2.4/c1_2_last_point_cloud.png"
           ],
           "warning": "Manual replay visualization inspection is still required."
+        }
+      ]
+    },
+    "phase2.5": {
+      "display_name": "Phase 2.5",
+      "targeted": [
+        "pc/tests/test_c1_pc_direct.py",
+        "pc/tests/test_recording.py",
+        "pc/tests/test_replay.py"
+      ],
+      "regression": [
+        "pc/tests/test_visualization.py",
+        "pc/tests/test_coordinate_transform.py",
+        "pc/tests/test_synthetic_scan.py",
+        "pc/tests/test_scan_builder.py",
+        "pc/tests/test_hardware_lock_validation.py",
+        "pc/tests/test_current_plan.py"
+      ],
+      "full": [
+        "pc/tests"
+      ],
+      "python_commands": [
+        {
+          "label": "Phase 2.5 capture c1_1 fixture",
+          "args": [
+            "-m",
+            "rplidar_c1_tools.cli",
+            "capture-c1",
+            "--sensor-id",
+            "c1_1",
+            "--sample-hex",
+            "3d0100a00f3e012da00f3e015aa00f3e0187a00f",
+            "--frames",
+            "1",
+            "--points-per-frame",
+            "4",
+            "--read-chunk-size",
+            "5",
+            "--output",
+            ".verification/phase2.5/c1_1_pc_direct_capture.jsonl",
+            "--overwrite"
+          ],
+          "expected_files": [
+            ".verification/phase2.5/c1_1_pc_direct_capture.jsonl"
+          ]
+        },
+        {
+          "label": "Phase 2.5 inspect c1_1 fixture",
+          "args": [
+            "-m",
+            "rplidar_c1_tools.cli",
+            "inspect-recording",
+            ".verification/phase2.5/c1_1_pc_direct_capture.jsonl",
+            "--output",
+            ".verification/phase2.5/c1_1_inspection.txt"
+          ],
+          "expected_files": [
+            ".verification/phase2.5/c1_1_inspection.txt"
+          ]
+        },
+        {
+          "label": "Phase 2.5 replay c1_1 fixture",
+          "args": [
+            "-m",
+            "rplidar_c1_tools.cli",
+            "replay-recording",
+            ".verification/phase2.5/c1_1_pc_direct_capture.jsonl",
+            "--sensor-id",
+            "c1_1",
+            "--output",
+            ".verification/phase2.5/c1_1_replay.txt"
+          ],
+          "expected_files": [
+            ".verification/phase2.5/c1_1_replay.txt"
+          ]
+        },
+        {
+          "label": "Phase 2.5 render c1_1 fixture",
+          "args": [
+            "-m",
+            "rplidar_c1_tools.cli",
+            "render-recording",
+            ".verification/phase2.5/c1_1_pc_direct_capture.jsonl",
+            "--sensor-id",
+            "c1_1",
+            "--output-dir",
+            ".verification/phase2.5"
+          ],
+          "expected_files": [
+            ".verification/phase2.5/c1_1_last_polar.png",
+            ".verification/phase2.5/c1_1_last_point_cloud.png"
+          ],
+          "warning": "Manual C1 hardware capture and visual orientation inspection are still required."
+        },
+        {
+          "label": "Phase 2.5 capture c1_2 fixture",
+          "args": [
+            "-m",
+            "rplidar_c1_tools.cli",
+            "capture-c1",
+            "--sensor-id",
+            "c1_2",
+            "--sample-hex",
+            "3d0100a00f3e012da00f3e015aa00f3e0187a00f",
+            "--frames",
+            "1",
+            "--points-per-frame",
+            "4",
+            "--read-chunk-size",
+            "5",
+            "--output",
+            ".verification/phase2.5/c1_2_pc_direct_capture.jsonl",
+            "--overwrite"
+          ],
+          "expected_files": [
+            ".verification/phase2.5/c1_2_pc_direct_capture.jsonl"
+          ]
+        },
+        {
+          "label": "Phase 2.5 render c1_2 fixture",
+          "args": [
+            "-m",
+            "rplidar_c1_tools.cli",
+            "render-recording",
+            ".verification/phase2.5/c1_2_pc_direct_capture.jsonl",
+            "--sensor-id",
+            "c1_2",
+            "--output-dir",
+            ".verification/phase2.5"
+          ],
+          "expected_files": [
+            ".verification/phase2.5/c1_2_last_polar.png",
+            ".verification/phase2.5/c1_2_last_point_cloud.png"
+          ],
+          "warning": "Simultaneous dual-C1 operation remains UNVERIFIED."
         }
       ]
     }

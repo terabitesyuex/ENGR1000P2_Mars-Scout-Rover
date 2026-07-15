@@ -6,6 +6,15 @@ import argparse
 from pathlib import Path
 import sys
 
+from .c1_pc_direct import (
+    C1CaptureConfig,
+    C1DriverError,
+    C1PcDirectDriver,
+    BytesBufferTransport,
+    PySerialByteTransport,
+    capture_c1_session,
+    parse_sample_hex,
+)
 from .point_cloud_view import save_point_cloud_view
 from .polar_view import save_polar_view
 from .recorder import MultiSensorRecorder
@@ -104,6 +113,29 @@ def main() -> int:
     render_recording.add_argument("--sensor-id", action="append", dest="sensor_ids")
     render_recording.add_argument("--output-dir", type=Path, required=True)
 
+    capture_c1 = subparsers.add_parser(
+        "capture-c1",
+        help="Capture a bounded PC-direct C1 scan session into JSONL.",
+    )
+    capture_c1.add_argument("--sensor-id", choices=("c1_1", "c1_2"), required=True)
+    capture_c1.add_argument("--output", type=Path, required=True)
+    capture_c1.add_argument("--frames", type=_positive_int, default=1)
+    capture_c1.add_argument("--points-per-frame", type=_positive_int, default=360)
+    capture_c1.add_argument("--read-chunk-size", type=_positive_int, default=64)
+    capture_c1.add_argument("--max-empty-reads", type=_positive_int, default=10)
+    capture_c1.add_argument("--baud-rate", type=_positive_int, default=460800)
+    capture_c1.add_argument("--timeout-s", type=float, default=1.0)
+    capture_c1.add_argument("--overwrite", action="store_true")
+    source_group = capture_c1.add_mutually_exclusive_group(required=True)
+    source_group.add_argument(
+        "--port",
+        help="Explicit serial port for manual PC-direct hardware capture.",
+    )
+    source_group.add_argument(
+        "--sample-hex",
+        help="Hex fixture bytes for automated tests and verifier smoke workflows.",
+    )
+
     args = parser.parse_args()
     try:
         if args.command == "synthetic-room":
@@ -166,7 +198,23 @@ def main() -> int:
             for path in paths:
                 print(path)
             return 0
-    except (OSError, ValueError, RecordingFormatError) as exc:
+        if args.command == "capture-c1":
+            path = capture_c1_recording(
+                sensor_id=args.sensor_id,
+                output_path=args.output,
+                frames=args.frames,
+                points_per_frame=args.points_per_frame,
+                read_chunk_size=args.read_chunk_size,
+                max_empty_reads=args.max_empty_reads,
+                baud_rate=args.baud_rate,
+                timeout_s=args.timeout_s,
+                port=args.port,
+                sample_hex=args.sample_hex,
+                overwrite=args.overwrite,
+            )
+            print(path)
+            return 0
+    except (OSError, ValueError, RecordingFormatError, C1DriverError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
     parser.error(f"unsupported command: {args.command}")
@@ -318,6 +366,46 @@ def render_recording_last_frames(
             )
         )
     return paths
+
+
+def capture_c1_recording(
+    *,
+    sensor_id: str,
+    output_path: Path,
+    frames: int,
+    points_per_frame: int,
+    read_chunk_size: int,
+    max_empty_reads: int,
+    baud_rate: int,
+    timeout_s: float,
+    port: str | None,
+    sample_hex: str | None,
+    overwrite: bool,
+) -> Path:
+    """Capture C1 data using either live serial or a deterministic fixture."""
+    if sample_hex is not None:
+        transport = BytesBufferTransport(parse_sample_hex(sample_hex))
+    elif port is not None:
+        transport = PySerialByteTransport(
+            port=port,
+            baud_rate=baud_rate,
+            timeout_s=timeout_s,
+        )
+    else:
+        raise ValueError("provide either --port or --sample-hex")
+    driver = C1PcDirectDriver(sensor_id=sensor_id, transport=transport)
+    return capture_c1_session(
+        driver=driver,
+        output_path=output_path,
+        config=C1CaptureConfig(
+            sensor_id=sensor_id,
+            frames=frames,
+            points_per_frame=points_per_frame,
+            read_chunk_size=read_chunk_size,
+            max_empty_reads=max_empty_reads,
+        ),
+        overwrite=overwrite,
+    )
 
 
 def _selected_scenes(scene: str) -> tuple[str, ...]:

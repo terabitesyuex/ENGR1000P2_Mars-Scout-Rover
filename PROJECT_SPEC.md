@@ -135,6 +135,12 @@ These facts do not verify the wiring, mounting, serial identifiers, revisions, o
 
 Phase 2.4 is software-only. It accepts deterministic synthetic recordings and replay as evidence that the PC data interfaces are ready for later real hardware drivers. It does not prove wiring, physical safety, sensor calibration, WiFi operation, odometry, mapping, SLAM, or autonomous avoidance.
 
+## Phase 2.5 Acceptance Philosophy
+
+Phase 2.5 adds PC-direct C1 software acquisition boundaries and safe integration into the existing `ScanFrame`, JSONL recording, replay, and visualization pipeline. Automated tests use mocked byte streams and do not open serial ports. Manual hardware acceptance still requires independent tests for `c1_1` and `c1_2`, redacted device identity, health, bounded capture, distance/orientation checks, and saved replay/visualization evidence.
+
+Phase 2.5 does not implement STM32 integration, ESP32 communication, WiFi, ROS, SLAM, navigation, obstacle avoidance, or simultaneous dual-C1 operation.
+
 ## Course Validation Evidence
 
 Evidence should include software test logs, deterministic JSONL recordings, replay output, rendered figures, future bench hardware logs, future stationary physical tests, future moving-rover tests, safety test outcomes, and final presentation artifacts. Physical validations must not be marked complete until they are actually performed.

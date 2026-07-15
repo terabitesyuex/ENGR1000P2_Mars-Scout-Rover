@@ -1,11 +1,12 @@
 # Calibration Plan
 
-No physical calibration is completed in Phase 2.4. This file records future calibration responsibilities only.
+No physical calibration is completed by Phase 2.5 automation. This file records future calibration responsibilities only.
 
 ## RPLIDAR C1
 
 - Calibrate `c1_1` independently.
 - Calibrate `c1_2` independently.
+- Use Phase 2.5 PC-direct captures as input evidence only after the manual hardware procedure is actually run.
 - Confirm forward direction relative to rover chassis.
 - Confirm native zero-angle direction.
 - Record mounting height, position, yaw, and orientation.

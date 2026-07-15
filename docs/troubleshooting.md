@@ -63,6 +63,34 @@ pytest basetemp:
 - The verifier passes repository-local `--basetemp` directories under `.verification/pytest_tmp/`.
 - Do not set global `TEMP`, `TMP`, `PATH`, or Windows execution policies to fix tests.
 
+## Phase 2.5 PC-Direct Capture
+
+Missing capture source:
+
+- `capture-c1` requires either `--port` or `--sample-hex`.
+- Use `--sample-hex` for automated verification.
+- Use `--port` only after the port is manually identified and wiring checks are complete.
+
+No C1 scan data received:
+
+- Fixture tests: confirm enough valid sample bytes exist for `--frames * --points-per-frame`.
+- Manual hardware: confirm power, scan command, correct serial port, 460800 baud, and USB adapter ownership.
+
+Invalid scan nodes:
+
+- The Phase 2.5 parser supports the standard 5-byte scan-node path.
+- Additional scan modes require separate parser support and tests.
+
+Recording integration:
+
+- Captures are saved as `lidar_scan` records in the Phase 2.4 JSONL format.
+- Use `inspect-recording`, `replay-recording`, and `render-recording` after capture.
+
+Dual-C1:
+
+- Test `c1_1` and `c1_2` independently.
+- Do not run simultaneous dual-C1 operation in Phase 2.5.
+
 ## Future Hardware Items
 
 No power or motor does not start:
@@ -89,4 +117,4 @@ PC-direct port remains locked:
 - Future hardware check: close the official SDK probe cleanly.
 - Future hardware check: unplug and reconnect the USB adapter if the operating system still holds the port.
 
-Current Phase 2.4 has no live LiDAR communication, serial-port access, WiFi sockets, firmware behavior, mapping, SLAM, odometry, or obstacle avoidance.
+Current Phase 2.5 has no STM32 integration, ESP32 communication, WiFi sockets, mapping, SLAM, odometry, navigation, or obstacle avoidance.

@@ -20,9 +20,9 @@ This repository is the ENGR1000P2 Mars Scout Rover software and documentation ba
 
 ## Current Scope
 
-- Completed phases: Phase 0, Phase 1, Phase 2.1, Phase 2.2, automated verification foundation, Phase 2.3, and Phase 2.4.
-- Current state: Phase 2.4 is complete; Phase 2.5 has not started.
-- Do not begin Phase 2.5 or any real hardware implementation without an explicit request and the documented hardware-safety prerequisites.
+- Completed phases: Phase 0, Phase 1, Phase 2.1, Phase 2.2, automated verification foundation, Phase 2.3, Phase 2.4, and Phase 2.5.
+- Current state: Phase 2.5 software support is complete; physical PC-direct C1 tests still require manual hardware execution and evidence.
+- Do not begin Phase 3 or any STM32/ESP32/WiFi integration without an explicit request and the documented hardware-safety prerequisites.
 
 ## Confirmed Inventory
 
@@ -44,6 +44,7 @@ Two C1 units are available. Phase 2.5 must test both independently. One stable C
 
 Do not claim real WiFi, serial, sensor acquisition, odometry, mapping, obstacle avoidance, or dual-C1 operation without test evidence.
 Do not invent GPIO, UART, I2C address, active polarity, connector order, mounting offset, or power-topology values.
+Do not invent COM ports. PC-direct C1 capture must use an explicit user-verified port or a test fixture byte stream.
 
 ## Coordinates And Units
 
@@ -70,16 +71,16 @@ ROS, ROS 2, Nav2, AMCL, Gmapping, `slam_toolbox`, Raspberry Pi, Jetson, and a ve
 
 ## Verification
 
-Run targeted tests, regression tests, the complete PC suite, and the phase verifier before declaring a phase complete. Development verification for the active phase:
+Run targeted tests, regression tests, the complete PC suite, and the phase verifier before declaring a phase complete. Development verification for the latest phase:
 
 ```powershell
-.\tools\verify_phase.cmd phase2.4 -AllowDirty
+.\tools\verify_phase.cmd phase2.5 -AllowDirty
 ```
 
 Normal verification after commit and push:
 
 ```powershell
-.\tools\verify_phase.cmd phase2.4
+.\tools\verify_phase.cmd phase2.5
 ```
 
 Generated recordings, logs, and figures belong under `.verification/` or ignored data directories and must not be committed.

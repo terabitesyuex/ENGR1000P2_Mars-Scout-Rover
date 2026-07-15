@@ -1,6 +1,6 @@
 # Recording Format
 
-Phase 2.4 implements a human-readable, streamable UTF-8 JSON Lines format.
+Phase 2.4 implements a human-readable, streamable UTF-8 JSON Lines format. Phase 2.5 reuses the same schema for bounded PC-direct C1 captures.
 
 ## Rationale
 
@@ -90,6 +90,8 @@ Fields:
 - `rover_pose`
 
 Each point stores `angle_deg`, `distance_mm`, and optional `quality`. Point order is preserved.
+
+Phase 2.5 PC-direct captures store native C1 samples only after conversion into rover-frame `ScanPoint.angle_deg`. Metadata identifies `source` as `pc_direct_c1` and includes `physical_test_required` because automated fixture tests do not verify hardware.
 
 Short example:
 
@@ -214,7 +216,7 @@ python -m rplidar_c1_tools.cli render-recording .verification\phase2.4\synthetic
 
 ## Limitations
 
-- Phase 2.4 data is synthetic unless a future phase writes real hardware records.
-- No real serial, WiFi, firmware, mapping, SLAM, odometry, or obstacle avoidance is implemented.
+- Phase 2.4 data is synthetic; Phase 2.5 can write PC-direct C1 records only when fixture bytes or an explicit user-verified serial port are provided.
+- No WiFi, firmware, mapping, SLAM, odometry, navigation, or obstacle avoidance is implemented.
 - No mounting transforms are recorded or applied.
 - No sensor calibration is implied.

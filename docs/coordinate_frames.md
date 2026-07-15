@@ -23,6 +23,8 @@ rover_angle_deg = normalize_angle_deg(-native_angle_deg)
 
 Do not apply this native conversion to synthetic `ScanPoint` values. Phase 2.1 synthetic scans already use the rover-frame convention.
 
+Phase 2.5 PC-direct C1 capture applies this native-clockwise conversion in the driver boundary before creating `ScanPoint` objects. Recording and replay files store only the project rover-frame convention.
+
 ## Polar-To-Cartesian Formula
 
 For a normalized rover-frame point:

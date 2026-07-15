@@ -1,8 +1,8 @@
 # Communication Protocol Planning
 
-This document describes the planned future communication architecture. Phase 2.4 does not implement the future wire protocol.
+This document describes the planned future communication architecture. Phase 2.5 does not implement the future wire protocol.
 
-The Phase 2.4 JSONL recording format is not the future on-wire protocol.
+The Phase 2.4 JSONL recording format is not the future on-wire protocol. The Phase 2.5 PC-direct C1 path is a bench-test and recording path, not the ESP32-to-PC WiFi protocol.
 
 ## Planned Links
 
@@ -32,7 +32,7 @@ ESP32 to PC future WiFi link:
 - Phase 2.5 tests `c1_1` and `c1_2` independently by PC-direct methods.
 - Phase 5 first targets one stable C1 + STM32 + ESP32 WiFi.
 - Simultaneous dual-C1 operation is optional and remains UNVERIFIED until UART, GPIO, bandwidth, buffering, timing, and power feasibility are measured.
-- No final ESP32 GPIO or UART assignment is locked in Phase 2.4.
+- No final ESP32 GPIO or UART assignment is locked in Phase 2.5.
 
 ## Planned Message Categories
 

@@ -73,11 +73,24 @@ All notable subsystem changes are recorded here. Track protocol, GPIO, power, da
 - Preserved verified C1 voltage, current, UART, connector, wire, and no-external-motor-PWM facts.
 - Kept real hardware access, WiFi sockets, firmware changes, mapping, SLAM, odometry, ROS, and obstacle-avoidance implementation out of scope.
 
+## 2026-07-15 - Phase 2.5 PC-Direct C1 Acquisition Boundary
+
+- Added a transport-injected PC-direct RPLIDAR C1 driver boundary with `connect()`, `disconnect()`, `start_scan()`, and `iter_scan_points()`.
+- Added standard 5-byte scan-node parsing for bounded PC-direct capture sessions, with native clockwise C1 angles converted before `ScanFrame` creation.
+- Added deterministic byte-buffer transport support for automated tests and verifier smoke workflows without opening serial ports.
+- Added an explicit PySerial-backed transport for manual PC-direct capture only; ports must be supplied by the user and are not invented by software.
+- Added `capture-c1` CLI support for recording one C1 stream as the existing Phase 2.4 JSONL `lidar_scan` format.
+- Reused `ScanFrame`, `MultiSensorRecorder`, replay, inspection, and render-recording paths without redesigning the recording schema.
+- Added mocked driver, parser, timeout, invalid-data, CLI, and recording integration tests.
+- Extended automated phase verification to support `phase2.5`.
+- Recorded that `c1_1` and `c1_2` remain neutral sensor IDs, one stable C1 is the Phase 2.5 baseline, and simultaneous dual-C1 operation remains UNVERIFIED.
+- Did not implement STM32 integration, ESP32 communication, WiFi, ROS, SLAM, navigation, obstacle avoidance, or simultaneous dual-C1 operation.
+
 ## Change Categories
 
-- Protocol changes: none in Phase 0, Phase 1, Phase 2.1, Phase 2.2, Phase 2.2.5, or Phase 2.3.
+- Protocol changes: Phase 2.5 adds a PC-direct standard scan-node parser boundary for C1 capture; no ESP32, STM32, or WiFi protocol changes.
 - GPIO changes: GPIO values remain unset.
 - Power changes: hardware values documented; supply model unverified.
-- Data-format changes: Phase 2.1 adds the PC-side `ScanFrame` software interface; Phase 2.2 adds Cartesian transform models; Phase 2.3 adds PNG visualization export; Phase 2.4 adds the multi-sensor JSONL recording format.
+- Data-format changes: Phase 2.1 adds the PC-side `ScanFrame` software interface; Phase 2.2 adds Cartesian transform models; Phase 2.3 adds PNG visualization export; Phase 2.4 adds the multi-sensor JSONL recording format; Phase 2.5 reuses that JSONL format for PC-direct C1 captures.
 - Firmware changes: PlatformIO structure created only; no live hardware behavior added.
 - Calibration changes: calibration process documented only.

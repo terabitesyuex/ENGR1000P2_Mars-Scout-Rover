@@ -11,17 +11,18 @@ Supported phases:
 - `phase2.2`
 - `phase2.3`
 - `phase2.4`
+- `phase2.5`
 
 Development verification:
 
 ```powershell
-.\tools\verify_phase.cmd phase2.4 -AllowDirty
+.\tools\verify_phase.cmd phase2.5 -AllowDirty
 ```
 
 Normal verification after commit and push:
 
 ```powershell
-.\tools\verify_phase.cmd phase2.4
+.\tools\verify_phase.cmd phase2.5
 ```
 
 The verifier uses repository-local pytest basetemp under `.verification/pytest_tmp/`, checks Git state, selects Python, confirms pytest import, runs targeted tests, regressions, the complete PC suite, and configured smoke workflows.
@@ -52,6 +53,33 @@ Smoke workflow:
 
 Phase 2.4 does not perform bench hardware tests, stationary physical tests, moving-rover tests, or real safety tests.
 
+## Phase 2.5 Automated Software Tests
+
+Targeted:
+
+- `pc/tests/test_c1_pc_direct.py`
+- `pc/tests/test_recording.py`
+- `pc/tests/test_replay.py`
+
+Regression:
+
+- `pc/tests/test_visualization.py`
+- `pc/tests/test_coordinate_transform.py`
+- `pc/tests/test_synthetic_scan.py`
+- `pc/tests/test_scan_builder.py`
+- `pc/tests/test_hardware_lock_validation.py`
+- `pc/tests/test_current_plan.py`
+
+Smoke workflow:
+
+- Capture `c1_1` from fixture standard scan bytes.
+- Capture `c1_2` from fixture standard scan bytes independently.
+- Inspect and replay captured JSONL.
+- Render final replayed frame images.
+- Verify artifacts under `.verification/phase2.5/`.
+
+Phase 2.5 automated tests do not open serial ports. Manual PC-direct hardware tests remain required before physical C1 operation can be marked verified.
+
 ## Revised Phase Sequence
 
 Phase 2.4:
@@ -65,7 +93,7 @@ Phase 2.4:
 
 Phase 2.5:
 
-- Automated software tests: PC-direct acquisition adapters, recorded real-scan replay, visualization regression.
+- Automated software tests: PC-direct driver boundary, standard scan-node parser fixtures, mocked timeout/error handling, captured JSONL replay, visualization regression.
 - Bench hardware tests: test both `c1_1` and `c1_2` independently with the supplied adapter.
 - Stationary physical tests: distance/orientation checks against known walls and targets.
 - Moving-rover tests: not required.

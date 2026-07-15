@@ -158,6 +158,14 @@ PC planned responsibilities:
 - Verify STM32-ESP32 physical link before relying on rover sensor data.
 - Verify HC-SR04 level interface, TCRT5000 polarity, Hall polarity, I2C addresses, and sensor mounting offsets.
 
+## Phase 2.5 Software Boundary Status
+
+- PC-direct capture software can consume a user-provided serial port or a test fixture byte stream.
+- Automated Phase 2.5 tests use fixture bytes only and do not open serial ports.
+- No physical PC-direct capture has been run by repository automation.
+- `c1_1` and `c1_2` operational status remain UNVERIFIED until independent manual tests are documented.
+- No COM port, mounting orientation, serial identifier, or hardware revision is inferred by software.
+
 ## Safety Rules
 
 - Do not connect the LiDAR red wire to ESP32 3.3 V.

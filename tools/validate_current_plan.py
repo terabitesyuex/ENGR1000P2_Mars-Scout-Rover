@@ -43,6 +43,9 @@ REQUIRED_SNIPPETS = (
     RequiredSnippet("docs/test_plan.md", "Phase 2.4", "phase order documented"),
     RequiredSnippet("docs/test_plan.md", "Phase 2.5", "next hardware test phase documented"),
     RequiredSnippet("AGENTS.md", "Do not invent GPIO", "future-agent hardware policy documented"),
+    RequiredSnippet("AGENTS.md", "Do not invent COM ports", "future-agent serial-port policy documented"),
+    RequiredSnippet("README.md", "capture-c1", "Phase 2.5 capture CLI documented"),
+    RequiredSnippet("PROJECT_SPEC.md", "Automated tests use mocked byte streams", "Phase 2.5 automation boundary documented"),
 )
 
 

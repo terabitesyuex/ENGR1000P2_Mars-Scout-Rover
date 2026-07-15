@@ -1,6 +1,6 @@
 # Architecture
 
-The rover architecture separates hardware access, transport, data models, algorithms, visualization, recording, and replay. Phase 2.4 is PC-side recording and replay only.
+The rover architecture separates hardware access, transport, data models, algorithms, visualization, recording, and replay. Phase 2.5 adds PC-direct C1 capture boundaries while preserving the Phase 2.4 recording and replay pipeline.
 
 ## Sensor Layer
 
@@ -81,6 +81,7 @@ PC responsibilities:
 
 ```text
 Synthetic LiDAR source
+PC-direct C1 byte stream with explicit user-provided port or fixture bytes
     -> ScanFrame data model
     -> scan builder / coordinate transforms
     -> visualization
@@ -89,7 +90,7 @@ Synthetic LiDAR source
     -> replay visualization
 ```
 
-The Phase 2.4 JSONL recording format is a PC-side reproducibility format. It is not the future on-wire ESP32 protocol.
+The Phase 2.4 JSONL recording format is a PC-side reproducibility format. Phase 2.5 writes PC-direct C1 captures into that same format. JSONL is not the future on-wire ESP32 protocol.
 
 ## Two-C1 Policy
 
@@ -101,6 +102,8 @@ The Phase 2.4 JSONL recording format is a PC-side reproducibility format. It is 
 
 ## Current Phase Scope
 
-Phase 2.4 implements deterministic multi-sensor recording and replay using synthetic data. It does not open serial ports, command a C1, parse C1 packets, use WiFi sockets, run firmware, implement mapping, implement SLAM, implement odometry, or implement obstacle avoidance.
+Phase 2.5 implements PC-direct C1 driver boundaries, standard scan-node parsing, bounded capture into `ScanFrame`, recording, replay, and visualization. Automated tests use fixture bytes and do not open serial ports. Manual hardware capture requires an explicit user-verified port.
+
+Phase 2.5 does not implement STM32 integration, ESP32 communication, WiFi sockets, firmware behavior, mapping, SLAM, odometry, navigation, obstacle avoidance, or simultaneous dual-C1 operation.
 
 Emergency stopping remains a local STM32 safety responsibility in the plan. PC mapping occurs later and is short-range accumulated mapping, not a required reusable global SLAM map. ROS is not required.

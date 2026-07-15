@@ -14,9 +14,10 @@ Major enhancements are encoder/IMU-assisted pose estimation, short-range accumul
 - Phase 2.2: rover-frame coordinate transforms complete.
 - Automated phase verification foundation: complete.
 - Phase 2.3: synthetic LiDAR visualization complete.
-- Phase 2.4: multi-sensor JSONL recording, replay, reproducible synthetic datasets, hardware-inventory update, and plan rebaseline.
+- Phase 2.4: multi-sensor JSONL recording, replay, reproducible synthetic datasets, hardware-inventory update, and plan rebaseline complete.
+- Phase 2.5: PC-direct C1 driver boundary, standard scan-node parsing, bounded capture into JSONL, replay, and visualization integration complete.
 
-Phase 2.4 does not implement real RPLIDAR UART communication, serial access, WiFi sockets, ESP32 firmware, STM32 firmware, mapping, SLAM, ROS, odometry, or autonomous obstacle avoidance.
+Phase 2.5 does not implement STM32 integration, ESP32 communication, WiFi sockets, ROS, SLAM, navigation, obstacle avoidance, or simultaneous dual-C1 operation. Automated tests do not access real hardware or serial ports.
 
 ## Confirmed Hardware Inventory
 
@@ -53,7 +54,7 @@ Use neutral sensor IDs until installation is physically verified: `c1_1`, `c1_2`
 
 Two C1 units physically exist. Both must be tested independently in Phase 2.5. One stable C1 is the baseline integration target. Simultaneous dual-C1 use is optional and remains UNVERIFIED until UART, GPIO, bandwidth, buffering, timing, and power feasibility are proven.
 
-No real C1 has yet been integrated into this software pipeline.
+The software pipeline can now accept a bounded PC-direct C1 byte stream and save it as JSONL. Real physical C1 operation still requires manual Phase 2.5 hardware evidence before it can be marked VERIFIED.
 
 ## Preserved Verified C1 Facts
 
@@ -128,20 +129,36 @@ python -m rplidar_c1_tools.cli render-recording .verification\phase2.4\synthetic
 
 Generated recordings and figures under `.verification/` are ignored by Git.
 
+## PC-Direct C1 Capture
+
+Phase 2.5 adds `capture-c1`. Manual hardware capture requires a user-verified serial port; no COM port is guessed:
+
+```powershell
+python -m rplidar_c1_tools.cli capture-c1 --sensor-id c1_1 --port <USER_VERIFIED_PORT> --frames 1 --points-per-frame 360 --output data\raw\c1_1_pc_direct.jsonl
+```
+
+Automated verification uses safe hex fixture bytes instead of serial access:
+
+```powershell
+python -m rplidar_c1_tools.cli capture-c1 --sensor-id c1_1 --sample-hex 3d0100a00f3e012da00f3e015aa00f3e0187a00f --frames 1 --points-per-frame 4 --output .verification\phase2.5\c1_1_pc_direct_capture.jsonl
+```
+
+Captured files use the existing `mars_scout_multisensor_recording` JSONL schema. The driver converts native C1 clockwise angles into the project rover-frame `ScanPoint.angle_deg` convention before recording.
+
 ## Phase Verification
 
-Supported phases include `phase1`, `phase2.1`, `phase2.2`, `phase2.3`, and `phase2.4`.
+Supported phases include `phase1`, `phase2.1`, `phase2.2`, `phase2.3`, `phase2.4`, and `phase2.5`.
 
 Development verification:
 
 ```powershell
-.\tools\verify_phase.cmd phase2.4 -AllowDirty
+.\tools\verify_phase.cmd phase2.5 -AllowDirty
 ```
 
 Normal verification after commit and push:
 
 ```powershell
-.\tools\verify_phase.cmd phase2.4
+.\tools\verify_phase.cmd phase2.5
 ```
 
 The verifier checks Git state, Python selection, pytest import, targeted tests, regressions, the complete PC suite, and configured smoke workflows. Hardware and safety facts still require physical verification.
