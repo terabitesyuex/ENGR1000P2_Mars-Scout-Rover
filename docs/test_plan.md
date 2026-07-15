@@ -73,10 +73,26 @@ Supported phases:
 - `phase1`
 - `phase2.1`
 - `phase2.2`
+- `phase2.3`
 
 Normal mode requires a clean working tree and returns a nonzero process exit code on any failure. Development-only `-AllowDirty` is available for testing verifier changes before they are committed. Verification logs are saved under `.verification/`.
 
 The automated verifier checks Git availability, branch, commit, upstream state, working-tree state, Python selection, pytest import, phase-specific tests, configured regressions, and the complete PC suite where configured. Hardware and safety facts still require human verification: wiring, voltage, polarity, motor direction, LiDAR mounting orientation, visual left/right mirroring, and real-world safety are not proven by software tests.
+
+For Phase 2.3, run:
+
+```powershell
+.\\tools\\verify_phase.cmd phase2.3
+```
+
+The verifier runs visualization tests, coordinate/synthetic/scan-builder regressions, the full PC suite, and a headless render smoke action that writes manual acceptance images to `.verification/phase2.3_visuals/`:
+
+- `circle_polar.png`
+- `circle_point_cloud.png`
+- `room_polar.png`
+- `room_point_cloud.png`
+
+These generated images must be inspected by a human. Automated tests can check file creation and mathematical orientation properties, but they cannot prove physical mounting orientation, visual left/right mirroring in a real room, or real-world safety.
 
 ## Later Test Categories
 

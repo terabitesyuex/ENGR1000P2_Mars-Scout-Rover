@@ -50,6 +50,25 @@ Tiny values such as `6.123233995736766e-17` are normal floating-point approximat
 | 180 degrees | -x rear |
 | 270 degrees | -y right |
 
+## Phase 2.3 Display Conventions
+
+Polar scan view:
+
+- zero degrees is shown at the top;
+- positive angles proceed counterclockwise;
+- `+90` degrees appears on the left;
+- radial units are metres.
+
+Rover-centric Cartesian point-cloud view:
+
+- image top represents rover forward;
+- image left represents rover left;
+- image right represents rover right;
+- image bottom represents rover backward;
+- units are metres.
+
+The Cartesian display is an image orientation, not a new coordinate frame. It plots rover `y_m` on the horizontal display axis and rover `x_m` on the vertical display axis, then inverts the horizontal axis so positive rover-left appears on the left side of the image. Stored `CartesianPoint` signs are not changed.
+
 ## Frame Names
 
 - `lidar_frame`: coordinate frame at the LiDAR optical rotation center.
@@ -57,6 +76,6 @@ Tiny values such as `6.123233995736766e-17` are normal floating-point approximat
 
 The physical LiDAR mounting translation and yaw from `lidar_frame` to `base_link` remain UNVERIFIED. Phase 2.2 provides only mathematical transform helpers and does not apply any physical mounting offset.
 
-Phase 2.2 does not implement odometry, `odom`, `map`, occupancy-grid mapping, or SLAM transforms.
+Phase 2.3 visualizations are single-frame synthetic scan views. They do not implement odometry, `odom`, `map`, occupancy-grid mapping, or SLAM transforms.
 
 Do not mix millimetres and metres. Store LiDAR range in millimetres in scan models and convert to metres only when computing Cartesian coordinates.

@@ -14,6 +14,8 @@ from .coordinate_transform import (
 from .data_models import CartesianPoint, LidarSample, LidarScan, RawLidarSample
 from .data_models import ScanFrame, ScanPoint, Transform2D
 from .data_models import ScanSource
+from .point_cloud_view import create_point_cloud_figure, save_point_cloud_view
+from .polar_view import create_polar_figure, save_polar_view
 from .scan_builder import ScanValidationError, build_scan_frame, create_scan_point
 from .synthetic_scan import (
     SyntheticRoomConfig,
@@ -34,6 +36,8 @@ __all__ = [
     "SyntheticRoomConfig",
     "SyntheticScanSource",
     "build_scan_frame",
+    "create_point_cloud_figure",
+    "create_polar_figure",
     "create_scan_point",
     "generate_circle_scan",
     "generate_room_scan",
@@ -45,6 +49,8 @@ __all__ = [
     "polar_to_cartesian_m",
     "scan_frame_to_cartesian",
     "scan_point_to_cartesian",
+    "save_point_cloud_view",
+    "save_polar_view",
     "transform_point_2d",
     "Transform2D",
 ]

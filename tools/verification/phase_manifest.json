@@ -2,7 +2,8 @@
   "supported_phases": [
     "phase1",
     "phase2.1",
-    "phase2.2"
+    "phase2.2",
+    "phase2.3"
   ],
   "phases": {
     "phase1": {
@@ -35,6 +36,42 @@
       ],
       "full": [
         "pc/tests"
+      ]
+    },
+    "phase2.3": {
+      "display_name": "Phase 2.3",
+      "targeted": [
+        "pc/tests/test_visualization.py"
+      ],
+      "regression": [
+        "pc/tests/test_coordinate_transform.py",
+        "pc/tests/test_synthetic_scan.py",
+        "pc/tests/test_scan_builder.py"
+      ],
+      "full": [
+        "pc/tests"
+      ],
+      "python_commands": [
+        {
+          "label": "Phase 2.3 visual artifacts",
+          "args": [
+            "-m",
+            "rplidar_c1_tools.cli",
+            "render-synthetic",
+            "--scene",
+            "both",
+            "--output-dir",
+            ".verification/phase2.3_visuals",
+            "--no-show"
+          ],
+          "expected_files": [
+            ".verification/phase2.3_visuals/circle_polar.png",
+            ".verification/phase2.3_visuals/circle_point_cloud.png",
+            ".verification/phase2.3_visuals/room_polar.png",
+            ".verification/phase2.3_visuals/room_point_cloud.png"
+          ],
+          "warning": "Manual visual orientation inspection is still required."
+        }
       ]
     }
   }

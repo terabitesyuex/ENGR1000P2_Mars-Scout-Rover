@@ -10,6 +10,9 @@ $ErrorActionPreference = "Stop"
 $script:HadFailure = $false
 $script:HadWarning = $false
 $script:LogPath = $null
+$script:PytestTempRoot = $null
+$script:PytestRunId = $null
+$script:PytestCheckIndex = 0
 
 function Write-LogLine {
     param([string]$Message)
@@ -118,19 +121,114 @@ function Select-Python {
     return $null
 }
 
+function New-LocalDirectory {
+    param([string]$Path)
+    [System.IO.Directory]::CreateDirectory($Path) | Out-Null
+}
+
+function Assert-ChildPath {
+    param(
+        [string]$Path,
+        [string]$ParentPath
+    )
+    $fullPath = [System.IO.Path]::GetFullPath($Path)
+    $fullParent = [System.IO.Path]::GetFullPath($ParentPath).TrimEnd(
+        [System.IO.Path]::DirectorySeparatorChar,
+        [System.IO.Path]::AltDirectorySeparatorChar
+    ) + [System.IO.Path]::DirectorySeparatorChar
+
+    if (-not $fullPath.StartsWith($fullParent, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Refusing to modify path outside repository verification directory: $Path"
+    }
+}
+
+function Test-DirectoryUsable {
+    param([string]$Path)
+    $probePath = Join-Path $Path (".probe_{0}" -f ([guid]::NewGuid().ToString("N")))
+    try {
+        New-LocalDirectory -Path $Path
+        New-LocalDirectory -Path $probePath
+        [System.IO.Directory]::Delete($probePath, $false)
+        return $true
+    } catch {
+        return $false
+    }
+}
+
+function Initialize-PytestTempRoot {
+    param([string]$LogRoot)
+    $pytestTempRoot = Join-Path $LogRoot "pytest_tmp"
+    if (Test-DirectoryUsable -Path $pytestTempRoot) {
+        return $pytestTempRoot
+    }
+
+    Assert-ChildPath -Path $pytestTempRoot -ParentPath $LogRoot
+    Write-LogLine ("Recreating inaccessible pytest temp root: {0}" -f $pytestTempRoot)
+    Remove-Item -LiteralPath $pytestTempRoot -Recurse -Force -ErrorAction Stop
+    New-LocalDirectory -Path $pytestTempRoot
+    if (-not (Test-DirectoryUsable -Path $pytestTempRoot)) {
+        throw "pytest temp root is not usable: $pytestTempRoot"
+    }
+    return $pytestTempRoot
+}
+
 function Invoke-PytestSet {
     param(
         [string]$PythonCommand,
         [string]$Label,
         [string[]]$TestPaths
     )
-    $arguments = @("-m", "pytest") + $TestPaths + @("-v")
+    $script:PytestCheckIndex++
+    $safeLabel = $Label -replace "[^A-Za-z0-9_.-]", "_"
+    $baseTemp = Join-Path $script:PytestTempRoot ("{0}_{1:D2}_{2}" -f $script:PytestRunId, $script:PytestCheckIndex, $safeLabel)
+    New-LocalDirectory -Path $baseTemp
+    Write-LogLine ("pytest basetemp: {0}" -f $baseTemp)
+
+    $arguments = @("-m", "pytest") + $TestPaths + @("-v", "--basetemp", $baseTemp)
     $result = Invoke-CommandCapture -FilePath $PythonCommand -Arguments $arguments
     if ($result.ExitCode -eq 0) {
         Write-Compact $Label "PASS"
     } else {
         Write-Compact $Label "FAIL" ("exit {0}" -f $result.ExitCode)
         Show-FailureOutput -Title "$Label output:" -Output $result.Output
+    }
+}
+
+function Invoke-PythonCommand {
+    param(
+        [string]$PythonCommand,
+        [object]$CommandConfig,
+        [string]$RepoRoot
+    )
+    $label = [string]$CommandConfig.label
+    $arguments = @($CommandConfig.args | ForEach-Object { [string]$_ })
+    $result = Invoke-CommandCapture -FilePath $PythonCommand -Arguments $arguments
+    if ($result.ExitCode -ne 0) {
+        Write-Compact $label "FAIL" ("exit {0}" -f $result.ExitCode)
+        Show-FailureOutput -Title "$label output:" -Output $result.Output
+        return
+    }
+
+    $missing = @()
+    foreach ($relative in @($CommandConfig.expected_files)) {
+        $path = Join-Path $RepoRoot ([string]$relative)
+        if (-not (Test-Path -LiteralPath $path)) {
+            $missing += [string]$relative
+            continue
+        }
+        $item = Get-Item -LiteralPath $path
+        if ($item.Length -le 0) {
+            $missing += [string]$relative
+        }
+    }
+    if ($missing.Count -gt 0) {
+        Write-Compact $label "FAIL" ("missing/empty: {0}" -f ($missing -join ", "))
+        return
+    }
+
+    Write-Compact $label "PASS"
+    if ($CommandConfig.warning) {
+        Write-Compact "Manual visual check" "WARN" ([string]$CommandConfig.warning)
     }
 }
 
@@ -141,6 +239,8 @@ try {
     $logRoot = Join-Path $repoRoot ".verification"
     New-Item -ItemType Directory -Force -Path $logRoot | Out-Null
     $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
+    $script:PytestRunId = "{0}_{1}_{2}" -f $timestamp, $PID, ([guid]::NewGuid().ToString("N").Substring(0, 8))
+    $script:PytestTempRoot = Initialize-PytestTempRoot -LogRoot $logRoot
     $safePhase = $Phase -replace "[^A-Za-z0-9_.-]", "_"
     $script:LogPath = Join-Path $logRoot ("verify_{0}_{1}.log" -f $safePhase, $timestamp)
     $latestLog = Join-Path $logRoot "latest.log"
@@ -281,6 +381,11 @@ try {
         }
         if ($phaseConfig.full) {
             Invoke-PytestSet -PythonCommand $python.Command -Label "Complete PC test suite" -TestPaths @($phaseConfig.full)
+        }
+        if ($phaseConfig.python_commands) {
+            foreach ($pythonCommand in @($phaseConfig.python_commands)) {
+                Invoke-PythonCommand -PythonCommand $python.Command -CommandConfig $pythonCommand -RepoRoot $repoRoot
+            }
         }
 
         $statusAfter = Invoke-CommandCapture -FilePath "git" -Arguments @("status", "--porcelain=v1")

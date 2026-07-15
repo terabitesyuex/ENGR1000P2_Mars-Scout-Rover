@@ -98,7 +98,7 @@ Use the automated verifier to run the checks for a completed phase:
 .\\tools\\verify_phase.cmd phase2.2
 ```
 
-Supported phase names are `phase1`, `phase2.1`, and `phase2.2`. The CMD wrapper calls `tools/verify_phase.ps1` with `-NoProfile` and `-ExecutionPolicy Bypass`; the PowerShell script can also be called directly:
+Supported phase names are `phase1`, `phase2.1`, `phase2.2`, and `phase2.3`. The CMD wrapper calls `tools/verify_phase.ps1` with `-NoProfile` and `-ExecutionPolicy Bypass`; the PowerShell script can also be called directly:
 
 ```powershell
 .\\tools\\verify_phase.ps1 -Phase phase2.2
@@ -108,9 +108,23 @@ The verifier prefers `pc\\.venv\\Scripts\\python.exe`, then `py`, then `python`,
 
 Logs are written under `.verification/`, which is ignored by Git. Automated checks do not verify physical wiring, supply voltage, polarity, motor direction, LiDAR mounting orientation, visual left/right mirroring, or real-world safety.
 
+## Synthetic Visualization
+
+Phase 2.3 provides deterministic, headless synthetic scan visualization only. It renders a polar scan and a rover-centric Cartesian point cloud from existing `ScanFrame` data:
+
+```powershell
+python -m rplidar_c1_tools.cli render-synthetic --scene both --output-dir .verification\phase2.3_visuals --no-show
+```
+
+Polar view convention: zero degrees is at the top, positive angles are counterclockwise, and `+90` degrees appears on the left. Distances are displayed in metres.
+
+Point-cloud display convention: image top is rover forward, image left is rover left, image right is rover right, and image bottom is rover backward. Internally, stored rover coordinates remain unchanged; the display plots rover `y_m` on the horizontal axis and rover `x_m` on the vertical axis, with the horizontal axis inverted so positive rover-left appears on the left side of the image.
+
+The generated files are synthetic scan visualizations, not maps. Phase 2.3 does not implement real LiDAR communication, mapping, SLAM, odometry, or hardware validation. Human visual inspection is still required for orientation and mirroring.
+
 ## Live View
 
-Live polar, Cartesian, and diagnostics views are planned for later phases. Phase 0 includes only the synthetic scan interface used by later visualization code.
+Live polar, Cartesian, and diagnostics views are planned for later phases. Phase 2.3 includes static synthetic PNG export only.
 
 ## Record And Replay
 

@@ -48,11 +48,21 @@ All notable subsystem changes are recorded here. Track protocol, GPIO, power, da
 - Documented one-command phase verification and development-only `-AllowDirty`.
 - Did not add Phase 2.3, hardware access, plotting, mapping, or GUI functionality.
 
+## 2026-07-15 - Phase 2.3 Synthetic LiDAR Visualization
+
+- Implemented headless-safe synthetic polar scan visualization.
+- Implemented rover-centric Cartesian point-cloud visualization with forward-up and left-left display orientation.
+- Added deterministic PNG export helpers for polar and point-cloud views.
+- Added `render-synthetic` CLI export for circle, room, or both scenes.
+- Added visualization tests for plotting semantics, PNG export, CLI smoke coverage, and synthetic integration.
+- Extended automated phase verification to support `phase2.3` and generate manual acceptance images.
+- Kept real LiDAR communication, serial access, mapping, SLAM, odometry, and hardware validation out of scope.
+
 ## Change Categories
 
-- Protocol changes: none in Phase 0, Phase 1, Phase 2.1, Phase 2.2, or Phase 2.2.5.
+- Protocol changes: none in Phase 0, Phase 1, Phase 2.1, Phase 2.2, Phase 2.2.5, or Phase 2.3.
 - GPIO changes: GPIO values remain unset.
 - Power changes: hardware values documented; supply model unverified.
-- Data-format changes: Phase 2.1 adds the PC-side `ScanFrame` software interface; Phase 2.2 adds Cartesian transform models.
+- Data-format changes: Phase 2.1 adds the PC-side `ScanFrame` software interface; Phase 2.2 adds Cartesian transform models; Phase 2.3 adds PNG visualization export.
 - Firmware changes: PlatformIO structure created only; no live hardware behavior added.
 - Calibration changes: calibration process documented only.

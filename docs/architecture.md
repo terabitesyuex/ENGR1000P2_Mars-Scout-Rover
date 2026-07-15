@@ -28,7 +28,7 @@ PC tools
     - replay
     - stationary occupancy grid
 
-Synthetic and replay sources feed the same PC scan interfaces.
+Synthetic and replay sources feed the same PC scan interfaces. Phase 2.3 visualizes only deterministic synthetic single-frame scans.
 ```
 
 ## Module Responsibilities
@@ -50,4 +50,4 @@ Synthetic and replay sources feed the same PC scan interfaces.
 
 ## Current Phase Scope
 
-Phase 0 created structure and documentation plus a deterministic Python synthetic scan interface. Phase 1 added repository audit, hardware-fact validation, interface inventory, and documentation consistency checks. Phase 2.1 added unified synthetic `ScanFrame` data. Phase 2.2 adds pure coordinate transforms from `ScanPoint` to Cartesian metres. No live serial ports are opened, no C1 command bytes are emitted, no binary C1 parser is implemented, and no mapping or plotting is implemented.
+Phase 0 created structure and documentation plus a deterministic Python synthetic scan interface. Phase 1 added repository audit, hardware-fact validation, interface inventory, and documentation consistency checks. Phase 2.1 added unified synthetic `ScanFrame` data. Phase 2.2 added pure coordinate transforms from `ScanPoint` to Cartesian metres. Phase 2.3 adds static synthetic polar and rover-centric Cartesian PNG visualization. No live serial ports are opened, no C1 command bytes are emitted, no binary C1 parser is implemented, and no mapping, SLAM, odometry, or hardware validation is implemented.
