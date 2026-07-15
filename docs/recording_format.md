@@ -1,6 +1,6 @@
 # Recording Format
 
-Phase 2.4 implements a human-readable, streamable UTF-8 JSON Lines format. Phase 2.5 reuses the same schema for bounded PC-direct C1 captures. Phase 3.1 reuses the same schema for validated STM32 low-rate sensor telemetry converted by the PC bridge.
+Phase 2.4 implements a human-readable, streamable UTF-8 JSON Lines format. Phase 2.5 reuses the same schema for bounded PC-direct C1 captures. Phase 3.1 reuses the same schema for validated STM32 low-rate sensor telemetry converted by the PC bridge. Phase 3.2A reuses it for mocked or manually captured OpenRF1 BH1750 serial telemetry.
 
 ## Rationale
 
@@ -171,6 +171,8 @@ Fields:
 - optional `status`
 - optional `source_sequence`
 
+Phase 3.2A serial capture writes `illuminance` records for `bh1750_1` only. Hardware errors such as timeout, not initialized, stale data, or hardware fault preserve `illuminance_lux: null`; they are not converted to zero. Zero lux is valid only when the telemetry status is valid and the BH1750 reading itself is zero.
+
 ### `barometer`
 
 Fields:
@@ -233,7 +235,7 @@ python -m rplidar_c1_tools.cli render-recording .verification\phase2.4\synthetic
 
 ## Limitations
 
-- Phase 2.4 data is synthetic; Phase 2.5 can write PC-direct C1 records only when fixture bytes or an explicit user-verified serial port are provided; Phase 3.1 can write STM32 telemetry records only from deterministic files or injected streams.
+- Phase 2.4 data is synthetic; Phase 2.5 can write PC-direct C1 records only when fixture bytes or an explicit user-verified serial port are provided; Phase 3.1 can write STM32 telemetry records only from deterministic files or injected streams; Phase 3.2A can write BH1750 records from mock input or a future explicit user-selected COM port.
 - No WiFi, live STM32 firmware, serial port, GPIO, I2C, mapping, SLAM, odometry, navigation, or obstacle avoidance is implemented.
 - No mounting transforms are recorded or applied.
 - No sensor calibration is implied.

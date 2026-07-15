@@ -6,7 +6,8 @@
     "phase2.3",
     "phase2.4",
     "phase2.5",
-    "phase3.1"
+    "phase3.1",
+    "phase3.2a"
   ],
   "phases": {
     "phase1": {
@@ -402,6 +403,136 @@
             ".verification/phase3.1/recording_inspection.txt"
           ],
           "warning": "Manual STM32 sensor hardware bring-up remains UNVERIFIED."
+        }
+      ]
+    },
+    "phase3.2a": {
+      "display_name": "Phase 3.2A",
+      "required_files": [
+        "firmware/openrf1/README.md",
+        "firmware/openrf1/app/board_config.h",
+        "firmware/openrf1/app/soft_i2c.h",
+        "firmware/openrf1/app/soft_i2c.c",
+        "firmware/openrf1/app/bh1750.h",
+        "firmware/openrf1/app/bh1750.c",
+        "firmware/openrf1/app/telemetry.h",
+        "firmware/openrf1/app/telemetry.c",
+        "firmware/openrf1/app/main.h",
+        "firmware/openrf1/app/main.c",
+        "docs/openrf1_bh1750_bringup.md",
+        "pc/src/rplidar_c1_tools/openrf1_bh1750.py",
+        "pc/src/rplidar_c1_tools/stm32_serial_capture.py",
+        "pc/tests/test_openrf1_bh1750.py",
+        "pc/tests/test_openrf1_firmware_foundation.py",
+        "pc/tests/test_stm32_serial_capture.py",
+        "tools/audit_openrf1_build.py"
+      ],
+      "targeted": [
+        "pc/tests/test_openrf1_bh1750.py",
+        "pc/tests/test_openrf1_firmware_foundation.py",
+        "pc/tests/test_stm32_serial_capture.py",
+        "pc/tests/test_stm32_sensor_protocol.py",
+        "pc/tests/test_stm32_recording_bridge.py",
+        "pc/tests/test_phase3_current_plan.py"
+      ],
+      "regression": [
+        "pc/tests/test_stm32_sensor_models.py",
+        "pc/tests/test_stm32_sensor_simulator.py",
+        "pc/tests/test_stm32_sensor_cli.py",
+        "pc/tests/test_recording.py",
+        "pc/tests/test_replay.py",
+        "pc/tests/test_c1_pc_direct.py",
+        "pc/tests/test_visualization.py",
+        "pc/tests/test_coordinate_transform.py",
+        "pc/tests/test_synthetic_scan.py",
+        "pc/tests/test_scan_builder.py",
+        "pc/tests/test_hardware_lock_validation.py",
+        "pc/tests/test_current_plan.py"
+      ],
+      "full": [
+        "pc/tests"
+      ],
+      "python_commands": [
+        {
+          "label": "Phase 3.2A generate BH1750 telemetry",
+          "args": [
+            "-m",
+            "rplidar_c1_tools",
+            "simulate-bh1750-telemetry",
+            "--samples",
+            "5",
+            "--output",
+            ".verification/phase3.2a/mocked_bh1750_source.jsonl",
+            "--overwrite"
+          ],
+          "expected_files": [
+            ".verification/phase3.2a/mocked_bh1750_source.jsonl"
+          ]
+        },
+        {
+          "label": "Phase 3.2A mocked serial capture",
+          "args": [
+            "-m",
+            "rplidar_c1_tools",
+            "capture-stm32-serial",
+            "--mock-input",
+            ".verification/phase3.2a/mocked_bh1750_source.jsonl",
+            "--max-messages",
+            "5",
+            "--telemetry-output",
+            ".verification/phase3.2a/mocked_bh1750_telemetry.jsonl",
+            "--recording-output",
+            ".verification/phase3.2a/mocked_bh1750_recording.jsonl",
+            "--overwrite"
+          ],
+          "expected_files": [
+            ".verification/phase3.2a/mocked_bh1750_telemetry.jsonl",
+            ".verification/phase3.2a/mocked_bh1750_recording.jsonl"
+          ]
+        },
+        {
+          "label": "Phase 3.2A inspect telemetry",
+          "args": [
+            "-m",
+            "rplidar_c1_tools.cli",
+            "inspect-stm32-telemetry",
+            "--input",
+            ".verification/phase3.2a/mocked_bh1750_telemetry.jsonl",
+            "--output",
+            ".verification/phase3.2a/telemetry_inspection.txt"
+          ],
+          "expected_files": [
+            ".verification/phase3.2a/telemetry_inspection.txt"
+          ]
+        },
+        {
+          "label": "Phase 3.2A inspect recording",
+          "args": [
+            "-m",
+            "rplidar_c1_tools.cli",
+            "inspect-recording",
+            ".verification/phase3.2a/mocked_bh1750_recording.jsonl",
+            "--output",
+            ".verification/phase3.2a/recording_inspection.txt"
+          ],
+          "expected_files": [
+            ".verification/phase3.2a/recording_inspection.txt"
+          ]
+        },
+        {
+          "label": "Phase 3.2A build audit",
+          "args": [
+            "tools/audit_openrf1_build.py",
+            "--build-output",
+            ".verification/phase3.2a/build_audit.txt",
+            "--manual-output",
+            ".verification/phase3.2a/manual_hardware_status.txt"
+          ],
+          "expected_files": [
+            ".verification/phase3.2a/build_audit.txt",
+            ".verification/phase3.2a/manual_hardware_status.txt"
+          ],
+          "warning": "Keil build, flash, ACK at 0x23, COM-port identity, and real lux validation remain UNVERIFIED."
         }
       ]
     }

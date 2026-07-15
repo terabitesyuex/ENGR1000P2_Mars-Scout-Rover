@@ -116,6 +116,43 @@ Telemetry converts to recording but replay shows no LiDAR scans:
 - STM32 low-rate sensor messages are auxiliary records, not `lidar_scan` records.
 - Use `inspect-recording` to verify counts for `ultrasonic`, `ground_edge`, `hall_landmark`, `illuminance`, and `barometer`.
 
+## Phase 3.2A OpenRF1 BH1750
+
+Mocked capture fails:
+
+- Confirm `capture-stm32-serial --mock-input` points to newline-delimited BH1750 telemetry.
+- Confirm each line uses `message_type: illuminance` and `sensor_id: bh1750_1`.
+- Confirm invalid readings use explicit status and `illuminance_lux: null`, not zero.
+
+Live capture has no COM port:
+
+- Identify the CH340 COM port manually in Device Manager.
+- Do not guess a COM port.
+- Do not run live capture from automated tests.
+
+No data at 115200 8N1:
+
+- Confirm firmware was built for STM32F103RC/F1 and flashed by the documented method.
+- Confirm USART1 PA9 TX / PA10 RX and CH340 path in the vendor OpenRF1 documentation.
+- Keep debug text out of the JSON telemetry stream.
+
+No ACK at `0x23`:
+
+- Power off before changing wiring.
+- Recheck GY-302 ADDR to GND, VCC to OpenRF1 I2C 5V, GND, SCL to PB1, and SDA to PC3.
+- Do not mark the address verified until ACK evidence is recorded.
+
+All-zero lux:
+
+- Distinguish valid darkness from bus failure.
+- Cover and uncover the sensor and compare against ACK/status evidence.
+- Do not convert timeout or hardware fault into zero lux.
+
+Malformed JSON:
+
+- Ensure firmware uses the bounded telemetry formatter and one JSON object per line.
+- Disable or route human-readable diagnostics away from the telemetry UART stream.
+
 ## Future Hardware Items
 
 No power or motor does not start:
@@ -142,4 +179,4 @@ PC-direct port remains locked:
 - Future hardware check: close the official SDK probe cleanly.
 - Future hardware check: unplug and reconnect the USB adapter if the operating system still holds the port.
 
-Current Phase 3.1 has no real STM32 acquisition, serial ports, GPIO, I2C, ESP32 communication, WiFi sockets, mapping, SLAM, odometry, navigation, or obstacle avoidance.
+Current Phase 3.2A automated work has no real COM-port access, STM32 flashing, GPIO, I2C, ESP32 communication, WiFi sockets, mapping, SLAM, odometry, navigation, obstacle avoidance, motors, encoders, or additional sensors.

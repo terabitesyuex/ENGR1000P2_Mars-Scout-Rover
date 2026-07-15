@@ -29,7 +29,16 @@ from .recording_models import (
     default_sensor_inventory,
 )
 from .replay import RecordingFormatError, inspect_recording, last_lidar_scan_by_sensor, replay_lidar_scans
+from .openrf1_bh1750 import generate_bh1750_telemetry_lines
 from .stm32_recording_bridge import record_stm32_telemetry_stream
+from .stm32_serial_capture import (
+    DEFAULT_LINE_LENGTH_LIMIT_BYTES,
+    DEFAULT_STM32_SERIAL_BAUD,
+    FileChunkSerialReader,
+    PySerialLineReader,
+    Stm32SerialCaptureError,
+    capture_stm32_serial_telemetry,
+)
 from .stm32_sensor_protocol import (
     Stm32TelemetryError,
     iter_stm32_telemetry,
@@ -176,6 +185,42 @@ def main() -> int:
     record_stm32.add_argument("--output", type=Path, required=True)
     record_stm32.add_argument("--overwrite", action="store_true")
 
+    simulate_bh1750 = subparsers.add_parser(
+        "simulate-bh1750-telemetry",
+        help="Generate deterministic OpenRF1 BH1750-only telemetry JSONL.",
+    )
+    simulate_bh1750.add_argument("--samples", type=_positive_int, default=5)
+    simulate_bh1750.add_argument("--start-timestamp-ms", type=_non_negative_int, default=0)
+    simulate_bh1750.add_argument("--interval-ms", type=_positive_int, default=500)
+    simulate_bh1750.add_argument("--output", type=Path, required=True)
+    simulate_bh1750.add_argument("--overwrite", action="store_true")
+
+    capture_stm32 = subparsers.add_parser(
+        "capture-stm32-serial",
+        help="Capture user-selected STM32 BH1750 serial telemetry into JSONL.",
+    )
+    capture_source = capture_stm32.add_mutually_exclusive_group(required=True)
+    capture_source.add_argument("--port", help="Explicit user-verified COM port for manual capture.")
+    capture_source.add_argument(
+        "--mock-input",
+        type=Path,
+        help="File-backed mock byte source for tests and verifier smoke runs.",
+    )
+    capture_stm32.add_argument("--baud", type=_positive_int, default=DEFAULT_STM32_SERIAL_BAUD)
+    capture_stm32.add_argument("--duration", type=float, default=30.0)
+    capture_stm32.add_argument("--max-messages", type=_positive_int)
+    capture_stm32.add_argument("--timeout-s", type=float, default=1.0)
+    capture_stm32.add_argument("--read-chunk-size", type=_positive_int, default=64)
+    capture_stm32.add_argument("--max-empty-reads", type=_positive_int, default=10)
+    capture_stm32.add_argument(
+        "--line-length-limit",
+        type=_positive_int,
+        default=DEFAULT_LINE_LENGTH_LIMIT_BYTES,
+    )
+    capture_stm32.add_argument("--telemetry-output", type=Path, required=True)
+    capture_stm32.add_argument("--recording-output", type=Path, required=True)
+    capture_stm32.add_argument("--overwrite", action="store_true")
+
     args = parser.parse_args()
     try:
         if args.command == "synthetic-room":
@@ -280,7 +325,41 @@ def main() -> int:
             )
             print(path)
             return 0
-    except (OSError, ValueError, RecordingFormatError, C1DriverError, Stm32TelemetryError) as exc:
+        if args.command == "simulate-bh1750-telemetry":
+            path = simulate_bh1750_telemetry(
+                output_path=args.output,
+                samples=args.samples,
+                start_timestamp_ms=args.start_timestamp_ms,
+                interval_ms=args.interval_ms,
+                overwrite=args.overwrite,
+            )
+            print(path)
+            return 0
+        if args.command == "capture-stm32-serial":
+            text = capture_stm32_serial_file(
+                port=args.port,
+                mock_input=args.mock_input,
+                baud=args.baud,
+                duration_s=args.duration,
+                max_messages=args.max_messages,
+                timeout_s=args.timeout_s,
+                read_chunk_size=args.read_chunk_size,
+                max_empty_reads=args.max_empty_reads,
+                line_length_limit_bytes=args.line_length_limit,
+                telemetry_output=args.telemetry_output,
+                recording_output=args.recording_output,
+                overwrite=args.overwrite,
+            )
+            print(text, end="")
+            return 0
+    except (
+        OSError,
+        ValueError,
+        RecordingFormatError,
+        C1DriverError,
+        Stm32TelemetryError,
+        Stm32SerialCaptureError,
+    ) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
     parser.error(f"unsupported command: {args.command}")
@@ -539,6 +618,63 @@ def record_stm32_telemetry_file(
             output_path=output_path,
             overwrite=overwrite,
         )
+
+
+def simulate_bh1750_telemetry(
+    *,
+    output_path: Path,
+    samples: int,
+    start_timestamp_ms: int,
+    interval_ms: int,
+    overwrite: bool,
+) -> Path:
+    """Write deterministic OpenRF1 BH1750-only telemetry fixture lines."""
+    if output_path.exists() and not overwrite:
+        raise ValueError(f"telemetry output already exists: {output_path}")
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    lines = generate_bh1750_telemetry_lines(
+        samples=samples,
+        start_timestamp_ms=start_timestamp_ms,
+        interval_ms=interval_ms,
+    )
+    output_path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
+    return output_path
+
+
+def capture_stm32_serial_file(
+    *,
+    port: str | None,
+    mock_input: Path | None,
+    baud: int,
+    duration_s: float,
+    max_messages: int | None,
+    timeout_s: float,
+    read_chunk_size: int,
+    max_empty_reads: int,
+    line_length_limit_bytes: int,
+    telemetry_output: Path,
+    recording_output: Path,
+    overwrite: bool,
+) -> str:
+    """Capture OpenRF1 BH1750 serial telemetry from a live or mocked source."""
+    if mock_input is not None:
+        reader = FileChunkSerialReader(mock_input, chunk_size=max(1, read_chunk_size // 2))
+    elif port is not None:
+        reader = PySerialLineReader(port=port, baud=baud, timeout_s=timeout_s)
+    else:
+        raise ValueError("provide either --port or --mock-input")
+    summary = capture_stm32_serial_telemetry(
+        reader=reader,
+        telemetry_output=telemetry_output,
+        recording_output=recording_output,
+        duration_s=duration_s,
+        max_messages=max_messages,
+        read_chunk_size=read_chunk_size,
+        max_empty_reads=max_empty_reads,
+        line_length_limit_bytes=line_length_limit_bytes,
+        overwrite=overwrite,
+    )
+    return summary.to_text()
 
 
 def _selected_scenes(scene: str) -> tuple[str, ...]:

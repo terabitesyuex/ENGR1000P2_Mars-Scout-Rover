@@ -1,6 +1,6 @@
 # Architecture
 
-The rover architecture separates hardware access, transport, data models, algorithms, visualization, recording, and replay. Phase 3.1 adds a host-testable STM32 low-rate sensor telemetry foundation while preserving the Phase 2.4 recording and replay pipeline.
+The rover architecture separates hardware access, transport, data models, algorithms, visualization, recording, and replay. Phase 3.2A adds an OpenRF1 STM32F103RCT6 + GY-302/BH1750 firmware foundation and mocked PC serial-capture path while preserving the Phase 2.4 recording and replay pipeline.
 
 ## Sensor Layer
 
@@ -83,6 +83,7 @@ PC responsibilities:
 Synthetic LiDAR source
 PC-direct C1 byte stream with explicit user-provided port or fixture bytes
 STM32 low-rate sensor telemetry simulator / future forwarded telemetry
+OpenRF1 BH1750 mocked serial capture / future user-selected CH340 COM port
     -> ScanFrame data model
     -> STM32 telemetry parser / recording bridge
     -> scan builder / coordinate transforms
@@ -92,7 +93,7 @@ STM32 low-rate sensor telemetry simulator / future forwarded telemetry
     -> replay visualization
 ```
 
-The Phase 2.4 JSONL recording format is a PC-side reproducibility format. Phase 2.5 writes PC-direct C1 captures into that same format. Phase 3.1 writes validated STM32 low-rate sensor telemetry into that same format. JSONL recordings are not the future on-wire ESP32 protocol.
+The Phase 2.4 JSONL recording format is a PC-side reproducibility format. Phase 2.5 writes PC-direct C1 captures into that same format. Phase 3.1 writes validated STM32 low-rate sensor telemetry into that same format. Phase 3.2A writes mocked or manually captured BH1750 serial telemetry into that same format. JSONL recordings are not the future on-wire ESP32 protocol.
 
 ## Two-C1 Policy
 
@@ -107,5 +108,9 @@ The Phase 2.4 JSONL recording format is a PC-side reproducibility format. Phase 
 Phase 3.1 implements `mars_scout_stm32_sensor_telemetry` v1, deterministic STM32 sensor telemetry simulation, strict PC parsing, and a bridge into the existing recording format. Automated tests use fixture files and in-memory streams only.
 
 Phase 3.1 does not implement real STM32 sensor acquisition, serial ports, GPIO, I2C, timers, ESP32 communication, WiFi sockets, firmware behavior, mapping, SLAM, odometry, navigation, obstacle avoidance, or simultaneous dual-C1 operation.
+
+Phase 3.2A implements application-layer firmware source for one GY-302/BH1750 sensor on OpenRF1 software I2C PB1/PC3, plus a mockable PC serial-capture layer for versioned `illuminance` telemetry from `bh1750_1`. Automated tests use pure logic and file-backed mock readers only.
+
+Phase 3.2A does not implement BMP280, HC-SR04, TCRT5000, Hall, MPU6050, motors, encoders, ESP32/WiFi, C1 hardware integration, mapping, SLAM, navigation, obstacle avoidance, or Phase 3.2B. Keil build, flash, real COM port, ACK at `0x23`, and real lux response remain manual and UNVERIFIED.
 
 Emergency stopping remains a local STM32 safety responsibility in the plan. PC mapping occurs later and is short-range accumulated mapping, not a required reusable global SLAM map. ROS is not required.

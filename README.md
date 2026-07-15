@@ -17,8 +17,9 @@ Major enhancements are encoder/IMU-assisted pose estimation, short-range accumul
 - Phase 2.4: multi-sensor JSONL recording, replay, reproducible synthetic datasets, hardware-inventory update, and plan rebaseline complete.
 - Phase 2.5: PC-direct C1 driver boundary, standard scan-node parsing, bounded capture into JSONL, replay, and visualization integration complete.
 - Phase 3.1: STM32 low-rate sensor telemetry protocol, deterministic simulator, strict parser, recording bridge, CLI workflows, and manual bring-up checklist complete.
+- Phase 3.2A: OpenRF1 STM32F103RCT6 + GY-302/BH1750 firmware foundation, mocked PC serial-capture workflow, documentation, and phase verification complete.
 
-Phase 3.1 does not implement real STM32 acquisition, serial ports, GPIO, I2C, ESP32 communication, WiFi sockets, motor control, encoder acquisition, MPU6050 integration, ROS, SLAM, navigation, obstacle avoidance, or simultaneous dual-C1 operation. Automated tests do not access real hardware or serial ports.
+Phase 3.2A does not implement BMP280, HC-SR04, TCRT5000, Hall, MPU6050, motors, encoders, ESP32/WiFi, C1 hardware integration, mapping, SLAM, navigation, obstacle avoidance, or Phase 3.2B. Automated tests do not access real COM ports, USB devices, GPIO, I2C, flashing tools, or sensors.
 
 ## Confirmed Hardware Inventory
 
@@ -80,6 +81,30 @@ python -m rplidar_c1_tools.cli record-stm32-telemetry --input .verification\phas
 ```
 
 Supported Phase 3.1 sensor message types are `ultrasonic`, `ground_edge`, `hall_landmark`, `illuminance`, and `barometer`. HC-SR04 timeout is explicit and is not converted to distance zero. TCRT5000 and Hall raw states remain visible while polarity is UNVERIFIED. BH1750 and BMP280 support environmental-change indication only; reliable dust-storm detection is not claimed.
+
+## Phase 3.2A OpenRF1 BH1750 Foundation
+
+Phase 3.2A locks the software target for the first real STM32 sensor path: OpenRF1 robot controller, STM32F103RCT6, software I2C on PB1/SCL and PC3/SDA, GY-302/BH1750 sensor ID `bh1750_1`, public 7-bit address `0x23`, and USART1 PA9 TX / PA10 RX at 115200 baud 8N1. The address is configured by the ADDR-to-GND plan but remains not ACK-verified.
+
+Generate deterministic BH1750-only telemetry:
+
+```powershell
+python -m rplidar_c1_tools simulate-bh1750-telemetry --samples 5 --output .verification\phase3.2a\mocked_bh1750_source.jsonl --overwrite
+```
+
+Capture from a mocked serial source and convert to the Phase 2.4 recording format:
+
+```powershell
+python -m rplidar_c1_tools capture-stm32-serial --mock-input .verification\phase3.2a\mocked_bh1750_source.jsonl --max-messages 5 --telemetry-output .verification\phase3.2a\mocked_bh1750_telemetry.jsonl --recording-output .verification\phase3.2a\mocked_bh1750_recording.jsonl --overwrite
+```
+
+Manual capture requires an operator-selected CH340 COM port; software never guesses a port:
+
+```powershell
+python -m rplidar_c1_tools capture-stm32-serial --port <USER_VERIFIED_COM_PORT> --baud 115200 --duration 30 --telemetry-output bh1750_telemetry.jsonl --recording-output bh1750_recording.jsonl --overwrite
+```
+
+Firmware source lives under `firmware/openrf1/app/`. It is application-layer source for the vendor OpenRF1 Keil MDK/uVision 5 STM32F103RC project and is not a standalone build tree. Keil build, firmware flash, ACK at `0x23`, COM port identity, and real lux response remain MANUAL_ACTION_REQUIRED.
 
 ## Preserved Verified C1 Facts
 
@@ -172,13 +197,14 @@ Captured files use the existing `mars_scout_multisensor_recording` JSONL schema.
 
 ## Phase Verification
 
-Supported phases include `phase1`, `phase2.1`, `phase2.2`, `phase2.3`, `phase2.4`, `phase2.5`, and `phase3.1`.
+Supported phases include `phase1`, `phase2.1`, `phase2.2`, `phase2.3`, `phase2.4`, `phase2.5`, `phase3.1`, and `phase3.2a`.
 
 Development verification:
 
 ```powershell
 .\tools\verify_phase.cmd phase2.5 -AllowDirty
 .\tools\verify_phase.cmd phase3.1 -AllowDirty
+.\tools\verify_phase.cmd phase3.2a -AllowDirty
 ```
 
 Normal verification after commit and push:
@@ -186,6 +212,7 @@ Normal verification after commit and push:
 ```powershell
 .\tools\verify_phase.cmd phase2.5
 .\tools\verify_phase.cmd phase3.1
+.\tools\verify_phase.cmd phase3.2a
 ```
 
 The verifier checks Git state, Python selection, pytest import, targeted tests, regressions, the complete PC suite, and configured smoke workflows. Hardware and safety facts still require physical verification.
@@ -195,7 +222,8 @@ The verifier checks Git state, Python selection, pytest import, targeted tests, 
 - Phase 2.4: multi-sensor recording, replay, reproducible datasets, current hardware inventory update, and project-plan rebaseline.
 - Phase 2.5: PC-direct testing of both RPLIDAR C1 units separately, real scan acquisition, distance/orientation checks, device identification, recording, and visualization.
 - Phase 3.1: STM32 low-rate sensor telemetry software foundation, deterministic simulator, PC parser, recording bridge, and manual bring-up checklist.
-- Phase 3.2: future physical STM32 integration of HC-SR04, TCRT5000, Hall, BH1750, and BMP280.
+- Phase 3.2A: OpenRF1 STM32F103RCT6 + GY-302/BH1750 firmware foundation, mocked serial-capture workflow, and manual bring-up procedure.
+- Phase 3.2B: future physical STM32 integration of remaining HC-SR04, TCRT5000, Hall, BMP280, and additional validated sensors.
 - Phase 4: wheel encoders, MPU6050, mecanum kinematics, closed-loop motion, and odometry.
 - Phase 5: STM32-ESP32-computer communication, WiFi transport, one-C1 baseline integration, then optional dual-C1 feasibility evaluation.
 - Phase 6: real-time PC visualization, rover trajectory, and short-range encoder/IMU-assisted accumulated 2D mapping.

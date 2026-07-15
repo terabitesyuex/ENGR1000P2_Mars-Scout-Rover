@@ -125,7 +125,8 @@ These facts do not verify the wiring, mounting, serial identifiers, revisions, o
 - Phase 2.4: multi-sensor recording, replay, reproducible datasets, current hardware inventory update, and project-plan rebaseline.
 - Phase 2.5: PC-direct testing of both RPLIDAR C1 units separately, real scan acquisition, distance/orientation checks, device identification, recording, and visualization.
 - Phase 3.1: STM32 low-rate sensor telemetry software foundation, deterministic simulator, strict PC parser, Phase 2.4 recording bridge, and manual bring-up checklist.
-- Phase 3.2: physical STM32 integration of HC-SR04, TCRT5000, Hall, BH1750, and BMP280, including low-level sensor safety and environmental-data acquisition.
+- Phase 3.2A: OpenRF1 STM32F103RCT6 + GY-302/BH1750 firmware foundation, mocked PC serial-capture workflow, and manual bring-up procedure.
+- Phase 3.2B: future physical STM32 integration of remaining HC-SR04, TCRT5000, Hall, BMP280, and additional validated sensors, including low-level sensor safety and environmental-data acquisition.
 - Phase 4: wheel encoders, MPU6050, mecanum kinematics, closed-loop motion, and odometry.
 - Phase 5: STM32-ESP32-computer communication, WiFi transport, one-C1 baseline integration, then optional dual-C1 feasibility evaluation.
 - Phase 6: real-time computer visualization, rover trajectory, and short-range encoder/IMU-assisted accumulated 2D mapping.
@@ -147,6 +148,14 @@ Phase 2.5 does not implement STM32 integration, ESP32 communication, WiFi, ROS, 
 Phase 3.1 is a software-foundation phase. It defines `mars_scout_stm32_sensor_telemetry` version `1`, validates deterministic software telemetry for HC-SR04, TCRT5000, Hall, BH1750, and BMP280, and bridges validated messages into the existing Phase 2.4 recording format. It does not prove any real STM32 pin, connector, voltage, polarity, timing, I2C address, or physical sensor behavior.
 
 Phase 3.1 does not implement real hardware access, serial-port access, GPIO, I2C, timers, STM32 flashing, ESP32 communication, WiFi, motor control, wheel encoders, MPU6050 integration, mapping, SLAM, navigation, obstacle avoidance, or autonomous motion.
+
+## Phase 3.2A Acceptance Philosophy
+
+Phase 3.2A is the first real-firmware preparation step for one low-rate sensor only: GY-302/BH1750 as `bh1750_1` on the OpenRF1 STM32F103RCT6 controller. It records the confirmed board, MCU, PB1/PC3 software-I2C pins, USART1 serial reference, planned GY-302 wiring, and BH1750 public 7-bit address `0x23`. It adds application-layer firmware source for the vendor Keil STM32F103RC project, but does not vendor the STM32F10x library or claim a standalone firmware build tree.
+
+Phase 3.2A automated evidence is software-only: pure conversion/state-machine tests, file-backed mocked serial capture, strict Phase 3.1 parser reuse, Phase 2.4 recording conversion, and verifier smoke artifacts. It does not access real COM ports, USB devices, GPIO, I2C, flashing tools, or sensors. Keil build, flash, ACK at `0x23`, COM-port identity, and real lux response remain MANUAL_ACTION_REQUIRED.
+
+Phase 3.2A does not implement BMP280, HC-SR04, TCRT5000, Hall, MPU6050, motors, encoders, mecanum kinematics, ESP32/WiFi, C1 hardware integration, mapping, SLAM, navigation, obstacle avoidance, or Phase 3.2B.
 
 ## Course Validation Evidence
 

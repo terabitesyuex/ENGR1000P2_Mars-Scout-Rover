@@ -69,6 +69,31 @@ Evidence table fields:
 - Document environmental-change limitations.
 - Do not claim reliable dust-storm detection.
 
+## Phase 3.2A OpenRF1 GY-302/BH1750
+
+Do not mark these items complete automatically.
+
+- Confirm OpenRF1 board identity and STM32F103RCT6 marking.
+- Confirm the 2x4 I2C header, not the adjacent SWD connector.
+- Confirm OpenRF1 I2C 5V and GND with power off before wiring.
+- Wire GY-302 VCC -> OpenRF1 I2C 5V.
+- Wire GY-302 GND -> OpenRF1 I2C GND.
+- Wire GY-302 SCL -> OpenRF1 PB1/SCL.
+- Wire GY-302 SDA -> OpenRF1 PC3/SDA.
+- Wire GY-302 ADDR -> OpenRF1 GND.
+- Keep motors and other new sensors disconnected for first power-on.
+- Build the STM32F103RC Keil project before flashing.
+- Flash only by the documented USB ISP or SWD method.
+- Identify the CH340 COM port privately in Device Manager.
+- Open serial at 115200 baud 8N1.
+- Confirm valid versioned JSONL output.
+- Confirm BH1750 ACK at public 7-bit address `0x23`.
+- Record uncovered room-light readings.
+- Cover the sensor and confirm lux decreases strongly.
+- Shine a lamp indirectly and confirm lux increases.
+- Capture at least 30 seconds of telemetry and convert it to Phase 2.4 recording.
+- Record commit, date, operator, wiring revision, COM port privately, expected result, observed result, pass/fail, notes, and evidence paths.
+
 ## Planned Ground/Landmark Connector
 
 The following is USER-CONFIRMED PLANNED CONNECTION only:

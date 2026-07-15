@@ -98,11 +98,24 @@ All notable subsystem changes are recorded here. Track protocol, GPIO, power, da
 - Preserved HC-SR04 ECHO voltage compatibility, TCRT5000/Hall polarity, BH1750/BMP280 addresses, STM32 MCU identity, GPIOs, timers, UARTs, I2C peripherals, and physical bring-up status as UNVERIFIED.
 - Did not implement real hardware access, serial-port access, STM32 flashing, GPIO, I2C, ESP32 communication, WiFi, motor control, encoders, MPU6050 integration, mapping, SLAM, navigation, obstacle avoidance, or Phase 3.2.
 
+## 2026-07-15 - Phase 3.2A OpenRF1 BH1750 Firmware Foundation
+
+- Corrected the STM32 controller target for the BH1750 bring-up path to OpenRF1 with STM32F103RCT6, 64 pins, Cortex-M3, 256 KB flash, and 48 KB SRAM.
+- Recorded the intended vendor toolchain as Keil MDK/uVision 5 with STM32F10x Standard Peripheral Library, target STM32F103RC, `STM32F10X_HD`, `USE_STDPERIPH_DRIVER`, and `startup_stm32f10x_hd.s`.
+- Recorded confirmed OpenRF1 software-I2C pins PB1/SCL and PC3/SDA, 10 kOhm pull-ups to 3.3 V, duplicated 2x4 I2C header signals, and USART1 PA9/PA10 at 115200 baud 8N1.
+- Recorded the GY-302/BH1750 planned wiring table and configured public 7-bit address `0x23` with ADDR to GND; ACK and real lux readings remain UNVERIFIED.
+- Added `firmware/openrf1/app/` application-layer source for board configuration, bounded software I2C, BH1750 conversion/state machine, and versioned telemetry formatting.
+- Added host-testable OpenRF1/BH1750 Python logic, deterministic BH1750 telemetry generation, mocked STM32 serial capture, and `python -m rplidar_c1_tools` CLI entrypoint.
+- Added CLI commands `simulate-bh1750-telemetry` and `capture-stm32-serial`.
+- Added tests for BH1750 conversion, address derivation, nonblocking state-machine behavior, firmware source constraints, mocked serial capture, invalid serial data, no-overwrite behavior, and CLI workflow.
+- Added OpenRF1 BH1750 bring-up documentation and a build-audit helper for verifier artifacts.
+- Did not run Keil, flash STM32, open real COM ports, access USB devices, run I2C/GPIO, or implement BMP280, HC-SR04, TCRT5000, Hall, MPU6050, motors, encoders, ESP32/WiFi, C1 hardware integration, mapping, SLAM, navigation, obstacle avoidance, or Phase 3.2B.
+
 ## Change Categories
 
-- Protocol changes: Phase 2.5 adds a PC-direct standard scan-node parser boundary for C1 capture; Phase 3.1 adds the PC-side `mars_scout_stm32_sensor_telemetry` v1 diagnostic protocol; no ESP32 or WiFi protocol changes.
-- GPIO changes: GPIO values remain unset.
+- Protocol changes: Phase 2.5 adds a PC-direct standard scan-node parser boundary for C1 capture; Phase 3.1 adds the PC-side `mars_scout_stm32_sensor_telemetry` v1 diagnostic protocol; Phase 3.2A emits the existing v1 `illuminance` message for `bh1750_1`; no ESP32 or WiFi protocol changes.
+- GPIO changes: Phase 3.2A locks OpenRF1 software-I2C PB1/SCL and PC3/SDA for BH1750 only; other GPIO values remain unset.
 - Power changes: hardware values documented; supply model unverified.
-- Data-format changes: Phase 2.1 adds the PC-side `ScanFrame` software interface; Phase 2.2 adds Cartesian transform models; Phase 2.3 adds PNG visualization export; Phase 2.4 adds the multi-sensor JSONL recording format; Phase 2.5 reuses that JSONL format for PC-direct C1 captures; Phase 3.1 reuses it for STM32 low-rate sensor telemetry recordings with optional status/raw fields.
-- Firmware changes: PlatformIO structure created only; no live hardware behavior added.
+- Data-format changes: Phase 2.1 adds the PC-side `ScanFrame` software interface; Phase 2.2 adds Cartesian transform models; Phase 2.3 adds PNG visualization export; Phase 2.4 adds the multi-sensor JSONL recording format; Phase 2.5 reuses that JSONL format for PC-direct C1 captures; Phase 3.1 reuses it for STM32 low-rate sensor telemetry recordings with optional status/raw fields; Phase 3.2A reuses the same recording format for mocked BH1750 serial capture.
+- Firmware changes: Phase 3.2A adds OpenRF1 application-layer STM32F103RCT6 BH1750 source, not a complete standalone Keil build tree.
 - Calibration changes: calibration process documented only.

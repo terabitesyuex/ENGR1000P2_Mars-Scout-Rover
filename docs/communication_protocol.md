@@ -63,6 +63,20 @@ Supported message types:
 
 This protocol is strict, human-inspectable, and machine-parseable. It does not open serial ports. It is designed so later STM32 or ESP32 transports can forward messages without changing the PC recording schema.
 
+## Phase 3.2A OpenRF1 BH1750 Serial Telemetry
+
+Phase 3.2A uses the existing `mars_scout_stm32_sensor_telemetry` version `1` protocol for one real-firmware preparation path:
+
+- `message_type`: `illuminance`
+- `sensor_id`: `bh1750_1`
+- payload field: `illuminance_lux`
+- valid status: `ok` from firmware or `simulated` from deterministic test fixtures
+- error statuses: `timeout`, `not_initialized`, `stale`, or `hardware_fault`
+
+The firmware foundation is configured for OpenRF1 STM32F103RCT6 software I2C on PB1/SCL and PC3/SDA, GY-302/BH1750 address `0x23`, and USART1 PA9/PA10 at 115200 baud 8N1. The PC `capture-stm32-serial` workflow accepts either a user-selected COM port for manual tests or `--mock-input` for automated verification. Automated tests and verifier smoke runs never open a real COM port.
+
+Invalid BH1750 communication must not be represented as zero lux. A valid dark reading may be `0.0` lux only when the sensor transaction is valid.
+
 ## Transport Expectations
 
 - Include sequence numbers.
@@ -86,7 +100,9 @@ The following remain UNVERIFIED:
 
 - Exact ESP32 GPIOs.
 - Exact UART assignment.
-- Exact STM32 GPIO, timer, UART, and I2C peripheral assignments.
+- Exact STM32 GPIO, timer, UART, and I2C peripheral assignments outside the Phase 3.2A BH1750 OpenRF1 path.
+- BH1750 ACK at 7-bit address `0x23`.
+- Successful OpenRF1 CH340 COM-port path.
 - Exact STM32-ESP32 connector.
 - Exact packet field widths.
 - Exact checksum polynomial.

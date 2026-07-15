@@ -45,6 +45,10 @@ No physical calibration is completed by Phase 3.1 automation. This file records 
 - Measure repeatability.
 - Test response to controlled light changes.
 - Do not claim reliable real-world dust-storm detection.
+- Phase 3.2A configures GY-302/BH1750 on OpenRF1 software I2C PB1/PC3 with ADDR grounded for public 7-bit address `0x23`; real ACK remains UNVERIFIED until measured.
+- Validate a real reading sequence by recording uncovered room light, covered sensor, and indirect lamp response.
+- Treat a valid zero-lux reading as darkness only after a successful sensor transaction; communication failures must remain explicit error statuses with no substituted zero.
+- Record commit, date, operator, wiring revision, private COM-port identifier, expected result, observed result, pass/fail, and evidence paths.
 
 ## BMP280
 

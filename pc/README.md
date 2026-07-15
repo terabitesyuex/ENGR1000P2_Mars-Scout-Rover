@@ -1,10 +1,12 @@
 # RPLIDAR C1 PC Tools
 
-PC-side package for synthetic scans, coordinate transforms, visualization, Phase 2.4 multi-sensor recording, deterministic replay, Phase 2.5 PC-direct C1 capture, Phase 3.1 STM32 telemetry simulation/parsing/recording bridge, and later mapping work.
+PC-side package for synthetic scans, coordinate transforms, visualization, Phase 2.4 multi-sensor recording, deterministic replay, Phase 2.5 PC-direct C1 capture, Phase 3.1 STM32 telemetry simulation/parsing/recording bridge, Phase 3.2A OpenRF1 BH1750 mocked serial capture, and later mapping work.
 
 Phase 2.5 automated tests use mocked C1 byte streams only. Manual PC-direct capture can use an explicit user-verified port, but this package does not invent ports, access STM32/ESP32 firmware, use WiFi sockets, implement mapping, implement SLAM, or implement obstacle avoidance.
 
 Phase 3.1 STM32 telemetry tools use deterministic files and in-memory streams only. They do not open serial ports, GPIO, I2C, USB devices, timers, or network sockets.
+
+Phase 3.2A capture tools use file-backed mock input in automated tests. Manual live capture requires an explicit user-selected CH340 COM port; no COM port is guessed.
 
 ## Install For Development
 
@@ -101,6 +103,32 @@ Protocol: `mars_scout_stm32_sensor_telemetry` version `1`.
 
 Supported scenarios: `nominal`, `ultrasonic_timeout`, `ground_polarity_unverified`, `hall_polarity_unverified`, `environment_change`, and `mixed_faults`.
 
+## OpenRF1 BH1750 Serial Capture
+
+Generate BH1750-only mock telemetry:
+
+```powershell
+python -m rplidar_c1_tools simulate-bh1750-telemetry --samples 5 --output .verification\phase3.2a\mocked_bh1750_source.jsonl --overwrite
+```
+
+Capture through the mocked serial path and convert to a Phase 2.4 recording:
+
+```powershell
+python -m rplidar_c1_tools capture-stm32-serial --mock-input .verification\phase3.2a\mocked_bh1750_source.jsonl --max-messages 5 --telemetry-output .verification\phase3.2a\mocked_bh1750_telemetry.jsonl --recording-output .verification\phase3.2a\mocked_bh1750_recording.jsonl --overwrite
+```
+
+Manual live capture requires a user-verified port:
+
+```powershell
+python -m rplidar_c1_tools capture-stm32-serial --port <USER_VERIFIED_COM_PORT> --baud 115200 --duration 30 --telemetry-output bh1750_telemetry.jsonl --recording-output bh1750_recording.jsonl --overwrite
+```
+
+If pyserial is unavailable for manual live capture, install it only in the repository virtual environment:
+
+```powershell
+pc\.venv\Scripts\python.exe -m pip install pyserial
+```
+
 ## Data Location
 
 Generated development artifacts belong under `.verification/`, which is ignored by Git. Do not commit generated recordings or figures unless a future task explicitly asks for a curated fixture.
@@ -110,6 +138,7 @@ Generated development artifacts belong under `.verification/`, which is ignored 
 ```powershell
 pc\.venv\Scripts\python.exe -m pytest pc\tests\test_recording.py pc\tests\test_replay.py pc\tests\test_current_plan.py -v
 pc\.venv\Scripts\python.exe -m pytest pc\tests\test_stm32_sensor_models.py pc\tests\test_stm32_sensor_protocol.py pc\tests\test_stm32_sensor_simulator.py pc\tests\test_stm32_recording_bridge.py pc\tests\test_stm32_sensor_cli.py pc\tests\test_phase3_current_plan.py -v
+pc\.venv\Scripts\python.exe -m pytest pc\tests\test_openrf1_bh1750.py pc\tests\test_openrf1_firmware_foundation.py pc\tests\test_stm32_serial_capture.py -v
 pc\.venv\Scripts\python.exe -m pytest pc\tests -v
 ```
 
@@ -118,4 +147,5 @@ Phase verifier:
 ```powershell
 .\tools\verify_phase.cmd phase2.5 -AllowDirty
 .\tools\verify_phase.cmd phase3.1 -AllowDirty
+.\tools\verify_phase.cmd phase3.2a -AllowDirty
 ```

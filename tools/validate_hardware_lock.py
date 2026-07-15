@@ -47,6 +47,16 @@ REQUIRED_TEXTS: tuple[RequiredText, ...] = (
     RequiredText("HARDWARE_LOCK.md", "USER-CONFIRMED PLANNED CONNECTION", "planned STM32 ground connector status"),
     RequiredText("HARDWARE_LOCK.md", "HC-SR04 ECHO voltage compatibility", "HC-SR04 ECHO status"),
     RequiredText("HARDWARE_LOCK.md", "TCRT5000 and Hall output polarity remains UNVERIFIED", "digital polarity status"),
+    RequiredText("HARDWARE_LOCK.md", "OpenRF1 robot controller", "OpenRF1 board identity"),
+    RequiredText("HARDWARE_LOCK.md", "STM32F103RCT6", "OpenRF1 MCU identity"),
+    RequiredText("HARDWARE_LOCK.md", "PB1", "OpenRF1 software I2C SCL"),
+    RequiredText("HARDWARE_LOCK.md", "PC3", "OpenRF1 software I2C SDA"),
+    RequiredText("HARDWARE_LOCK.md", "0x23", "BH1750 address plan"),
+    RequiredText("HARDWARE_LOCK.md", "NOT YET ACK-VERIFIED", "BH1750 ACK status"),
+    RequiredText("firmware/openrf1/app/board_config.h", "OPENRF1_MCU_PART \"STM32F103RCT6\"", "OpenRF1 firmware MCU lock"),
+    RequiredText("firmware/openrf1/app/board_config.h", "OPENRF1_SOFT_I2C_SCL_PORT GPIOB", "OpenRF1 firmware SCL port"),
+    RequiredText("firmware/openrf1/app/board_config.h", "OPENRF1_SOFT_I2C_SDA_PORT GPIOC", "OpenRF1 firmware SDA port"),
+    RequiredText("firmware/openrf1/app/board_config.h", "OPENRF1_BH1750_ADDRESS_7BIT ((uint8_t)0x23u)", "OpenRF1 firmware BH1750 address"),
     RequiredText("HARDWARE_LOCK.md", "Physical wiring verification date: UNVERIFIED", "unverified wiring date"),
     RequiredText("HARDWARE_LOCK.md", "Individual C1 serial IDs: UNVERIFIED", "unverified serial status"),
     RequiredText("docs/phase1_hardware_audit.md", "Documentation Conflicts", "conflict log"),
@@ -139,7 +149,7 @@ def _collect_firmware_sources(root: Path, errors: list[str]) -> dict[str, str]:
         return {}
     sources: dict[str, str] = {}
     for path in firmware_root.rglob("*"):
-        if path.is_file() and path.suffix in {".h", ".hpp", ".cpp", ".ino"}:
+        if path.is_file() and path.suffix in {".c", ".h", ".hpp", ".cpp", ".ino"}:
             relative = path.relative_to(root).as_posix()
             content = _read_text(root, relative, errors)
             if content is not None:

@@ -15,6 +15,7 @@ AUTHORITATIVE_FILES = (
     "docs/architecture.md",
     "docs/stm32_sensor_protocol.md",
     "docs/phase3_hardware_checklist.md",
+    "docs/openrf1_bh1750_bringup.md",
     "docs/test_plan.md",
 )
 
@@ -55,6 +56,17 @@ REQUIRED_SNIPPETS = (
     RequiredSnippet("docs/architecture.md", "STM32 telemetry parser / recording bridge", "Phase 3.1 software layer documented"),
     RequiredSnippet("docs/stm32_sensor_protocol.md", "timeout must not be represented as a valid zero-distance obstacle", "ultrasonic timeout semantics documented"),
     RequiredSnippet("docs/phase3_hardware_checklist.md", "Do not mark checklist items complete automatically", "manual checklist honesty documented"),
+    RequiredSnippet("README.md", "OpenRF1 STM32F103RCT6", "Phase 3.2A OpenRF1 target documented"),
+    RequiredSnippet("README.md", "capture-stm32-serial", "Phase 3.2A capture CLI documented"),
+    RequiredSnippet("README.md", "phase3.2a", "Phase 3.2A verifier documented"),
+    RequiredSnippet("PROJECT_SPEC.md", "Phase 3.2A Acceptance Philosophy", "Phase 3.2A acceptance documented"),
+    RequiredSnippet("HARDWARE_LOCK.md", "OpenRF1 robot controller", "OpenRF1 board documented"),
+    RequiredSnippet("HARDWARE_LOCK.md", "STM32F103RCT6", "OpenRF1 MCU documented"),
+    RequiredSnippet("HARDWARE_LOCK.md", "PB1", "OpenRF1 SCL documented"),
+    RequiredSnippet("HARDWARE_LOCK.md", "PC3", "OpenRF1 SDA documented"),
+    RequiredSnippet("HARDWARE_LOCK.md", "0x23", "BH1750 address plan documented"),
+    RequiredSnippet("docs/openrf1_bh1750_bringup.md", "GY-302 VCC", "BH1750 wiring procedure documented"),
+    RequiredSnippet("docs/openrf1_bh1750_bringup.md", "Do not invent a COM port", "COM-port honesty documented"),
 )
 
 

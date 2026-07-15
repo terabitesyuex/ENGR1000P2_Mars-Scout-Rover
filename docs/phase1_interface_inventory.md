@@ -145,3 +145,24 @@ This inventory records the interfaces present after Phase 0 and audited in curre
 
 - `tools/verification/phase_manifest.json`
   - Adds `phase3.1` targeted tests, regressions, complete PC suite execution, and telemetry generation/inspection/conversion smoke workflows.
+
+## Phase 3.2A Interface Update
+
+- `firmware/openrf1/app/`
+  - Adds application-layer OpenRF1 STM32F103RCT6 source for GY-302/BH1750 only.
+  - Defines the board configuration boundary, PB1/PC3 software I2C, BH1750 pure conversion/state machine, and bounded telemetry formatter.
+  - Automation does not build, flash, open serial, or access I2C/GPIO.
+
+- `pc/src/rplidar_c1_tools/openrf1_bh1750.py`
+  - Mirrors host-testable BH1750 address derivation, raw-count conversion, nonblocking state-machine behavior, and deterministic telemetry generation.
+
+- `pc/src/rplidar_c1_tools/stm32_serial_capture.py`
+  - Adds dependency-injected STM32 telemetry capture from a serial-like byte reader.
+  - Uses file-backed mock input for tests and verifier smoke workflows.
+  - Reuses the Phase 3.1 strict parser and Phase 2.4 recording bridge.
+
+- `pc/src/rplidar_c1_tools/cli.py`
+  - Adds `simulate-bh1750-telemetry` and `capture-stm32-serial`.
+
+- `tools/verification/phase_manifest.json`
+  - Adds `phase3.2a` targeted tests, regressions, full PC suite execution, mocked serial-capture smoke workflows, build audit, and manual hardware status artifacts.

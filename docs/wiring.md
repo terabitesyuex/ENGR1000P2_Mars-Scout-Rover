@@ -56,10 +56,29 @@ These wire functions preserve the verified C1 harness profile. They do not prove
 - HC-SR04 ECHO voltage compatibility with the STM32 input remains UNVERIFIED; do not connect ECHO directly until the exact board I/O voltage tolerance is verified.
 - TCRT5000 active polarity is UNVERIFIED.
 - Hall active polarity is UNVERIFIED.
-- BH1750 I2C address is UNVERIFIED.
+- Phase 3.2A BH1750 target board is OpenRF1 with STM32F103RCT6.
+- OpenRF1 software I2C SCL is PB1/SCL and SDA is PC3/SDA.
+- The OpenRF1 schematic includes 10 kOhm pull-ups from PB1/SCL and PC3/SDA to 3.3 V.
+- The OpenRF1 2x4 I2C header duplicates PC3/SDA, PB1/SCL, GND, and 5V rows.
+- The adjacent SWD connector must not be confused with the I2C header.
+- BH1750 public 7-bit address `0x23` is configured by the GY-302 ADDR-to-GND plan, but ACK at `0x23` is UNVERIFIED.
 - BMP280 I2C address is UNVERIFIED.
 - MPU6050 I2C address is UNVERIFIED.
 - Final sensor mounting offsets are UNVERIFIED.
+
+## Phase 3.2A GY-302/BH1750 Planned Wiring
+
+This plan is USER-CONFIRMED, NOT ELECTRICALLY TESTED:
+
+| GY-302 pin | OpenRF1 connection |
+| --- | --- |
+| VCC | OpenRF1 I2C 5V |
+| GND | OpenRF1 I2C GND |
+| SCL | OpenRF1 PB1/SCL |
+| SDA | OpenRF1 PC3/SDA |
+| ADDR | OpenRF1 GND |
+
+Power off before changing wiring. First power-on should be performed without motors and without additional new sensors. Confirm address ACK at `0x23` and controlled lux response before marking readings verified.
 
 ## User-Confirmed Planned Ground/Landmark Connector
 

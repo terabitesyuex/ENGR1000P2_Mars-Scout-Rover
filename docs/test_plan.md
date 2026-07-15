@@ -13,12 +13,14 @@ Supported phases:
 - `phase2.4`
 - `phase2.5`
 - `phase3.1`
+- `phase3.2a`
 
 Development verification:
 
 ```powershell
 .\tools\verify_phase.cmd phase2.5 -AllowDirty
 .\tools\verify_phase.cmd phase3.1 -AllowDirty
+.\tools\verify_phase.cmd phase3.2a -AllowDirty
 ```
 
 Normal verification after commit and push:
@@ -26,6 +28,7 @@ Normal verification after commit and push:
 ```powershell
 .\tools\verify_phase.cmd phase2.5
 .\tools\verify_phase.cmd phase3.1
+.\tools\verify_phase.cmd phase3.2a
 ```
 
 The verifier uses repository-local pytest basetemp under `.verification/pytest_tmp/`, checks Git state, selects Python, confirms pytest import, runs targeted tests, regressions, the complete PC suite, and configured smoke workflows.
@@ -112,6 +115,37 @@ Smoke workflow:
 
 Phase 3.1 automated tests do not open serial ports, GPIO, I2C, timers, USB devices, network sockets, or real sensors.
 
+## Phase 3.2A Automated Software Tests
+
+Targeted:
+
+- `pc/tests/test_openrf1_bh1750.py`
+- `pc/tests/test_openrf1_firmware_foundation.py`
+- `pc/tests/test_stm32_serial_capture.py`
+- `pc/tests/test_stm32_sensor_protocol.py`
+- `pc/tests/test_stm32_recording_bridge.py`
+- `pc/tests/test_phase3_current_plan.py`
+
+Regression:
+
+- Phase 3.1 telemetry tests.
+- Phase 2.5 C1 PC-direct tests.
+- Phase 2.4 recording and replay tests.
+- Visualization tests.
+- Coordinate-transform tests.
+- Hardware-lock validation.
+- Current-plan validation.
+
+Smoke workflow:
+
+- Generate deterministic BH1750-only telemetry under `.verification/phase3.2a/`.
+- Capture that telemetry through the mocked serial-capture path.
+- Inspect the preserved telemetry.
+- Inspect the converted Phase 2.4 recording.
+- Generate `build_audit.txt` and `manual_hardware_status.txt`.
+
+Phase 3.2A automated tests do not open real COM ports, USB devices, GPIO, I2C, flash tools, Keil projects, network sockets, motors, or real sensors.
+
 ## Revised Phase Sequence
 
 Phase 2.4:
@@ -141,7 +175,16 @@ Phase 3.1:
 - Safety tests: documentation/checklist only.
 - Presentation evidence: deterministic telemetry files, converted recordings, inspection output, verifier logs.
 
-Phase 3.2:
+Phase 3.2A:
+
+- Automated software tests: OpenRF1 BH1750 address/conversion logic, nonblocking state machine, firmware source constraints, mocked serial capture, strict parser reuse, recording bridge, and verifier smoke artifacts.
+- Bench hardware tests: MANUAL_ACTION_REQUIRED for Keil build, flash, ACK at `0x23`, CH340 COM-port identification, and controlled lux response.
+- Stationary physical tests: manual cover/uncover/lamp response after successful build/flash.
+- Moving-rover tests: not performed.
+- Safety tests: documentation/checklist only; motors remain disconnected for first power-on.
+- Presentation evidence: mocked telemetry, converted recording, build audit, manual status file, and future physical logs after manual bring-up.
+
+Phase 3.2B:
 
 - Automated software tests: STM32 sensor parsing/validation where available.
 - Bench hardware tests: HC-SR04, TCRT5000, Hall, BH1750, BMP280 individually.
