@@ -90,6 +90,24 @@ pip install -e .\\pc
 
 Python 3.11 or newer is expected.
 
+## Phase Verification
+
+Use the automated verifier to run the checks for a completed phase:
+
+```powershell
+.\\tools\\verify_phase.cmd phase2.2
+```
+
+Supported phase names are `phase1`, `phase2.1`, and `phase2.2`. The CMD wrapper calls `tools/verify_phase.ps1` with `-NoProfile` and `-ExecutionPolicy Bypass`; the PowerShell script can also be called directly:
+
+```powershell
+.\\tools\\verify_phase.ps1 -Phase phase2.2
+```
+
+The verifier prefers `pc\\.venv\\Scripts\\python.exe`, then `py`, then `python`, and returns a nonzero exit code on failure. Normal verification requires a clean working tree. During development only, use `-AllowDirty` to test the verifier before committing its own files.
+
+Logs are written under `.verification/`, which is ignored by Git. Automated checks do not verify physical wiring, supply voltage, polarity, motor direction, LiDAR mounting orientation, visual left/right mirroring, or real-world safety.
+
 ## Live View
 
 Live polar, Cartesian, and diagnostics views are planned for later phases. Phase 0 includes only the synthetic scan interface used by later visualization code.

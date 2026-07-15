@@ -54,6 +54,30 @@ Expected result:
 - `docs/phase1_interface_inventory.md` records current interfaces.
 - Validation tooling succeeds.
 
+## Automated Phase Verification
+
+Run the phase verifier from any terminal location:
+
+```powershell
+.\\tools\\verify_phase.cmd phase2.2
+```
+
+Direct PowerShell usage is also supported:
+
+```powershell
+.\\tools\\verify_phase.ps1 -Phase phase2.2
+```
+
+Supported phases:
+
+- `phase1`
+- `phase2.1`
+- `phase2.2`
+
+Normal mode requires a clean working tree and returns a nonzero process exit code on any failure. Development-only `-AllowDirty` is available for testing verifier changes before they are committed. Verification logs are saved under `.verification/`.
+
+The automated verifier checks Git availability, branch, commit, upstream state, working-tree state, Python selection, pytest import, phase-specific tests, configured regressions, and the complete PC suite where configured. Hardware and safety facts still require human verification: wiring, voltage, polarity, motor direction, LiDAR mounting orientation, visual left/right mirroring, and real-world safety are not proven by software tests.
+
 ## Later Test Categories
 
 - PC-direct USB adapter verification.

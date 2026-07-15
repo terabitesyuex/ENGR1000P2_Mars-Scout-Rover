@@ -39,11 +39,20 @@ All notable subsystem changes are recorded here. Track protocol, GPIO, power, da
 - Added coordinate transform and synthetic integration tests.
 - Kept hardware communication, plotting, mapping, odometry, and SLAM out of scope.
 
+## 2026-07-15 - Phase 2.2.5 Automated Phase Verification
+
+- Added a CMD wrapper and PowerShell phase verifier for `phase1`, `phase2.1`, and `phase2.2`.
+- Added a data-driven phase manifest for targeted, regression, and full PC test sets.
+- Added Git, Python, pytest import, working-tree, upstream, and tracked-file-change checks.
+- Added ignored `.verification/` log output.
+- Documented one-command phase verification and development-only `-AllowDirty`.
+- Did not add Phase 2.3, hardware access, plotting, mapping, or GUI functionality.
+
 ## Change Categories
 
-- Protocol changes: none in Phase 0, Phase 1, Phase 2.1, or Phase 2.2.
+- Protocol changes: none in Phase 0, Phase 1, Phase 2.1, Phase 2.2, or Phase 2.2.5.
 - GPIO changes: GPIO values remain unset.
 - Power changes: hardware values documented; supply model unverified.
 - Data-format changes: Phase 2.1 adds the PC-side `ScanFrame` software interface; Phase 2.2 adds Cartesian transform models.
-- Firmware changes: PlatformIO structure created only; current Phase 1 adds no live hardware behavior.
+- Firmware changes: PlatformIO structure created only; no live hardware behavior added.
 - Calibration changes: calibration process documented only.

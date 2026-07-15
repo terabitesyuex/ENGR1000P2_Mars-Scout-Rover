@@ -1,0 +1,41 @@
+{
+  "supported_phases": [
+    "phase1",
+    "phase2.1",
+    "phase2.2"
+  ],
+  "phases": {
+    "phase1": {
+      "display_name": "Phase 1",
+      "targeted": [
+        "pc/tests/test_hardware_lock_validation.py"
+      ],
+      "full": [
+        "pc/tests"
+      ]
+    },
+    "phase2.1": {
+      "display_name": "Phase 2.1",
+      "targeted": [
+        "pc/tests/test_synthetic_scan.py",
+        "pc/tests/test_scan_builder.py"
+      ],
+      "full": [
+        "pc/tests"
+      ]
+    },
+    "phase2.2": {
+      "display_name": "Phase 2.2",
+      "targeted": [
+        "pc/tests/test_coordinate_transform.py"
+      ],
+      "regression": [
+        "pc/tests/test_synthetic_scan.py",
+        "pc/tests/test_scan_builder.py"
+      ],
+      "full": [
+        "pc/tests"
+      ]
+    }
+  }
+}
