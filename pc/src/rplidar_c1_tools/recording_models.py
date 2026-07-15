@@ -53,40 +53,55 @@ class ImuSample:
 @dataclass(frozen=True, slots=True)
 class UltrasonicSample:
     timestamp_us: int
-    distance_mm: int
+    distance_mm: int | None
     sensor_id: str
     valid: bool = True
+    status: str = "ok"
+    raw_echo_us: int | None = None
+    source_sequence: int | None = None
 
 
 @dataclass(frozen=True, slots=True)
 class GroundEdgeSample:
     timestamp_us: int
-    edge_detected: bool
+    edge_detected: bool | None
     sensor_id: str
+    raw_state: int | None = None
+    polarity_verified: bool = False
+    status: str = "ok"
     reflectance_raw: int | None = None
+    source_sequence: int | None = None
 
 
 @dataclass(frozen=True, slots=True)
 class HallLandmarkSample:
     timestamp_us: int
-    detected: bool
+    detected: bool | None
     sensor_id: str = "hall_1"
+    raw_state: int | None = None
+    polarity_verified: bool = False
+    status: str = "ok"
     raw_value: int | None = None
+    source_sequence: int | None = None
 
 
 @dataclass(frozen=True, slots=True)
 class IlluminanceSample:
     timestamp_us: int
-    illuminance_lux: float
+    illuminance_lux: float | None
     sensor_id: str = "bh1750_1"
+    status: str = "ok"
+    source_sequence: int | None = None
 
 
 @dataclass(frozen=True, slots=True)
 class BarometerSample:
     timestamp_us: int
-    temperature_c: float
-    pressure_pa: float
+    temperature_c: float | None
+    pressure_pa: float | None
     sensor_id: str = "bmp280_1"
+    status: str = "ok"
+    source_sequence: int | None = None
 
 
 def default_sensor_inventory(

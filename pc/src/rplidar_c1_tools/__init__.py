@@ -58,6 +58,29 @@ from .replay import (
     replay_lidar_scans,
 )
 from .scan_builder import ScanValidationError, build_scan_frame, create_scan_point
+from .stm32_recording_bridge import (
+    bridge_stm32_message_to_recording,
+    record_stm32_telemetry_stream,
+    stm32_message_to_recording_sample,
+)
+from .stm32_sensor_models import (
+    STM32_TELEMETRY_PROTOCOL,
+    STM32_TELEMETRY_VERSION,
+    Stm32TelemetryMessage,
+)
+from .stm32_sensor_protocol import (
+    Stm32TelemetryError,
+    Stm32TelemetryFormatError,
+    encode_stm32_telemetry_message,
+    iter_stm32_telemetry,
+    parse_stm32_telemetry_line,
+    validate_stm32_telemetry_message,
+)
+from .stm32_sensor_simulator import (
+    STM32_SIMULATOR_SCENARIOS,
+    generate_synthetic_stm32_lines,
+    generate_synthetic_stm32_session,
+)
 from .synthetic_scan import (
     SyntheticRoomConfig,
     SyntheticScanSource,
@@ -98,6 +121,7 @@ __all__ = [
     "C1StandardScanParser",
     "C1TimeoutError",
     "build_scan_frame",
+    "bridge_stm32_message_to_recording",
     "capture_c1_session",
     "create_point_cloud_figure",
     "create_polar_figure",
@@ -105,6 +129,8 @@ __all__ = [
     "default_sensor_inventory",
     "decoded_sample_to_scan_point",
     "generate_circle_scan",
+    "generate_synthetic_stm32_lines",
+    "generate_synthetic_stm32_session",
     "generate_room_scan",
     "GroundEdgeSample",
     "HallLandmarkSample",
@@ -122,12 +148,22 @@ __all__ = [
     "polar_to_cartesian_m",
     "PySerialByteTransport",
     "parse_sample_hex",
+    "parse_stm32_telemetry_line",
+    "record_stm32_telemetry_stream",
     "scan_frame_to_cartesian",
     "scan_point_to_cartesian",
     "read_recording_header",
     "replay_lidar_scans",
     "save_point_cloud_view",
     "save_polar_view",
+    "STM32_SIMULATOR_SCENARIOS",
+    "STM32_TELEMETRY_PROTOCOL",
+    "STM32_TELEMETRY_VERSION",
+    "Stm32TelemetryError",
+    "Stm32TelemetryFormatError",
+    "Stm32TelemetryMessage",
+    "stm32_message_to_recording_sample",
     "transform_point_2d",
     "Transform2D",
+    "validate_stm32_telemetry_message",
 ]

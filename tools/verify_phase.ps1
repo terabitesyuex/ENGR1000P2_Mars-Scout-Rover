@@ -283,6 +283,20 @@ try {
     Write-Compact "Phase supported" "PASS" $Phase
     $phaseConfig = $manifest.phases.PSObject.Properties[$Phase].Value
 
+    if ($phaseConfig.required_files) {
+        $missingRequired = @()
+        foreach ($relative in @($phaseConfig.required_files)) {
+            if (-not (Test-Path -LiteralPath (Join-Path $repoRoot ([string]$relative)))) {
+                $missingRequired += [string]$relative
+            }
+        }
+        if ($missingRequired.Count -gt 0) {
+            Write-Compact "Phase required files" "FAIL" ("missing: {0}" -f ($missingRequired -join ", "))
+        } else {
+            Write-Compact "Phase required files" "PASS"
+        }
+    }
+
     Push-Location $repoRoot
     try {
         $gitVersion = Invoke-CommandCapture -FilePath "git" -Arguments @("--version")

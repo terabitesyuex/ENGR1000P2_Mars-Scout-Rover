@@ -13,6 +13,8 @@ AUTHORITATIVE_FILES = (
     "PROJECT_SPEC.md",
     "HARDWARE_LOCK.md",
     "docs/architecture.md",
+    "docs/stm32_sensor_protocol.md",
+    "docs/phase3_hardware_checklist.md",
     "docs/test_plan.md",
 )
 
@@ -46,6 +48,13 @@ REQUIRED_SNIPPETS = (
     RequiredSnippet("AGENTS.md", "Do not invent COM ports", "future-agent serial-port policy documented"),
     RequiredSnippet("README.md", "capture-c1", "Phase 2.5 capture CLI documented"),
     RequiredSnippet("PROJECT_SPEC.md", "Automated tests use mocked byte streams", "Phase 2.5 automation boundary documented"),
+    RequiredSnippet("README.md", "mars_scout_stm32_sensor_telemetry", "Phase 3.1 protocol documented"),
+    RequiredSnippet("README.md", "simulate-stm32-sensors", "Phase 3.1 simulation CLI documented"),
+    RequiredSnippet("HARDWARE_LOCK.md", "USER-CONFIRMED PLANNED CONNECTION", "planned connector status documented"),
+    RequiredSnippet("HARDWARE_LOCK.md", "HC-SR04 ECHO voltage compatibility", "HC-SR04 ECHO status documented"),
+    RequiredSnippet("docs/architecture.md", "STM32 telemetry parser / recording bridge", "Phase 3.1 software layer documented"),
+    RequiredSnippet("docs/stm32_sensor_protocol.md", "timeout must not be represented as a valid zero-distance obstacle", "ultrasonic timeout semantics documented"),
+    RequiredSnippet("docs/phase3_hardware_checklist.md", "Do not mark checklist items complete automatically", "manual checklist honesty documented"),
 )
 
 

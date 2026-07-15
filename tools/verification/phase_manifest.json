@@ -5,7 +5,8 @@
     "phase2.2",
     "phase2.3",
     "phase2.4",
-    "phase2.5"
+    "phase2.5",
+    "phase3.1"
   ],
   "phases": {
     "phase1": {
@@ -295,6 +296,112 @@
             ".verification/phase2.5/c1_2_last_point_cloud.png"
           ],
           "warning": "Simultaneous dual-C1 operation remains UNVERIFIED."
+        }
+      ]
+    },
+    "phase3.1": {
+      "display_name": "Phase 3.1",
+      "required_files": [
+        "docs/stm32_sensor_protocol.md",
+        "docs/stm32_sensor_bringup.md",
+        "docs/phase3_hardware_checklist.md",
+        "pc/src/rplidar_c1_tools/stm32_sensor_models.py",
+        "pc/src/rplidar_c1_tools/stm32_sensor_protocol.py",
+        "pc/src/rplidar_c1_tools/stm32_sensor_simulator.py",
+        "pc/src/rplidar_c1_tools/stm32_recording_bridge.py",
+        "pc/tests/test_stm32_sensor_models.py",
+        "pc/tests/test_stm32_sensor_protocol.py",
+        "pc/tests/test_stm32_sensor_simulator.py",
+        "pc/tests/test_stm32_recording_bridge.py",
+        "pc/tests/test_stm32_sensor_cli.py",
+        "pc/tests/test_phase3_current_plan.py"
+      ],
+      "targeted": [
+        "pc/tests/test_stm32_sensor_models.py",
+        "pc/tests/test_stm32_sensor_protocol.py",
+        "pc/tests/test_stm32_sensor_simulator.py",
+        "pc/tests/test_stm32_recording_bridge.py",
+        "pc/tests/test_stm32_sensor_cli.py",
+        "pc/tests/test_phase3_current_plan.py"
+      ],
+      "regression": [
+        "pc/tests/test_recording.py",
+        "pc/tests/test_replay.py",
+        "pc/tests/test_c1_pc_direct.py",
+        "pc/tests/test_visualization.py",
+        "pc/tests/test_coordinate_transform.py",
+        "pc/tests/test_synthetic_scan.py",
+        "pc/tests/test_scan_builder.py",
+        "pc/tests/test_hardware_lock_validation.py",
+        "pc/tests/test_current_plan.py"
+      ],
+      "full": [
+        "pc/tests"
+      ],
+      "python_commands": [
+        {
+          "label": "Phase 3.1 generate STM32 telemetry",
+          "args": [
+            "-m",
+            "rplidar_c1_tools.cli",
+            "simulate-stm32-sensors",
+            "--cycles",
+            "3",
+            "--scenario",
+            "nominal",
+            "--output",
+            ".verification/phase3.1/synthetic_stm32_telemetry.jsonl",
+            "--overwrite"
+          ],
+          "expected_files": [
+            ".verification/phase3.1/synthetic_stm32_telemetry.jsonl"
+          ]
+        },
+        {
+          "label": "Phase 3.1 inspect STM32 telemetry",
+          "args": [
+            "-m",
+            "rplidar_c1_tools.cli",
+            "inspect-stm32-telemetry",
+            "--input",
+            ".verification/phase3.1/synthetic_stm32_telemetry.jsonl",
+            "--output",
+            ".verification/phase3.1/telemetry_inspection.txt"
+          ],
+          "expected_files": [
+            ".verification/phase3.1/telemetry_inspection.txt"
+          ]
+        },
+        {
+          "label": "Phase 3.1 convert STM32 telemetry",
+          "args": [
+            "-m",
+            "rplidar_c1_tools.cli",
+            "record-stm32-telemetry",
+            "--input",
+            ".verification/phase3.1/synthetic_stm32_telemetry.jsonl",
+            "--output",
+            ".verification/phase3.1/converted_multisensor_recording.jsonl",
+            "--overwrite"
+          ],
+          "expected_files": [
+            ".verification/phase3.1/converted_multisensor_recording.jsonl"
+          ]
+        },
+        {
+          "label": "Phase 3.1 inspect converted recording",
+          "args": [
+            "-m",
+            "rplidar_c1_tools.cli",
+            "inspect-recording",
+            ".verification/phase3.1/converted_multisensor_recording.jsonl",
+            "--output",
+            ".verification/phase3.1/recording_inspection.txt"
+          ],
+          "expected_files": [
+            ".verification/phase3.1/recording_inspection.txt"
+          ],
+          "warning": "Manual STM32 sensor hardware bring-up remains UNVERIFIED."
         }
       ]
     }

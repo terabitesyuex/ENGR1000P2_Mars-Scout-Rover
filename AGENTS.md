@@ -20,9 +20,11 @@ This repository is the ENGR1000P2 Mars Scout Rover software and documentation ba
 
 ## Current Scope
 
-- Completed phases: Phase 0, Phase 1, Phase 2.1, Phase 2.2, automated verification foundation, Phase 2.3, Phase 2.4, and Phase 2.5.
-- Current state: Phase 2.5 software support is complete; physical PC-direct C1 tests still require manual hardware execution and evidence.
-- Do not begin Phase 3 or any STM32/ESP32/WiFi integration without an explicit request and the documented hardware-safety prerequisites.
+- Completed phases: Phase 0, Phase 1, Phase 2.1, Phase 2.2, automated verification foundation, Phase 2.3, Phase 2.4, Phase 2.5, and Phase 3.1.
+- Current state: Phase 2.5 software foundation is complete; physical C1 validation remains a manual UNVERIFIED activity.
+- Phase 3.1 software work is complete: versioned STM32 low-rate sensor telemetry, deterministic PC simulator, strict parser, and recording bridge are implemented.
+- Phase 3.2 and later physical sensor integration have not started.
+- Do not begin Phase 3.2, live STM32 sensor acquisition, ESP32/WiFi integration, or hardware bring-up without an explicit request and the documented hardware-safety prerequisites.
 
 ## Confirmed Inventory
 
@@ -45,6 +47,10 @@ Two C1 units are available. Phase 2.5 must test both independently. One stable C
 Do not claim real WiFi, serial, sensor acquisition, odometry, mapping, obstacle avoidance, or dual-C1 operation without test evidence.
 Do not invent GPIO, UART, I2C address, active polarity, connector order, mounting offset, or power-topology values.
 Do not invent COM ports. PC-direct C1 capture must use an explicit user-verified port or a test fixture byte stream.
+No hardware result may be claimed without evidence.
+Do not treat HC-SR04 timeout as a valid zero-distance obstacle.
+Preserve raw TCRT5000 and Hall states until active polarity is physically verified.
+The Hall sensor is for magnetic landmark/checkpoint detection, not odometry.
 
 ## Coordinates And Units
 
@@ -60,7 +66,8 @@ Do not invent COM ports. PC-direct C1 capture must use an explicit user-verified
 
 - Phase 2.4: multi-sensor recording, replay, reproducible datasets, inventory update, and plan rebaseline.
 - Phase 2.5: PC-direct testing of both C1 units separately, real scan acquisition, device identification, recording, and visualization.
-- Phase 3: STM32 integration of HC-SR04, TCRT5000, Hall, BH1750, and BMP280.
+- Phase 3.1: STM32 low-rate sensor telemetry software foundation, simulator, parser, recording bridge, and manual bring-up checklist.
+- Phase 3.2: future physical STM32 integration of HC-SR04, TCRT5000, Hall, BH1750, and BMP280.
 - Phase 4: wheel encoders, MPU6050, mecanum kinematics, closed-loop motion, and odometry.
 - Phase 5: STM32-ESP32-PC communication, WiFi transport, one-C1 baseline integration, then optional dual-C1 feasibility evaluation.
 - Phase 6: real-time PC visualization, rover trajectory, and short-range encoder/IMU-assisted accumulated 2D mapping.
@@ -75,12 +82,14 @@ Run targeted tests, regression tests, the complete PC suite, and the phase verif
 
 ```powershell
 .\tools\verify_phase.cmd phase2.5 -AllowDirty
+.\tools\verify_phase.cmd phase3.1 -AllowDirty
 ```
 
 Normal verification after commit and push:
 
 ```powershell
 .\tools\verify_phase.cmd phase2.5
+.\tools\verify_phase.cmd phase3.1
 ```
 
 Generated recordings, logs, and figures belong under `.verification/` or ignored data directories and must not be committed.

@@ -1,8 +1,8 @@
 # Communication Protocol Planning
 
-This document describes the planned future communication architecture. Phase 2.5 does not implement the future wire protocol.
+This document describes the planned future communication architecture. Phase 3.1 does not implement the future ESP32 WiFi wire protocol.
 
-The Phase 2.4 JSONL recording format is not the future on-wire protocol. The Phase 2.5 PC-direct C1 path is a bench-test and recording path, not the ESP32-to-PC WiFi protocol.
+The Phase 2.4 JSONL recording format is not the future on-wire protocol. The Phase 2.5 PC-direct C1 path is a bench-test and recording path, not the ESP32-to-PC WiFi protocol. The Phase 3.1 `mars_scout_stm32_sensor_telemetry` protocol is a versioned diagnostic/foundation format for low-rate STM32 sensor data and future forwarding; it is not a claim that ESP32 transport is implemented.
 
 ## Planned Links
 
@@ -32,7 +32,8 @@ ESP32 to PC future WiFi link:
 - Phase 2.5 tests `c1_1` and `c1_2` independently by PC-direct methods.
 - Phase 5 first targets one stable C1 + STM32 + ESP32 WiFi.
 - Simultaneous dual-C1 operation is optional and remains UNVERIFIED until UART, GPIO, bandwidth, buffering, timing, and power feasibility are measured.
-- No final ESP32 GPIO or UART assignment is locked in Phase 2.5.
+- No final ESP32 GPIO or UART assignment is locked in Phase 3.1.
+- No final STM32 GPIO, timer, UART, or I2C peripheral assignment is locked in Phase 3.1.
 
 ## Planned Message Categories
 
@@ -47,6 +48,20 @@ ESP32 to PC future WiFi link:
 - `ERROR_EVENT`
 - `COMMAND_ACK`
 - `CONFIG_UPDATE`
+
+## Phase 3.1 STM32 Sensor Telemetry
+
+Phase 3.1 defines `mars_scout_stm32_sensor_telemetry` version `1` as newline-delimited UTF-8 JSON. Required fields are `protocol`, `version`, `sequence`, `timestamp_ms`, `message_type`, `sensor_id`, `payload`, and `status`.
+
+Supported message types:
+
+- `ultrasonic`
+- `ground_edge`
+- `hall_landmark`
+- `illuminance`
+- `barometer`
+
+This protocol is strict, human-inspectable, and machine-parseable. It does not open serial ports. It is designed so later STM32 or ESP32 transports can forward messages without changing the PC recording schema.
 
 ## Transport Expectations
 
@@ -71,6 +86,7 @@ The following remain UNVERIFIED:
 
 - Exact ESP32 GPIOs.
 - Exact UART assignment.
+- Exact STM32 GPIO, timer, UART, and I2C peripheral assignments.
 - Exact STM32-ESP32 connector.
 - Exact packet field widths.
 - Exact checksum polynomial.

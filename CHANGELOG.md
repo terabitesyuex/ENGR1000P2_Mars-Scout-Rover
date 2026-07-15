@@ -86,11 +86,23 @@ All notable subsystem changes are recorded here. Track protocol, GPIO, power, da
 - Recorded that `c1_1` and `c1_2` remain neutral sensor IDs, one stable C1 is the Phase 2.5 baseline, and simultaneous dual-C1 operation remains UNVERIFIED.
 - Did not implement STM32 integration, ESP32 communication, WiFi, ROS, SLAM, navigation, obstacle avoidance, or simultaneous dual-C1 operation.
 
+## 2026-07-15 - Phase 3.1 STM32 Sensor Telemetry Foundation
+
+- Added `mars_scout_stm32_sensor_telemetry` version `1` as a newline-delimited UTF-8 JSON diagnostic protocol for future low-rate STM32 sensor data.
+- Added PC-side typed STM32 telemetry models, strict line parser, stream validator, deterministic simulator, and Phase 2.4 recording bridge.
+- Added CLI commands `simulate-stm32-sensors`, `inspect-stm32-telemetry`, and `record-stm32-telemetry`.
+- Added backward-compatible optional recording fields for auxiliary sensor status, raw echo/state values, polarity verification, and source telemetry sequence.
+- Added tests for STM32 telemetry models, protocol validation, simulator scenarios, recording bridge behavior, CLI workflows, and Phase 3.1 current-plan anchors.
+- Added STM32 sensor protocol, bring-up, and hardware-checklist documentation.
+- Recorded the user-confirmed planned PH2.0-6P line-tracking connector usage for TCRT5000 and Hall as PLANNED, not electrically verified.
+- Preserved HC-SR04 ECHO voltage compatibility, TCRT5000/Hall polarity, BH1750/BMP280 addresses, STM32 MCU identity, GPIOs, timers, UARTs, I2C peripherals, and physical bring-up status as UNVERIFIED.
+- Did not implement real hardware access, serial-port access, STM32 flashing, GPIO, I2C, ESP32 communication, WiFi, motor control, encoders, MPU6050 integration, mapping, SLAM, navigation, obstacle avoidance, or Phase 3.2.
+
 ## Change Categories
 
-- Protocol changes: Phase 2.5 adds a PC-direct standard scan-node parser boundary for C1 capture; no ESP32, STM32, or WiFi protocol changes.
+- Protocol changes: Phase 2.5 adds a PC-direct standard scan-node parser boundary for C1 capture; Phase 3.1 adds the PC-side `mars_scout_stm32_sensor_telemetry` v1 diagnostic protocol; no ESP32 or WiFi protocol changes.
 - GPIO changes: GPIO values remain unset.
 - Power changes: hardware values documented; supply model unverified.
-- Data-format changes: Phase 2.1 adds the PC-side `ScanFrame` software interface; Phase 2.2 adds Cartesian transform models; Phase 2.3 adds PNG visualization export; Phase 2.4 adds the multi-sensor JSONL recording format; Phase 2.5 reuses that JSONL format for PC-direct C1 captures.
+- Data-format changes: Phase 2.1 adds the PC-side `ScanFrame` software interface; Phase 2.2 adds Cartesian transform models; Phase 2.3 adds PNG visualization export; Phase 2.4 adds the multi-sensor JSONL recording format; Phase 2.5 reuses that JSONL format for PC-direct C1 captures; Phase 3.1 reuses it for STM32 low-rate sensor telemetry recordings with optional status/raw fields.
 - Firmware changes: PlatformIO structure created only; no live hardware behavior added.
 - Calibration changes: calibration process documented only.

@@ -124,3 +124,24 @@ This inventory records the interfaces present after Phase 0 and audited in curre
 
 - `tools/verification/phase_manifest.json`
   - Adds `phase2.5` targeted tests, regression tests, full PC suite execution, and fixture-only capture/replay/render smoke workflows.
+
+## Phase 3.1 Interface Update
+
+- `pc/src/rplidar_c1_tools/stm32_sensor_models.py`
+  - Defines `Stm32TelemetryMessage`, protocol constants, statuses, message types, and neutral sensor IDs.
+
+- `pc/src/rplidar_c1_tools/stm32_sensor_protocol.py`
+  - Encodes and strictly parses newline-delimited UTF-8 JSON telemetry lines.
+  - Enforces stream sequence and timestamp ordering with line-numbered errors.
+
+- `pc/src/rplidar_c1_tools/stm32_sensor_simulator.py`
+  - Generates deterministic STM32 low-rate sensor telemetry sessions without hardware access.
+
+- `pc/src/rplidar_c1_tools/stm32_recording_bridge.py`
+  - Converts validated STM32 telemetry into existing Phase 2.4 recording records.
+
+- `pc/src/rplidar_c1_tools/cli.py`
+  - Adds `simulate-stm32-sensors`, `inspect-stm32-telemetry`, and `record-stm32-telemetry`.
+
+- `tools/verification/phase_manifest.json`
+  - Adds `phase3.1` targeted tests, regressions, complete PC suite execution, and telemetry generation/inspection/conversion smoke workflows.

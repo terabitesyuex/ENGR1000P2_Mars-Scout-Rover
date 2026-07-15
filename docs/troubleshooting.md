@@ -91,6 +91,31 @@ Dual-C1:
 - Test `c1_1` and `c1_2` independently.
 - Do not run simultaneous dual-C1 operation in Phase 2.5.
 
+## Phase 3.1 STM32 Telemetry
+
+Telemetry parser rejects a line:
+
+- Confirm each line is one complete JSON object.
+- Confirm `protocol` is `mars_scout_stm32_sensor_telemetry`.
+- Confirm `version` is `1`.
+- Confirm sequence increases and `timestamp_ms` is nondecreasing.
+- Confirm NaN and Infinity are not present.
+
+Ultrasonic timeout appears as zero distance:
+
+- This is invalid for Phase 3.1.
+- Timeout must use status `timeout`, `valid: false`, and no valid `distance_mm`.
+
+Ground or Hall detection appears before polarity verification:
+
+- Check that `polarity_verified` is true before trusting interpreted fields.
+- Until then, use only `raw_state`.
+
+Telemetry converts to recording but replay shows no LiDAR scans:
+
+- STM32 low-rate sensor messages are auxiliary records, not `lidar_scan` records.
+- Use `inspect-recording` to verify counts for `ultrasonic`, `ground_edge`, `hall_landmark`, `illuminance`, and `barometer`.
+
 ## Future Hardware Items
 
 No power or motor does not start:
@@ -117,4 +142,4 @@ PC-direct port remains locked:
 - Future hardware check: close the official SDK probe cleanly.
 - Future hardware check: unplug and reconnect the USB adapter if the operating system still holds the port.
 
-Current Phase 2.5 has no STM32 integration, ESP32 communication, WiFi sockets, mapping, SLAM, odometry, navigation, or obstacle avoidance.
+Current Phase 3.1 has no real STM32 acquisition, serial ports, GPIO, I2C, ESP32 communication, WiFi sockets, mapping, SLAM, odometry, navigation, or obstacle avoidance.

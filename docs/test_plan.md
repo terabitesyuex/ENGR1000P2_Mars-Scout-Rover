@@ -12,17 +12,20 @@ Supported phases:
 - `phase2.3`
 - `phase2.4`
 - `phase2.5`
+- `phase3.1`
 
 Development verification:
 
 ```powershell
 .\tools\verify_phase.cmd phase2.5 -AllowDirty
+.\tools\verify_phase.cmd phase3.1 -AllowDirty
 ```
 
 Normal verification after commit and push:
 
 ```powershell
 .\tools\verify_phase.cmd phase2.5
+.\tools\verify_phase.cmd phase3.1
 ```
 
 The verifier uses repository-local pytest basetemp under `.verification/pytest_tmp/`, checks Git state, selects Python, confirms pytest import, runs targeted tests, regressions, the complete PC suite, and configured smoke workflows.
@@ -80,6 +83,35 @@ Smoke workflow:
 
 Phase 2.5 automated tests do not open serial ports. Manual PC-direct hardware tests remain required before physical C1 operation can be marked verified.
 
+## Phase 3.1 Automated Software Tests
+
+Targeted:
+
+- `pc/tests/test_stm32_sensor_models.py`
+- `pc/tests/test_stm32_sensor_protocol.py`
+- `pc/tests/test_stm32_sensor_simulator.py`
+- `pc/tests/test_stm32_recording_bridge.py`
+- `pc/tests/test_stm32_sensor_cli.py`
+- `pc/tests/test_phase3_current_plan.py`
+
+Regression:
+
+- Phase 2.4 recording and replay tests.
+- Phase 2.5 C1 PC-direct tests.
+- Visualization tests.
+- Coordinate-transform tests.
+- Hardware-lock validation.
+- Current-plan validation.
+
+Smoke workflow:
+
+- Generate deterministic STM32 telemetry under `.verification/phase3.1/`.
+- Inspect generated telemetry.
+- Convert telemetry into the Phase 2.4 JSONL recording format.
+- Inspect the converted recording.
+
+Phase 3.1 automated tests do not open serial ports, GPIO, I2C, timers, USB devices, network sockets, or real sensors.
+
 ## Revised Phase Sequence
 
 Phase 2.4:
@@ -100,7 +132,16 @@ Phase 2.5:
 - Safety tests: power, polarity, common ground, cable strain, serial-port release.
 - Presentation evidence: device info, health, scan samples, distance error tables, orientation images.
 
-Phase 3:
+Phase 3.1:
+
+- Automated software tests: STM32 telemetry protocol, parser, simulator, recording bridge, CLI, and current-plan anchors.
+- Bench hardware tests: not performed.
+- Stationary physical tests: not performed.
+- Moving-rover tests: not performed.
+- Safety tests: documentation/checklist only.
+- Presentation evidence: deterministic telemetry files, converted recordings, inspection output, verifier logs.
+
+Phase 3.2:
 
 - Automated software tests: STM32 sensor parsing/validation where available.
 - Bench hardware tests: HC-SR04, TCRT5000, Hall, BH1750, BMP280 individually.

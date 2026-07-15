@@ -1,6 +1,6 @@
 # Calibration Plan
 
-No physical calibration is completed by Phase 2.5 automation. This file records future calibration responsibilities only.
+No physical calibration is completed by Phase 3.1 automation. This file records future calibration responsibilities only.
 
 ## RPLIDAR C1
 
@@ -16,6 +16,7 @@ No physical calibration is completed by Phase 2.5 automation. This file records 
 
 ## HC-SR04
 
+- Verify HC-SR04 ECHO voltage compatibility before connecting to STM32 inputs.
 - Measure distance error for each of `ultrasonic_1`, `ultrasonic_2`, and `ultrasonic_3`.
 - Measure timeout behavior.
 - Measure cross-talk rate.
@@ -24,6 +25,7 @@ No physical calibration is completed by Phase 2.5 automation. This file records 
 
 ## TCRT5000
 
+- Preserve raw digital state during polarity verification.
 - Calibrate `tcrt5000_1` and `tcrt5000_2` for edge/drop detection.
 - Measure false positives.
 - Check installation-height sensitivity.
@@ -31,6 +33,7 @@ No physical calibration is completed by Phase 2.5 automation. This file records 
 
 ## Hall Sensor
 
+- Preserve raw digital state during polarity verification.
 - Calibrate `hall_1` for magnetic landmark/checkpoint detection.
 - Measure repeatability and false positives.
 - Do not use the Hall module as wheel odometry.

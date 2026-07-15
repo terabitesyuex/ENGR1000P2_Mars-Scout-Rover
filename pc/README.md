@@ -1,8 +1,10 @@
 # RPLIDAR C1 PC Tools
 
-PC-side package for synthetic scans, coordinate transforms, visualization, Phase 2.4 multi-sensor recording, deterministic replay, Phase 2.5 PC-direct C1 capture, and later mapping work.
+PC-side package for synthetic scans, coordinate transforms, visualization, Phase 2.4 multi-sensor recording, deterministic replay, Phase 2.5 PC-direct C1 capture, Phase 3.1 STM32 telemetry simulation/parsing/recording bridge, and later mapping work.
 
 Phase 2.5 automated tests use mocked C1 byte streams only. Manual PC-direct capture can use an explicit user-verified port, but this package does not invent ports, access STM32/ESP32 firmware, use WiFi sockets, implement mapping, implement SLAM, or implement obstacle avoidance.
+
+Phase 3.1 STM32 telemetry tools use deterministic files and in-memory streams only. They do not open serial ports, GPIO, I2C, USB devices, timers, or network sockets.
 
 ## Install For Development
 
@@ -87,6 +89,18 @@ python -m rplidar_c1_tools.cli capture-c1 --sensor-id c1_1 --sample-hex 3d0100a0
 
 The output is the same Phase 2.4 JSONL schema used by `inspect-recording`, `replay-recording`, and `render-recording`.
 
+## STM32 Sensor Telemetry
+
+```powershell
+python -m rplidar_c1_tools.cli simulate-stm32-sensors --cycles 5 --scenario nominal --output .verification\phase3.1\synthetic_stm32_telemetry.jsonl --overwrite
+python -m rplidar_c1_tools.cli inspect-stm32-telemetry --input .verification\phase3.1\synthetic_stm32_telemetry.jsonl --output .verification\phase3.1\telemetry_inspection.txt
+python -m rplidar_c1_tools.cli record-stm32-telemetry --input .verification\phase3.1\synthetic_stm32_telemetry.jsonl --output .verification\phase3.1\converted_multisensor_recording.jsonl --overwrite
+```
+
+Protocol: `mars_scout_stm32_sensor_telemetry` version `1`.
+
+Supported scenarios: `nominal`, `ultrasonic_timeout`, `ground_polarity_unverified`, `hall_polarity_unverified`, `environment_change`, and `mixed_faults`.
+
 ## Data Location
 
 Generated development artifacts belong under `.verification/`, which is ignored by Git. Do not commit generated recordings or figures unless a future task explicitly asks for a curated fixture.
@@ -95,6 +109,7 @@ Generated development artifacts belong under `.verification/`, which is ignored 
 
 ```powershell
 pc\.venv\Scripts\python.exe -m pytest pc\tests\test_recording.py pc\tests\test_replay.py pc\tests\test_current_plan.py -v
+pc\.venv\Scripts\python.exe -m pytest pc\tests\test_stm32_sensor_models.py pc\tests\test_stm32_sensor_protocol.py pc\tests\test_stm32_sensor_simulator.py pc\tests\test_stm32_recording_bridge.py pc\tests\test_stm32_sensor_cli.py pc\tests\test_phase3_current_plan.py -v
 pc\.venv\Scripts\python.exe -m pytest pc\tests -v
 ```
 
@@ -102,4 +117,5 @@ Phase verifier:
 
 ```powershell
 .\tools\verify_phase.cmd phase2.5 -AllowDirty
+.\tools\verify_phase.cmd phase3.1 -AllowDirty
 ```

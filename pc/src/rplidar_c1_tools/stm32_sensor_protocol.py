@@ -1,0 +1,317 @@
+"""Strict JSONL protocol helpers for Phase 3.1 STM32 sensor telemetry."""
+
+from __future__ import annotations
+
+from collections.abc import Iterable, Iterator, Mapping
+import json
+import math
+from typing import Any
+
+from .stm32_sensor_models import (
+    BAROMETER_SENSOR_IDS,
+    GROUND_EDGE_SENSOR_IDS,
+    HALL_SENSOR_IDS,
+    ILLUMINANCE_SENSOR_IDS,
+    MESSAGE_TYPES,
+    SENSOR_IDS_BY_MESSAGE_TYPE,
+    STM32_TELEMETRY_PROTOCOL,
+    STM32_TELEMETRY_VERSION,
+    TELEMETRY_STATUSES,
+    ULTRASONIC_SENSOR_IDS,
+    Stm32TelemetryMessage,
+)
+
+
+class Stm32TelemetryError(ValueError):
+    """Base error for STM32 sensor telemetry failures."""
+
+
+class Stm32TelemetryFormatError(Stm32TelemetryError):
+    """Raised for malformed or semantically invalid telemetry."""
+
+    def __init__(self, message: str, *, line_number: int | None = None) -> None:
+        self.line_number = line_number
+        prefix = f"line {line_number}: " if line_number is not None else ""
+        super().__init__(f"{prefix}{message}")
+
+
+TOP_LEVEL_FIELDS = {
+    "protocol",
+    "version",
+    "sequence",
+    "timestamp_ms",
+    "message_type",
+    "sensor_id",
+    "payload",
+    "status",
+}
+
+
+def encode_stm32_telemetry_message(message: Stm32TelemetryMessage) -> str:
+    """Encode one validated message as one UTF-8 JSONL-compatible line."""
+    validate_stm32_telemetry_message(message)
+    return json.dumps(
+        message.to_json(),
+        allow_nan=False,
+        ensure_ascii=True,
+        separators=(",", ":"),
+        sort_keys=True,
+    )
+
+
+def parse_stm32_telemetry_line(
+    line: str,
+    *,
+    line_number: int | None = None,
+) -> Stm32TelemetryMessage:
+    """Parse and validate one telemetry JSON line."""
+    if line.strip() == "":
+        raise Stm32TelemetryFormatError("blank telemetry line", line_number=line_number)
+    try:
+        payload = json.loads(line)
+    except json.JSONDecodeError as exc:
+        raise Stm32TelemetryFormatError(
+            f"invalid JSON: {exc.msg}",
+            line_number=line_number,
+        ) from exc
+    if not isinstance(payload, dict):
+        raise Stm32TelemetryFormatError("telemetry line must be a JSON object", line_number=line_number)
+    unknown = sorted(set(payload) - TOP_LEVEL_FIELDS)
+    if unknown:
+        raise Stm32TelemetryFormatError(
+            f"unknown top-level field: {', '.join(unknown)}",
+            line_number=line_number,
+        )
+    missing = sorted(TOP_LEVEL_FIELDS - set(payload))
+    if missing:
+        raise Stm32TelemetryFormatError(
+            f"missing required field: {', '.join(missing)}",
+            line_number=line_number,
+        )
+    message = Stm32TelemetryMessage(
+        protocol=_require_string(payload, "protocol", line_number),
+        version=_require_int(payload, "version", line_number),
+        sequence=_require_int(payload, "sequence", line_number),
+        timestamp_ms=_require_int(payload, "timestamp_ms", line_number),
+        message_type=_require_string(payload, "message_type", line_number),
+        sensor_id=_require_string(payload, "sensor_id", line_number),
+        status=_require_string(payload, "status", line_number),
+        payload=_require_object(payload, "payload", line_number),
+    )
+    validate_stm32_telemetry_message(message, line_number=line_number)
+    return message
+
+
+def iter_stm32_telemetry(lines: Iterable[str]) -> Iterator[Stm32TelemetryMessage]:
+    """Yield validated telemetry messages while enforcing stream ordering."""
+    previous_sequence = -1
+    previous_timestamp_ms = 0
+    for line_number, line in enumerate(lines, start=1):
+        message = parse_stm32_telemetry_line(line, line_number=line_number)
+        if message.sequence <= previous_sequence:
+            raise Stm32TelemetryFormatError("sequence must increase", line_number=line_number)
+        if message.timestamp_ms < previous_timestamp_ms:
+            raise Stm32TelemetryFormatError("timestamp_ms must be nondecreasing", line_number=line_number)
+        previous_sequence = message.sequence
+        previous_timestamp_ms = message.timestamp_ms
+        yield message
+
+
+def validate_stm32_telemetry_message(
+    message: Stm32TelemetryMessage,
+    *,
+    line_number: int | None = None,
+) -> None:
+    """Validate schema and per-sensor payload semantics."""
+    if not isinstance(message, Stm32TelemetryMessage):
+        raise Stm32TelemetryFormatError("message must be Stm32TelemetryMessage", line_number=line_number)
+    if message.protocol != STM32_TELEMETRY_PROTOCOL:
+        raise Stm32TelemetryFormatError("unsupported protocol", line_number=line_number)
+    if message.version != STM32_TELEMETRY_VERSION:
+        raise Stm32TelemetryFormatError("unsupported version", line_number=line_number)
+    _validate_non_negative_int(message.sequence, "sequence", line_number)
+    _validate_non_negative_int(message.timestamp_ms, "timestamp_ms", line_number)
+    if message.message_type not in MESSAGE_TYPES:
+        raise Stm32TelemetryFormatError("unknown message_type", line_number=line_number)
+    if message.status not in TELEMETRY_STATUSES:
+        raise Stm32TelemetryFormatError("invalid status", line_number=line_number)
+    if message.sensor_id not in SENSOR_IDS_BY_MESSAGE_TYPE[message.message_type]:
+        raise Stm32TelemetryFormatError("sensor_id does not match message_type", line_number=line_number)
+    if not isinstance(message.payload, Mapping):
+        raise Stm32TelemetryFormatError("payload must be an object", line_number=line_number)
+    _validate_payload(message, line_number)
+
+
+def _validate_payload(message: Stm32TelemetryMessage, line_number: int | None) -> None:
+    if message.message_type == "ultrasonic":
+        _validate_ultrasonic(message, line_number)
+    elif message.message_type == "ground_edge":
+        _validate_ground_edge(message, line_number)
+    elif message.message_type == "hall_landmark":
+        _validate_hall_landmark(message, line_number)
+    elif message.message_type == "illuminance":
+        _validate_illuminance(message, line_number)
+    elif message.message_type == "barometer":
+        _validate_barometer(message, line_number)
+    else:
+        raise Stm32TelemetryFormatError("unknown message_type", line_number=line_number)
+
+
+def _validate_ultrasonic(message: Stm32TelemetryMessage, line_number: int | None) -> None:
+    _require_sensor_id(message.sensor_id, ULTRASONIC_SENSOR_IDS, line_number)
+    payload = dict(message.payload)
+    _require_allowed_fields(payload, {"distance_mm", "raw_echo_us", "valid"}, line_number)
+    if "valid" in payload and not isinstance(payload["valid"], bool):
+        raise Stm32TelemetryFormatError("payload.valid must be a boolean", line_number=line_number)
+    raw_echo_us = payload.get("raw_echo_us")
+    if raw_echo_us is not None:
+        _validate_non_negative_int(raw_echo_us, "payload.raw_echo_us", line_number)
+    distance_present = payload.get("distance_mm") is not None
+    if message.status in {"ok", "simulated"}:
+        if not distance_present:
+            raise Stm32TelemetryFormatError("payload.distance_mm is required", line_number=line_number)
+        _validate_non_negative_int(payload["distance_mm"], "payload.distance_mm", line_number)
+        if payload.get("valid", True) is not True:
+            raise Stm32TelemetryFormatError("valid ultrasonic status requires payload.valid true", line_number=line_number)
+    else:
+        if distance_present:
+            raise Stm32TelemetryFormatError(
+                "invalid ultrasonic status must not include a valid distance_mm",
+                line_number=line_number,
+            )
+        if payload.get("valid", False) is not False:
+            raise Stm32TelemetryFormatError("invalid ultrasonic status requires payload.valid false", line_number=line_number)
+
+
+def _validate_ground_edge(message: Stm32TelemetryMessage, line_number: int | None) -> None:
+    _require_sensor_id(message.sensor_id, GROUND_EDGE_SENSOR_IDS, line_number)
+    _validate_digital_payload(
+        dict(message.payload),
+        interpreted_key="interpreted_edge_detected",
+        line_number=line_number,
+    )
+
+
+def _validate_hall_landmark(message: Stm32TelemetryMessage, line_number: int | None) -> None:
+    _require_sensor_id(message.sensor_id, HALL_SENSOR_IDS, line_number)
+    _validate_digital_payload(
+        dict(message.payload),
+        interpreted_key="interpreted_landmark_detected",
+        line_number=line_number,
+    )
+
+
+def _validate_digital_payload(
+    payload: dict[str, Any],
+    *,
+    interpreted_key: str,
+    line_number: int | None,
+) -> None:
+    _require_allowed_fields(payload, {"raw_state", "polarity_verified", interpreted_key}, line_number)
+    raw_state = payload.get("raw_state")
+    _validate_non_negative_int(raw_state, "payload.raw_state", line_number)
+    if raw_state not in (0, 1):
+        raise Stm32TelemetryFormatError("payload.raw_state must be 0 or 1", line_number=line_number)
+    polarity_verified = payload.get("polarity_verified")
+    if not isinstance(polarity_verified, bool):
+        raise Stm32TelemetryFormatError("payload.polarity_verified must be a boolean", line_number=line_number)
+    interpreted = payload.get(interpreted_key)
+    if not polarity_verified:
+        if interpreted is not None:
+            raise Stm32TelemetryFormatError(
+                f"payload.{interpreted_key} must be null until polarity is verified",
+                line_number=line_number,
+            )
+        return
+    if not isinstance(interpreted, bool):
+        raise Stm32TelemetryFormatError(
+            f"payload.{interpreted_key} must be a boolean when polarity is verified",
+            line_number=line_number,
+        )
+
+
+def _validate_illuminance(message: Stm32TelemetryMessage, line_number: int | None) -> None:
+    _require_sensor_id(message.sensor_id, ILLUMINANCE_SENSOR_IDS, line_number)
+    payload = dict(message.payload)
+    _require_allowed_fields(payload, {"illuminance_lux"}, line_number)
+    value = payload.get("illuminance_lux")
+    if message.status in {"ok", "simulated"}:
+        _validate_non_negative_finite(value, "payload.illuminance_lux", line_number)
+    elif value is not None:
+        _validate_non_negative_finite(value, "payload.illuminance_lux", line_number)
+
+
+def _validate_barometer(message: Stm32TelemetryMessage, line_number: int | None) -> None:
+    _require_sensor_id(message.sensor_id, BAROMETER_SENSOR_IDS, line_number)
+    payload = dict(message.payload)
+    _require_allowed_fields(payload, {"temperature_c", "pressure_pa"}, line_number)
+    if message.status in {"ok", "simulated"}:
+        _validate_finite(payload.get("temperature_c"), "payload.temperature_c", line_number)
+        _validate_positive_finite(payload.get("pressure_pa"), "payload.pressure_pa", line_number)
+    else:
+        temperature = payload.get("temperature_c")
+        pressure = payload.get("pressure_pa")
+        if temperature is not None:
+            _validate_finite(temperature, "payload.temperature_c", line_number)
+        if pressure is not None:
+            _validate_positive_finite(pressure, "payload.pressure_pa", line_number)
+
+
+def _require_allowed_fields(
+    payload: dict[str, Any],
+    allowed: set[str],
+    line_number: int | None,
+) -> None:
+    unknown = sorted(set(payload) - allowed)
+    if unknown:
+        raise Stm32TelemetryFormatError(
+            f"unknown payload field: {', '.join(unknown)}",
+            line_number=line_number,
+        )
+
+
+def _require_sensor_id(sensor_id: str, allowed: tuple[str, ...], line_number: int | None) -> None:
+    if sensor_id not in allowed:
+        raise Stm32TelemetryFormatError("sensor_id does not match message_type", line_number=line_number)
+
+
+def _require_string(payload: dict[str, Any], key: str, line_number: int | None) -> str:
+    value = payload.get(key)
+    if not isinstance(value, str) or not value:
+        raise Stm32TelemetryFormatError(f"{key} must be a non-empty string", line_number=line_number)
+    return value
+
+
+def _require_int(payload: dict[str, Any], key: str, line_number: int | None) -> int:
+    value = payload.get(key)
+    _validate_non_negative_int(value, key, line_number)
+    return value
+
+
+def _require_object(payload: dict[str, Any], key: str, line_number: int | None) -> dict[str, Any]:
+    value = payload.get(key)
+    if not isinstance(value, dict):
+        raise Stm32TelemetryFormatError(f"{key} must be an object", line_number=line_number)
+    return value
+
+
+def _validate_non_negative_int(value: object, name: str, line_number: int | None) -> None:
+    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        raise Stm32TelemetryFormatError(f"{name} must be a non-negative integer", line_number=line_number)
+
+
+def _validate_finite(value: object, name: str, line_number: int | None) -> None:
+    if isinstance(value, bool) or not isinstance(value, int | float) or not math.isfinite(float(value)):
+        raise Stm32TelemetryFormatError(f"{name} must be finite", line_number=line_number)
+
+
+def _validate_positive_finite(value: object, name: str, line_number: int | None) -> None:
+    _validate_finite(value, name, line_number)
+    if float(value) <= 0.0:
+        raise Stm32TelemetryFormatError(f"{name} must be positive", line_number=line_number)
+
+
+def _validate_non_negative_finite(value: object, name: str, line_number: int | None) -> None:
+    _validate_finite(value, name, line_number)
+    if float(value) < 0.0:
+        raise Stm32TelemetryFormatError(f"{name} must be non-negative", line_number=line_number)

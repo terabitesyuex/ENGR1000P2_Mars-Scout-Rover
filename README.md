@@ -16,8 +16,9 @@ Major enhancements are encoder/IMU-assisted pose estimation, short-range accumul
 - Phase 2.3: synthetic LiDAR visualization complete.
 - Phase 2.4: multi-sensor JSONL recording, replay, reproducible synthetic datasets, hardware-inventory update, and plan rebaseline complete.
 - Phase 2.5: PC-direct C1 driver boundary, standard scan-node parsing, bounded capture into JSONL, replay, and visualization integration complete.
+- Phase 3.1: STM32 low-rate sensor telemetry protocol, deterministic simulator, strict parser, recording bridge, CLI workflows, and manual bring-up checklist complete.
 
-Phase 2.5 does not implement STM32 integration, ESP32 communication, WiFi sockets, ROS, SLAM, navigation, obstacle avoidance, or simultaneous dual-C1 operation. Automated tests do not access real hardware or serial ports.
+Phase 3.1 does not implement real STM32 acquisition, serial ports, GPIO, I2C, ESP32 communication, WiFi sockets, motor control, encoder acquisition, MPU6050 integration, ROS, SLAM, navigation, obstacle avoidance, or simultaneous dual-C1 operation. Automated tests do not access real hardware or serial ports.
 
 ## Confirmed Hardware Inventory
 
@@ -55,6 +56,30 @@ Use neutral sensor IDs until installation is physically verified: `c1_1`, `c1_2`
 Two C1 units physically exist. Both must be tested independently in Phase 2.5. One stable C1 is the baseline integration target. Simultaneous dual-C1 use is optional and remains UNVERIFIED until UART, GPIO, bandwidth, buffering, timing, and power feasibility are proven.
 
 The software pipeline can now accept a bounded PC-direct C1 byte stream and save it as JSONL. Real physical C1 operation still requires manual Phase 2.5 hardware evidence before it can be marked VERIFIED.
+
+## Phase 3.1 STM32 Sensor Telemetry
+
+Phase 3.1 defines the transport-facing protocol `mars_scout_stm32_sensor_telemetry` version `1` for future STM32 low-rate sensor messages. It is newline-delimited UTF-8 JSON for software bring-up and later ESP32 forwarding. The persistent PC recording format remains `mars_scout_multisensor_recording` version `1`.
+
+Generate deterministic STM32 telemetry:
+
+```powershell
+python -m rplidar_c1_tools.cli simulate-stm32-sensors --cycles 5 --scenario nominal --output .verification\phase3.1\synthetic_stm32_telemetry.jsonl --overwrite
+```
+
+Inspect telemetry:
+
+```powershell
+python -m rplidar_c1_tools.cli inspect-stm32-telemetry --input .verification\phase3.1\synthetic_stm32_telemetry.jsonl --output .verification\phase3.1\telemetry_inspection.txt
+```
+
+Convert telemetry into the existing Phase 2.4 recording format:
+
+```powershell
+python -m rplidar_c1_tools.cli record-stm32-telemetry --input .verification\phase3.1\synthetic_stm32_telemetry.jsonl --output .verification\phase3.1\converted_multisensor_recording.jsonl --overwrite
+```
+
+Supported Phase 3.1 sensor message types are `ultrasonic`, `ground_edge`, `hall_landmark`, `illuminance`, and `barometer`. HC-SR04 timeout is explicit and is not converted to distance zero. TCRT5000 and Hall raw states remain visible while polarity is UNVERIFIED. BH1750 and BMP280 support environmental-change indication only; reliable dust-storm detection is not claimed.
 
 ## Preserved Verified C1 Facts
 
@@ -147,18 +172,20 @@ Captured files use the existing `mars_scout_multisensor_recording` JSONL schema.
 
 ## Phase Verification
 
-Supported phases include `phase1`, `phase2.1`, `phase2.2`, `phase2.3`, `phase2.4`, and `phase2.5`.
+Supported phases include `phase1`, `phase2.1`, `phase2.2`, `phase2.3`, `phase2.4`, `phase2.5`, and `phase3.1`.
 
 Development verification:
 
 ```powershell
 .\tools\verify_phase.cmd phase2.5 -AllowDirty
+.\tools\verify_phase.cmd phase3.1 -AllowDirty
 ```
 
 Normal verification after commit and push:
 
 ```powershell
 .\tools\verify_phase.cmd phase2.5
+.\tools\verify_phase.cmd phase3.1
 ```
 
 The verifier checks Git state, Python selection, pytest import, targeted tests, regressions, the complete PC suite, and configured smoke workflows. Hardware and safety facts still require physical verification.
@@ -167,7 +194,8 @@ The verifier checks Git state, Python selection, pytest import, targeted tests, 
 
 - Phase 2.4: multi-sensor recording, replay, reproducible datasets, current hardware inventory update, and project-plan rebaseline.
 - Phase 2.5: PC-direct testing of both RPLIDAR C1 units separately, real scan acquisition, distance/orientation checks, device identification, recording, and visualization.
-- Phase 3: STM32 integration of HC-SR04, TCRT5000, Hall, BH1750, and BMP280.
+- Phase 3.1: STM32 low-rate sensor telemetry software foundation, deterministic simulator, PC parser, recording bridge, and manual bring-up checklist.
+- Phase 3.2: future physical STM32 integration of HC-SR04, TCRT5000, Hall, BH1750, and BMP280.
 - Phase 4: wheel encoders, MPU6050, mecanum kinematics, closed-loop motion, and odometry.
 - Phase 5: STM32-ESP32-computer communication, WiFi transport, one-C1 baseline integration, then optional dual-C1 feasibility evaluation.
 - Phase 6: real-time PC visualization, rover trajectory, and short-range encoder/IMU-assisted accumulated 2D mapping.

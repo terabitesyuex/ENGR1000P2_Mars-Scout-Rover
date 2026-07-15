@@ -53,6 +53,18 @@ Neutral planned sensor IDs:
 - `mpu6050_1`
 - `hall_1`
 
+## USER-CONFIRMED PLANNED CONNECTIONS
+
+Ground and landmark connector plan, supplied by the user for future STM32 bring-up:
+
+- Two TCRT5000 modules and one Hall sensor are planned to use the STM32 PH2.0-6P four-channel line-tracking connector.
+- TCRT5000 left OUT -> signal channel 1.
+- TCRT5000 right OUT -> signal channel 2.
+- Hall sensor S -> signal channel 3.
+- Their power and ground are planned to share the connector VCC and GND.
+
+This is a USER-CONFIRMED PLANNED CONNECTION only. It is not electrically tested hardware evidence. Connector orientation, exact pin order, supply voltage, logic voltage, pull configuration, active polarity, and installed behavior remain UNVERIFIED.
+
 ## CONFIRMED ELECTRICAL FACTS
 
 Verified RPLIDAR C1 facts from earlier hardware lock work:
@@ -136,9 +148,11 @@ PC planned responsibilities:
 - exact UART assignment: UNVERIFIED.
 - exact STM32-ESP32 connector: UNVERIFIED.
 - exact HC-SR04 level-shifting requirements on the physical board: UNVERIFIED.
+- HC-SR04 ECHO voltage compatibility with STM32 inputs: UNVERIFIED.
 - actual BH1750 I2C address: UNVERIFIED.
 - actual BMP280 I2C address: UNVERIFIED.
 - actual MPU6050 I2C address: UNVERIFIED.
+- TCRT5000 and Hall output polarity remains UNVERIFIED.
 - physical TCRT5000 active polarity: UNVERIFIED.
 - physical Hall active polarity: UNVERIFIED.
 - battery voltage and capacity: UNVERIFIED unless measured.
@@ -165,6 +179,14 @@ PC planned responsibilities:
 - No physical PC-direct capture has been run by repository automation.
 - `c1_1` and `c1_2` operational status remain UNVERIFIED until independent manual tests are documented.
 - No COM port, mounting orientation, serial identifier, or hardware revision is inferred by software.
+
+## Phase 3.1 Software Boundary Status
+
+- Phase 3.1 defines `mars_scout_stm32_sensor_telemetry` version `1` for host-side software tests and future STM32 telemetry forwarding.
+- Automated Phase 3.1 tests use deterministic files and in-memory streams only.
+- No serial port, USB device, GPIO, I2C bus, timer, STM32 flash action, or real sensor is accessed by Phase 3.1 automation.
+- STM32 MCU part number, board revision, firmware framework, pin assignments, timer channels, UART assignments, I2C peripheral assignments, and real I2C addresses remain UNVERIFIED.
+- Physical STM32 sensor bring-up has not started.
 
 ## Safety Rules
 

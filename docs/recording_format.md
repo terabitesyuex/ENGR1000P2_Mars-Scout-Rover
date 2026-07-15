@@ -1,6 +1,6 @@
 # Recording Format
 
-Phase 2.4 implements a human-readable, streamable UTF-8 JSON Lines format. Phase 2.5 reuses the same schema for bounded PC-direct C1 captures.
+Phase 2.4 implements a human-readable, streamable UTF-8 JSON Lines format. Phase 2.5 reuses the same schema for bounded PC-direct C1 captures. Phase 3.1 reuses the same schema for validated STM32 low-rate sensor telemetry converted by the PC bridge.
 
 ## Rationale
 
@@ -128,24 +128,37 @@ Fields:
 Fields:
 
 - `sensor_id`: `ultrasonic_1`, `ultrasonic_2`, or `ultrasonic_3`.
-- `distance_mm`
+- `distance_mm`, nullable when invalid or timeout.
 - `valid`
+- optional `status`
+- optional `raw_echo_us`
+- optional `source_sequence`
+
+Phase 3.1 timeout and invalid readings are explicit. Timeout is not represented as a valid zero-distance obstacle.
 
 ### `ground_edge`
 
 Fields:
 
 - `sensor_id`: `tcrt5000_1` or `tcrt5000_2`.
-- `edge_detected`
+- `edge_detected`, nullable until active polarity is verified.
+- optional `raw_state`
+- optional `polarity_verified`
+- optional `status`
 - optional `reflectance_raw`
+- optional `source_sequence`
 
 ### `hall_landmark`
 
 Fields:
 
 - `sensor_id`: `hall_1`.
-- `detected`
+- `detected`, nullable until active polarity is verified.
+- optional `raw_state`
+- optional `polarity_verified`
+- optional `status`
 - optional `raw_value`
+- optional `source_sequence`
 
 The Hall module is for magnetic landmark/checkpoint detection, not wheel odometry.
 
@@ -154,15 +167,19 @@ The Hall module is for magnetic landmark/checkpoint detection, not wheel odometr
 Fields:
 
 - `sensor_id`: `bh1750_1`.
-- `illuminance_lux`
+- `illuminance_lux`, nullable when invalid or not initialized.
+- optional `status`
+- optional `source_sequence`
 
 ### `barometer`
 
 Fields:
 
 - `sensor_id`: `bmp280_1`.
-- `temperature_c`
-- `pressure_pa`
+- `temperature_c`, nullable when invalid or not initialized.
+- `pressure_pa`, nullable when invalid or not initialized.
+- optional `status`
+- optional `source_sequence`
 
 BH1750 and BMP280 support environmental-change indication. Reliable real-world dust-storm detection is not claimed.
 
@@ -216,7 +233,7 @@ python -m rplidar_c1_tools.cli render-recording .verification\phase2.4\synthetic
 
 ## Limitations
 
-- Phase 2.4 data is synthetic; Phase 2.5 can write PC-direct C1 records only when fixture bytes or an explicit user-verified serial port are provided.
-- No WiFi, firmware, mapping, SLAM, odometry, navigation, or obstacle avoidance is implemented.
+- Phase 2.4 data is synthetic; Phase 2.5 can write PC-direct C1 records only when fixture bytes or an explicit user-verified serial port are provided; Phase 3.1 can write STM32 telemetry records only from deterministic files or injected streams.
+- No WiFi, live STM32 firmware, serial port, GPIO, I2C, mapping, SLAM, odometry, navigation, or obstacle avoidance is implemented.
 - No mounting transforms are recorded or applied.
 - No sensor calibration is implied.

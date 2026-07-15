@@ -29,6 +29,15 @@ from .recording_models import (
     default_sensor_inventory,
 )
 from .replay import RecordingFormatError, inspect_recording, last_lidar_scan_by_sensor, replay_lidar_scans
+from .stm32_recording_bridge import record_stm32_telemetry_stream
+from .stm32_sensor_protocol import (
+    Stm32TelemetryError,
+    iter_stm32_telemetry,
+)
+from .stm32_sensor_simulator import (
+    STM32_SIMULATOR_SCENARIOS,
+    generate_synthetic_stm32_lines,
+)
 from .synthetic_scan import SyntheticRoomConfig, SyntheticScanSource, scan_to_json
 from .synthetic_scan import generate_circle_scan, generate_room_scan
 
@@ -136,6 +145,37 @@ def main() -> int:
         help="Hex fixture bytes for automated tests and verifier smoke workflows.",
     )
 
+    simulate_stm32 = subparsers.add_parser(
+        "simulate-stm32-sensors",
+        help="Generate deterministic Phase 3.1 STM32 sensor telemetry JSONL.",
+        description="Generate deterministic Phase 3.1 STM32 sensor telemetry JSONL.",
+    )
+    simulate_stm32.add_argument("--cycles", type=_positive_int, default=1)
+    simulate_stm32.add_argument(
+        "--scenario",
+        choices=STM32_SIMULATOR_SCENARIOS,
+        default="nominal",
+    )
+    simulate_stm32.add_argument("--start-timestamp-ms", type=_non_negative_int, default=0)
+    simulate_stm32.add_argument("--interval-ms", type=_positive_int, default=100)
+    simulate_stm32.add_argument("--output", type=Path, required=True)
+    simulate_stm32.add_argument("--overwrite", action="store_true")
+
+    inspect_stm32 = subparsers.add_parser(
+        "inspect-stm32-telemetry",
+        help="Validate and summarize STM32 sensor telemetry JSONL.",
+    )
+    inspect_stm32.add_argument("--input", type=Path, required=True)
+    inspect_stm32.add_argument("--output", type=Path)
+
+    record_stm32 = subparsers.add_parser(
+        "record-stm32-telemetry",
+        help="Convert STM32 telemetry JSONL into the Phase 2.4 recording format.",
+    )
+    record_stm32.add_argument("--input", type=Path, required=True)
+    record_stm32.add_argument("--output", type=Path, required=True)
+    record_stm32.add_argument("--overwrite", action="store_true")
+
     args = parser.parse_args()
     try:
         if args.command == "synthetic-room":
@@ -214,7 +254,33 @@ def main() -> int:
             )
             print(path)
             return 0
-    except (OSError, ValueError, RecordingFormatError, C1DriverError) as exc:
+        if args.command == "simulate-stm32-sensors":
+            path = simulate_stm32_sensor_telemetry(
+                output_path=args.output,
+                cycles=args.cycles,
+                scenario=args.scenario,
+                start_timestamp_ms=args.start_timestamp_ms,
+                interval_ms=args.interval_ms,
+                overwrite=args.overwrite,
+            )
+            print(path)
+            return 0
+        if args.command == "inspect-stm32-telemetry":
+            text = inspect_stm32_telemetry_file(args.input)
+            if args.output:
+                args.output.parent.mkdir(parents=True, exist_ok=True)
+                args.output.write_text(text, encoding="utf-8")
+            print(text, end="")
+            return 0
+        if args.command == "record-stm32-telemetry":
+            path = record_stm32_telemetry_file(
+                input_path=args.input,
+                output_path=args.output,
+                overwrite=args.overwrite,
+            )
+            print(path)
+            return 0
+    except (OSError, ValueError, RecordingFormatError, C1DriverError, Stm32TelemetryError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
     parser.error(f"unsupported command: {args.command}")
@@ -408,6 +474,73 @@ def capture_c1_recording(
     )
 
 
+def simulate_stm32_sensor_telemetry(
+    *,
+    output_path: Path,
+    cycles: int,
+    scenario: str,
+    start_timestamp_ms: int,
+    interval_ms: int,
+    overwrite: bool,
+) -> Path:
+    """Write deterministic STM32 telemetry fixture lines."""
+    if output_path.exists() and not overwrite:
+        raise ValueError(f"telemetry output already exists: {output_path}")
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    lines = generate_synthetic_stm32_lines(
+        cycles=cycles,
+        scenario=scenario,
+        start_timestamp_ms=start_timestamp_ms,
+        interval_ms=interval_ms,
+    )
+    output_path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
+    return output_path
+
+
+def inspect_stm32_telemetry_file(input_path: Path) -> str:
+    """Return a compact validation summary for STM32 telemetry JSONL."""
+    counts: dict[str, int] = {}
+    sensors: set[str] = set()
+    first_timestamp_ms: int | None = None
+    last_timestamp_ms: int | None = None
+    total = 0
+    with input_path.open("r", encoding="utf-8") as stream:
+        for message in iter_stm32_telemetry(stream):
+            total += 1
+            counts[message.message_type] = counts.get(message.message_type, 0) + 1
+            sensors.add(message.sensor_id)
+            if first_timestamp_ms is None:
+                first_timestamp_ms = message.timestamp_ms
+            last_timestamp_ms = message.timestamp_ms
+    lines = [
+        f"path: {input_path}",
+        "protocol: mars_scout_stm32_sensor_telemetry v1",
+        f"messages: {total}",
+        f"sensors: {', '.join(sorted(sensors))}",
+        "message_counts:",
+    ]
+    for message_type, count in sorted(counts.items()):
+        lines.append(f"  {message_type}: {count}")
+    lines.append(f"first_timestamp_ms: {first_timestamp_ms}")
+    lines.append(f"last_timestamp_ms: {last_timestamp_ms}")
+    return "\n".join(lines) + "\n"
+
+
+def record_stm32_telemetry_file(
+    *,
+    input_path: Path,
+    output_path: Path,
+    overwrite: bool,
+) -> Path:
+    """Convert STM32 telemetry JSONL to the existing multi-sensor recording format."""
+    with input_path.open("r", encoding="utf-8") as stream:
+        return record_stm32_telemetry_stream(
+            stream,
+            output_path=output_path,
+            overwrite=overwrite,
+        )
+
+
 def _selected_scenes(scene: str) -> tuple[str, ...]:
     if scene == "both":
         return ("circle", "room")
@@ -512,6 +645,13 @@ def _positive_int(value: str) -> int:
     parsed = int(value)
     if parsed <= 0:
         raise argparse.ArgumentTypeError("value must be a positive integer")
+    return parsed
+
+
+def _non_negative_int(value: str) -> int:
+    parsed = int(value)
+    if parsed < 0:
+        raise argparse.ArgumentTypeError("value must be a non-negative integer")
     return parsed
 
 

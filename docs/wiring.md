@@ -53,12 +53,25 @@ These wire functions preserve the verified C1 harness profile. They do not prove
 ## STM32 Sensor Wiring Status
 
 - HC-SR04 logic-level interface on the physical STM32 board is UNVERIFIED.
+- HC-SR04 ECHO voltage compatibility with the STM32 input remains UNVERIFIED; do not connect ECHO directly until the exact board I/O voltage tolerance is verified.
 - TCRT5000 active polarity is UNVERIFIED.
 - Hall active polarity is UNVERIFIED.
 - BH1750 I2C address is UNVERIFIED.
 - BMP280 I2C address is UNVERIFIED.
 - MPU6050 I2C address is UNVERIFIED.
 - Final sensor mounting offsets are UNVERIFIED.
+
+## User-Confirmed Planned Ground/Landmark Connector
+
+This plan is USER-CONFIRMED PLANNED CONNECTION, not electrically tested hardware evidence:
+
+- Two TCRT5000 modules and one Hall sensor are planned to use the STM32 PH2.0-6P four-channel line-tracking connector.
+- TCRT5000 left OUT -> signal channel 1.
+- TCRT5000 right OUT -> signal channel 2.
+- Hall sensor S -> signal channel 3.
+- Shared VCC and GND on that connector are planned.
+
+Connector orientation, exact pin order, supply voltage, logic voltage, active polarity, and pull configuration remain UNVERIFIED.
 
 ## Future Verification Checklist
 

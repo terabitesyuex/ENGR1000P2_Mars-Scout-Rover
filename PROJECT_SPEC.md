@@ -124,7 +124,8 @@ These facts do not verify the wiring, mounting, serial identifiers, revisions, o
 
 - Phase 2.4: multi-sensor recording, replay, reproducible datasets, current hardware inventory update, and project-plan rebaseline.
 - Phase 2.5: PC-direct testing of both RPLIDAR C1 units separately, real scan acquisition, distance/orientation checks, device identification, recording, and visualization.
-- Phase 3: STM32 integration of HC-SR04, TCRT5000, Hall, BH1750, and BMP280, including low-level sensor safety and environmental-data acquisition.
+- Phase 3.1: STM32 low-rate sensor telemetry software foundation, deterministic simulator, strict PC parser, Phase 2.4 recording bridge, and manual bring-up checklist.
+- Phase 3.2: physical STM32 integration of HC-SR04, TCRT5000, Hall, BH1750, and BMP280, including low-level sensor safety and environmental-data acquisition.
 - Phase 4: wheel encoders, MPU6050, mecanum kinematics, closed-loop motion, and odometry.
 - Phase 5: STM32-ESP32-computer communication, WiFi transport, one-C1 baseline integration, then optional dual-C1 feasibility evaluation.
 - Phase 6: real-time computer visualization, rover trajectory, and short-range encoder/IMU-assisted accumulated 2D mapping.
@@ -140,6 +141,12 @@ Phase 2.4 is software-only. It accepts deterministic synthetic recordings and re
 Phase 2.5 adds PC-direct C1 software acquisition boundaries and safe integration into the existing `ScanFrame`, JSONL recording, replay, and visualization pipeline. Automated tests use mocked byte streams and do not open serial ports. Manual hardware acceptance still requires independent tests for `c1_1` and `c1_2`, redacted device identity, health, bounded capture, distance/orientation checks, and saved replay/visualization evidence.
 
 Phase 2.5 does not implement STM32 integration, ESP32 communication, WiFi, ROS, SLAM, navigation, obstacle avoidance, or simultaneous dual-C1 operation.
+
+## Phase 3.1 Acceptance Philosophy
+
+Phase 3.1 is a software-foundation phase. It defines `mars_scout_stm32_sensor_telemetry` version `1`, validates deterministic software telemetry for HC-SR04, TCRT5000, Hall, BH1750, and BMP280, and bridges validated messages into the existing Phase 2.4 recording format. It does not prove any real STM32 pin, connector, voltage, polarity, timing, I2C address, or physical sensor behavior.
+
+Phase 3.1 does not implement real hardware access, serial-port access, GPIO, I2C, timers, STM32 flashing, ESP32 communication, WiFi, motor control, wheel encoders, MPU6050 integration, mapping, SLAM, navigation, obstacle avoidance, or autonomous motion.
 
 ## Course Validation Evidence
 
