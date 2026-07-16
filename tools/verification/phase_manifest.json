@@ -423,13 +423,17 @@
         "docs/openrf1_bh1750_bringup.md",
         "pc/src/rplidar_c1_tools/openrf1_bh1750.py",
         "pc/src/rplidar_c1_tools/stm32_serial_capture.py",
+        "evidence/phase3.2a/bh1750_physical_ba2024b_20260716_234217.jsonl",
+        "evidence/phase3.2a/bh1750_physical_evidence.md",
         "pc/tests/test_openrf1_bh1750.py",
+        "pc/tests/test_phase32a_physical_evidence.py",
         "pc/tests/test_openrf1_firmware_foundation.py",
         "pc/tests/test_stm32_serial_capture.py",
         "tools/audit_openrf1_build.py"
       ],
       "targeted": [
         "pc/tests/test_openrf1_bh1750.py",
+        "pc/tests/test_phase32a_physical_evidence.py",
         "pc/tests/test_openrf1_firmware_foundation.py",
         "pc/tests/test_stm32_serial_capture.py",
         "pc/tests/test_stm32_sensor_protocol.py",
@@ -533,7 +537,7 @@
             ".verification/phase3.2a/build_audit.txt",
             ".verification/phase3.2a/manual_hardware_status.txt"
           ],
-          "warning": "Keil build is VERIFIED; flash, ACK at 0x23, COM-port identity, and real lux validation remain UNVERIFIED."
+          "warning": "Recorded manual evidence verifies firmware flash, CH340/USART1 telemetry, BH1750 communication at configured address 0x23, a 500 ms telemetry period, and physical light response. Absolute lux calibration remains UNVERIFIED."
         }
       ]
     },
@@ -563,6 +567,7 @@
       ],
       "regression": [
         "pc/tests/test_openrf1_bh1750.py",
+        "pc/tests/test_phase32a_physical_evidence.py",
         "pc/tests/test_openrf1_firmware_foundation.py",
         "pc/tests/test_stm32_serial_capture.py",
         "pc/tests/test_stm32_sensor_models.py",
@@ -638,7 +643,7 @@
             ".verification/phase3.2b/software_audit.txt",
             ".verification/phase3.2b/manual_hardware_status.txt"
           ],
-          "warning": "Software foundation and Keil builds are VERIFIED when this audit passes; physical wiring, power integrity, voltage levels, USART2/USART3 operation, I2C ACKs, sensor polarity, ultrasonic timing, RPLIDAR transport, ESP32 link, and real sensor data remain UNVERIFIED."
+          "warning": "Software foundation and Keil builds are VERIFIED when this audit passes; recorded Phase 3.2A BH1750 evidence is MANUAL_EVIDENCE_VERIFIED; all other real multisensor, UART2/UART3, ultrasonic, TCRT5000, Hall, RPLIDAR, ESP32, power-integrity, concurrent-operation, and full-system sensor results remain UNVERIFIED."
         }
       ]
     }

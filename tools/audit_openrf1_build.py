@@ -44,9 +44,14 @@ def build_audit_text(repo_root: Path) -> str:
     spl_headers = _find(repo_root / "firmware", ("stm32f10x.h",))
     uv4 = shutil.which("UV4.exe") or shutil.which("UV4")
 
+    baseline_hex = repo_root / "firmware/openrf1/keil/Objects/OpenRF1_BH1750.hex"
+    baseline_log = repo_root / "firmware/openrf1/keil/Objects/OpenRF1_BH1750.build_log.htm"
+    evidence_file = repo_root / "evidence/phase3.2a/bh1750_physical_ba2024b_20260716_234217.jsonl"
+    build_verified = baseline_hex.exists() and _log_has_zero_errors_warnings(baseline_log)
+
     lines = [
         "OpenRF1 Phase 3.2A build audit",
-        "build_status: MANUAL_ACTION_REQUIRED",
+        f"build_status: {'SOFTWARE_VERIFIED' if build_verified else 'MANUAL_ACTION_REQUIRED'}",
         "hardware_access: none",
         "flash_attempted: no",
         "serial_port_opened: no",
@@ -61,8 +66,10 @@ def build_audit_text(repo_root: Path) -> str:
             f"startup_stm32f10x_hd_found: {bool(startup_files)}",
             f"stm32f10x_header_found: {bool(spl_headers)}",
             f"uv4_on_path: {bool(uv4)}",
-            "note: repository does not contain a complete licensed Keil/SPL build tree.",
-            "manual_action: add app files to the vendor OpenRF1 STM32F103RC Keil project and build without flashing.",
+            f"baseline_hex_present: {baseline_hex.exists()}",
+            f"baseline_keil_zero_errors_warnings: {build_verified}",
+            f"recorded_bh1750_evidence_present: {evidence_file.exists()}",
+            "note: audit validates repository files and recorded evidence only; it does not flash, open a COM port, or access hardware.",
         ]
     )
     return "\n".join(lines) + "\n"
@@ -74,15 +81,24 @@ def manual_status_text() -> str:
             "OpenRF1 Phase 3.2A manual hardware status",
             "board_identity: CONFIRMED by user request",
             "mcu_identity: CONFIRMED by user request",
-            "planned_wiring: USER-CONFIRMED, NOT ELECTRICALLY TESTED",
-            "bh1750_address_0x23: CONFIGURED BY ADDR-TO-GND PLAN, NOT ACK-VERIFIED",
-            "keil_build: UNVERIFIED",
-            "firmware_flash: UNVERIFIED",
-            "serial_com_port: UNVERIFIED",
-            "real_lux_readings: UNVERIFIED",
+            "gy302_module_supply_5v: MANUAL_EVIDENCE_VERIFIED for recorded Phase 3.2A run",
+            "bh1750_address_0x23: MANUAL_EVIDENCE_VERIFIED by recorded manual telemetry evidence",
+            "keil_build: SOFTWARE_VERIFIED when baseline build log reports zero errors and warnings",
+            "firmware_flash: MANUAL_EVIDENCE_VERIFIED",
+            "ch340_usart1_telemetry: MANUAL_EVIDENCE_VERIFIED",
+            "telemetry_period_500_ms: MANUAL_EVIDENCE_VERIFIED",
+            "physical_light_response: MANUAL_EVIDENCE_VERIFIED",
+            "absolute_lux_calibration: UNVERIFIED",
             "hardware_access_by_automation: none",
         ]
     ) + "\n"
+
+
+def _log_has_zero_errors_warnings(path: Path) -> bool:
+    if not path.exists():
+        return False
+    text = path.read_text(encoding="utf-8", errors="replace")
+    return "0 Error(s), 0 Warning(s)" in text
 
 
 def _find(root: Path, patterns: tuple[str, ...]) -> list[Path]:
