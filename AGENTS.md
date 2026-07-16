@@ -7,7 +7,7 @@ This repository is the ENGR1000P2 Mars Scout Rover software and documentation ba
 - Work only inside this repository.
 - Inspect `git status`, this file, and any nested guidance before editing.
 - Preserve working code and verified hardware facts.
-- Distinguish `CONFIRMED`, `PLANNED`, and `UNVERIFIED`; do not invent hardware values.
+- Distinguish `CONFIRMED`, `CONFIRMED_MODULE_EVIDENCE`, `PLANNED`, `SOFTWARE_VERIFIED`, `MANUAL_EVIDENCE_VERIFIED`, `MANUAL_ACTION_REQUIRED`, `UNVERIFIED`, and `BLOCKED`; do not invent hardware values.
 - Keep hardware access separate from algorithms.
 - Keep modules small and single-purpose.
 - Use explicit measurement units in names.
@@ -23,7 +23,7 @@ This repository is the ENGR1000P2 Mars Scout Rover software and documentation ba
 - Completed phases: Phase 0, Phase 1, Phase 2.1, Phase 2.2, automated verification foundation, Phase 2.3, Phase 2.4, Phase 2.5, Phase 3.1, Phase 3.2A, and the Phase 3.2B software foundation.
 - Current state: Phase 2.5 software foundation is complete; physical C1 validation remains a manual UNVERIFIED activity.
 - Phase 3.1 software work is complete: versioned STM32 low-rate sensor telemetry, deterministic PC simulator, strict parser, and recording bridge are implemented.
-- Phase 3.2A software work is complete: OpenRF1 STM32F103RCT6 + GY-302/BH1750 firmware foundation, mocked PC serial capture, documentation, and verifier support are implemented.
+- Phase 3.2A software work is complete: OpenRF1 STM32F103RCT6 + GY-302/BH1750 firmware foundation, mocked PC serial capture, documentation, and verifier support are implemented. Recorded manual evidence verifies the BH1750-only flash, CH340/USART1 telemetry, configured `0x23` BH1750 communication, 500 ms telemetry period, and physical light response; absolute lux calibration remains UNVERIFIED.
 - Phase 3.2B software work is complete: isolated OpenRF1 full-hardware firmware foundation, PC contracts, deterministic fixtures, documentation, and verifier support are implemented. Phase 3.2B physical sensor integration has not started.
 - Do not begin Phase 3.2B physical integration, additional physical sensor bring-up, motor/encoder work, ESP32/WiFi implementation, or hardware bring-up without an explicit request and the documented hardware-safety prerequisites.
 

@@ -110,11 +110,11 @@ These facts do not verify the wiring, mounting, serial identifiers, revisions, o
 - Operational status of either physical C1.
 - Final C1 placement and orientation.
 - Simultaneous dual-C1 architecture.
-- Exact ESP32 GPIOs.
+- ESP32 module UART pins have CONFIRMED_MODULE_EVIDENCE for GPIO21 TX and GPIO20 RX; OpenRF1 USART3 connector-to-MCU mapping remains UNVERIFIED.
 - Exact UART assignment.
 - Exact STM32-ESP32 connector.
 - Exact HC-SR04 level-shifting requirements on the physical board.
-- Actual BH1750, BMP280, and MPU6050 I2C addresses.
+- BH1750 communication at configured address `0x23` is MANUAL_EVIDENCE_VERIFIED for the recorded Phase 3.2A run; BMP280 and MPU6050 real I2C addresses/ACKs remain UNVERIFIED.
 - Physical TCRT5000 and Hall active polarity.
 - Battery voltage and capacity unless measured.
 - Final power-distribution topology.
@@ -151,9 +151,9 @@ Phase 3.1 does not implement real hardware access, serial-port access, GPIO, I2C
 
 ## Phase 3.2A Acceptance Philosophy
 
-Phase 3.2A is the first real-firmware preparation step for one low-rate sensor only: GY-302/BH1750 as `bh1750_1` on the OpenRF1 STM32F103RCT6 controller. It records the confirmed board, MCU, PB1/PC3 software-I2C pins, USART1 serial reference, planned GY-302 wiring, and BH1750 public 7-bit address `0x23`. It adds application-layer firmware source for the vendor Keil STM32F103RC project, but does not vendor the STM32F10x library or claim a standalone firmware build tree.
+Phase 3.2A is the first real-firmware preparation step for one low-rate sensor only: GY-302/BH1750 as `bh1750_1` on the OpenRF1 STM32F103RCT6 controller. It records the confirmed board, MCU, PB1/PC3 software-I2C pins, USART1 serial reference, GY-302 wiring, and BH1750 public 7-bit address `0x23`. It adds application-layer firmware source for the vendor Keil STM32F103RC project.
 
-Phase 3.2A automated evidence is software-only: pure conversion/state-machine tests, file-backed mocked serial capture, strict Phase 3.1 parser reuse, Phase 2.4 recording conversion, and verifier smoke artifacts. It does not access real COM ports, USB devices, GPIO, I2C, flashing tools, or sensors. Keil build, flash, ACK at `0x23`, COM-port identity, and real lux response remain MANUAL_ACTION_REQUIRED.
+Phase 3.2A automated evidence is software-only: pure conversion/state-machine tests, file-backed mocked serial capture, strict Phase 3.1 parser reuse, Phase 2.4 recording conversion, and verifier smoke artifacts. It does not access real COM ports, USB devices, GPIO, I2C, flashing tools, or sensors. Recorded manual evidence verifies firmware flash, CH340/USART1 telemetry, BH1750 communication at configured address `0x23`, a 500 ms telemetry period, and physical light response. Absolute illuminance calibration remains UNVERIFIED.
 
 Phase 3.2A does not implement BMP280, HC-SR04, TCRT5000, Hall, MPU6050, motors, encoders, mecanum kinematics, ESP32/WiFi, C1 hardware integration, mapping, SLAM, navigation, obstacle avoidance, or Phase 3.2B.
 
@@ -161,7 +161,7 @@ Phase 3.2A does not implement BMP280, HC-SR04, TCRT5000, Hall, MPU6050, motors, 
 
 Phase 3.2B is a software-foundation phase for the proposed complete OpenRF1 hardware wiring. It preserves the Phase 3.2A BH1750-only application, adds an isolated full-hardware Keil project, and prepares bounded cooperative firmware foundations for shared I2C, BMP280, MPU6050, HC-SR04, TCRT5000, Hall, RPLIDAR C1 byte transport, and STM32-to-ESP32 transport.
 
-Phase 3.2B automated evidence is software-only: pure logic tests, deterministic telemetry fixtures, strict parser and recording bridge coverage, binary frame golden vectors, static firmware/source audits, and local Keil build evidence. It does not access real COM ports, USB devices, GPIO, I2C, WiFi, flashing tools, or sensors. Physical wiring, voltage levels, power integrity, I2C ACKs, USART2/USART3 operation, sensor polarity, ultrasonic timing, RPLIDAR operation, ESP32 operation, and real sensor data remain UNVERIFIED.
+Phase 3.2B automated evidence is software-only: pure logic tests, deterministic telemetry fixtures, strict parser and recording bridge coverage, binary frame golden vectors, static firmware/source audits, and local Keil build evidence. It does not access real COM ports, USB devices, GPIO, I2C, WiFi, flashing tools, or sensors. The revised electrical contract uses module-specific evidence for separate 5 V and 3.3 V domains but does not prove physical integration. Physical multisensor wiring, voltage levels, power integrity, BMP280/MPU6050 ACKs, USART2/USART3 operation, sensor polarity, ultrasonic Echo VOH/timing, RPLIDAR operation, ESP32 operation, concurrent operation, and real full-system sensor data remain UNVERIFIED.
 
 Phase 3.2B does not implement ESP32 WiFi firmware, motor/encoder control, mecanum kinematics, sensor fusion, mapping, SLAM, navigation, obstacle avoidance, or autonomous motion.
 

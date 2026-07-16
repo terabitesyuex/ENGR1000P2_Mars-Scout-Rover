@@ -4,12 +4,14 @@ Phase 3.2B is a software-only foundation for the proposed full OpenRF1 sensor an
 
 Manual warning:
 
-> Software foundation and Keil builds are VERIFIED only when the automated tests and both Keil builds pass; physical wiring, power integrity, voltage levels, USART2/USART3 operation, I2C ACKs, sensor polarity, ultrasonic timing, RPLIDAR transport, ESP32 link, and real sensor data remain UNVERIFIED.
+> Software foundation and Keil builds are SOFTWARE_VERIFIED only when the automated tests and both Keil builds pass. Recorded manual evidence verifies the Phase 3.2A BH1750-only flash, CH340/USART1 telemetry, configured `0x23` BH1750 communication, 500 ms telemetry period, and physical light response. All other real multisensor wiring, power integrity, voltage levels, USART2/USART3 operation, BMP280/MPU6050 ACKs, sensor polarity, ultrasonic timing, RPLIDAR transport, ESP32 link, concurrent operation, and real full-system sensor data remain UNVERIFIED.
 
 ## Status Labels
 
 - CONFIRMED: supported by repository/manual/schematic evidence.
+- CONFIRMED_MODULE_EVIDENCE: supported by supplied module-specific documentation or schematic evidence, but not necessarily validated in the rover wiring.
 - SOFTWARE_VERIFIED: validated by automated tests or a successful local build.
+- MANUAL_EVIDENCE_VERIFIED: supported by recorded manual evidence; automation may validate the committed evidence file but did not perform the physical action.
 - MANUAL_ACTION_REQUIRED: requires a person to perform a physical step.
 - UNVERIFIED: not yet demonstrated.
 - BLOCKED: cannot proceed safely without missing evidence.
@@ -64,11 +66,15 @@ firmware/openrf1/full_hardware/
 
 | Interface | Proposal | Software status | Physical status |
 | --- | --- | --- | --- |
-| ESP32-C3 TX/RX | ESP32 GPIO21 TX -> OpenRF1 RX3, GPIO20 RX <- TX3 | USART3 link contract exists | UNVERIFIED |
+| GY-302/BH1750 | VCC -> OpenRF1 5 V I2C supply, GND common, SCL PB1, SDA PC3, ADDR -> GND | address `0x23`; 500 ms telemetry path exists | MANUAL_EVIDENCE_VERIFIED for BH1750-only bring-up; absolute lux calibration UNVERIFIED |
+| GY-521/MPU6050 | VCC -> OpenRF1 5 V, GND common, SCL/SDA shared, AD0 -> GND, INT/XDA/XCL disconnected | raw-read/conversion foundation exists | CONFIRMED_MODULE_EVIDENCE for module supply/pull-ups/address default; real ACK/data UNVERIFIED |
+| BMP280-3.3 | VCC -> OpenRF1 3.3 V, GND common, SCL/SDA shared, CSB -> 3.3 V, SDO -> GND | chip-ID/raw/calibration/compensation foundation exists | CONFIRMED_MODULE_EVIDENCE for 3.3 V-only style board; real ACK/data UNVERIFIED |
+| Shared I2C signals | PB1/SCL and PC3/SDA shared across BH1750, MPU6050, and BMP280; module VCC rails are not tied together | CONFIRMED pins reused | BH1750 verified by recorded manual evidence; BMP280/MPU6050 ACKs UNVERIFIED |
+| ESP32-C3 TX/RX | ESP32 GPIO21 TX -> OpenRF1 RX3, GPIO20 RX <- TX3, ESP32 5 V input during non-USB operation | USART3 link contract exists | ESP32 module pins CONFIRMED_MODULE_EVIDENCE; OpenRF1 RX3/TX3 pins and real link UNVERIFIED |
 | RPLIDAR C1 | C1 TX -> OpenRF1 RX2, C1 RX <- TX2 | USART2 byte transport exists | UNVERIFIED |
-| Shared I2C | PB1/SCL, PC3/SDA | CONFIRMED pins reused | ACKs UNVERIFIED |
-| HC-SR04 | PWM channels 0/1, 2/3, 4/5 as trig/echo pairs | nonblocking state machine exists | MCU pins and level shifting UNVERIFIED |
-| TCRT5000/Hall | line input signals 1, 2, 3 | raw/debounced state model exists | MCU pins and polarity UNVERIFIED |
+| HC-SR04 | Initial test powers one module from OpenRF1 3.3 V output; Trig/Echo use selected PWM-channel signal pins only | nonblocking state machine exists | MCU pins and Echo VOH safety UNVERIFIED |
+| TCRT5000 | VCC -> OpenRF1 3.3 V, GND common, OUT -> line input signals 1 and 2 | raw/debounced state model exists | CONFIRMED_MODULE_EVIDENCE for module 3.3-5 V operation; MCU pins and polarity UNVERIFIED |
+| Hall | `+` -> OpenRF1 5 V, `-` -> GND, `S` -> line input signal 3 only after output voltage is measured | raw/debounced state model exists | CONFIRMED_MODULE_EVIDENCE for supply range; output topology, safe input path, and polarity UNVERIFIED |
 
 Do not infer MCU pins from connector order or channel numbers. Authoritative schematic/manual evidence is required before moving unresolved mappings into `board_config.h`.
 
@@ -76,11 +82,21 @@ Do not infer MCU pins from connector order or channel numbers. Authoritative sch
 
 | Device | Strap requirement | 7-bit address in software | Status |
 | --- | --- | --- | --- |
-| GY-302/BH1750 | ADDR -> GND | `0x23` | PLANNED, ACK UNVERIFIED |
-| GY-521/MPU6050 | AD0 -> GND; INT disconnected for polling foundation | `0x68` provisional | UNVERIFIED |
-| HW-611/BMP280 | CSB -> VDDIO for I2C mode; SDO -> GND | `0x76` provisional | UNVERIFIED |
+| GY-302/BH1750 | ADDR -> GND | `0x23` | MANUAL_EVIDENCE_VERIFIED for Phase 3.2A BH1750-only bring-up |
+| GY-521/MPU6050 | AD0 -> GND for deterministic `0x68`; INT, XDA, and XCL disconnected for polling foundation | `0x68` provisional | CONFIRMED_MODULE_EVIDENCE for module default; real ACK UNVERIFIED |
+| BMP280-3.3 | CSB -> 3.3 V for I2C mode; SDO -> GND | `0x76` provisional | CONFIRMED_MODULE_EVIDENCE for strap plan; real ACK UNVERIFIED |
 
-Module supply compatibility is MANUAL_ACTION_REQUIRED until each breakout board circuit is inspected. Do not state unresolved module supplies as final 5 V or 3.3 V facts.
+Do not tie all I2C module VCC pins together. Correct proposed power is BH1750 VCC -> 5 V, MPU6050 VCC -> 5 V, BMP280 VCC -> 3.3 V, all grounds common, SCL common, and SDA common. No external I2C pull-ups are added by default because the OpenRF1 board and modules already include pull-ups; inspect parallel pull-up strength during physical bus testing if communication becomes unreliable.
+
+## Revised Power Domains
+
+| Domain | Modules | Status |
+| --- | --- | --- |
+| 5 V | GY-302/BH1750 module, GY-521/MPU6050 module, ESP32-C3 5 V input during non-USB operation, RPLIDAR C1, Hall module | BH1750 manually verified; other devices require per-module bring-up |
+| 3.3 V | BMP280-3.3, two TCRT5000 modules, initial HC-SR04 bring-up proposal, STM32/ESP32 UART logic, I2C signal pull-up rail | CONFIRMED_MODULE_EVIDENCE where listed; measurements still required |
+| Common ground | all modules | MANUAL_ACTION_REQUIRED before each physical test |
+
+The OpenRF1 board exposes a 3.3 V sensor/output rail, so no separate regulator is currently required for the BMP280/TCRT5000/initial-HC-SR04 proposal. Total current budget, regulator temperature, noise, brownout behavior, motor interference, and full-system concurrency remain MANUAL_ACTION_REQUIRED.
 
 ## UART Allocation
 
@@ -155,11 +171,13 @@ Still UNVERIFIED:
 
 ## Electrical Safety Notes
 
-- HC-SR04 Echo may be 5 V and requires an external divider or suitable level shifter before STM32 input unless board-level protection is proven.
-- PWM servo supply jumper must be set to 5 V, not 6.5 V, before powering HC-SR04 modules from that rail.
-- BMP280 chip voltage limits differ from breakout-board input claims; exact HW-611 supply compatibility is MANUAL_ACTION_REQUIRED.
-- I2C pull-up rail must be checked before attaching modules.
-- ESP32-C3 logic is 3.3 V.
+- The GY-302/BH1750 module has CONFIRMED_MODULE_EVIDENCE for onboard 3.3 V regulation, logic-level conversion, module-level 3-5 V supply compatibility, and I2C pull-ups on the regulated logic rail. For this exact module, GY-302 VCC -> OpenRF1 5 V is accepted and no external regulator or I2C level shifter is required. ADDR -> GND remains required for configured address `0x23`.
+- The GY-521/MPU6050 module has CONFIRMED_MODULE_EVIDENCE for 3.3 V or 5 V VCC, onboard 3.3 V regulation, SCL/SDA pull-ups to onboard 3.3 V, and AD0 pull-down. Use explicit AD0 -> GND for deterministic `0x68`; INT, XDA, and XCL remain disconnected in the polling foundation.
+- The BMP280-3.3 module is a 3.3 V-only style board. BMP280 VCC must connect to OpenRF1 3.3 V and must not connect to the I2C connector 5 V pin. CSB -> 3.3 V selects I2C mode and SDO -> GND selects `0x76`. No external level shifter is needed when this module and the I2C pull-ups operate at 3.3 V.
+- HC-SR04 Echo level protection is conditional on module supply and measured Echo VOH; direct connection is not approved until measured or the exact MCU pin tolerance is established. Start with one wide-voltage HC-SR04 powered from OpenRF1 3.3 V output, do not use the PWM servo-interface rail for that first test, and measure Echo high voltage before direct STM32 connection. If Echo exceeds safe STM32 input voltage, or if the module is powered from 5 V, add a divider or level shifter. Do not claim 450 cm range at 3.3 V until physically tested.
+- TCRT5000 modules should be powered from 3.3 V for first integration so OUT cannot become a 5 V high from module supply. If later powered from 5 V, output voltage or MCU-pin 5 V tolerance must first be verified.
+- The Hall module should use 5 V based on CONFIRMED_MODULE_EVIDENCE for its supply range. Hall `S` must not be declared safe for direct STM32 connection until its voltage is measured in both magnetic states. Use a divider for an approximately 5 V high state, use a 3.3 V pull-up if the board exposes open collector without onboard 5 V pull-up, or approve direct input only after recorded evidence shows the signal is within 3.3 V logic range.
+- ESP32-C3 UART logic is 3.3 V, so no STM32-to-ESP32 UART level shifter is required for the proposed link. External 5 V power and USB power must not be connected simultaneously; disconnect the STM32/OpenRF1 5 V feed before plugging the ESP32 into USB. A removable jumper or switch in the ESP32 5 V wire is recommended as an integration aid.
 - C1 signal identity must be verified from adapter-board labels or continuity testing, not wire color alone.
 - Complete system power must not rely on an undersized USB supply.
 - All modules require a common ground.
@@ -183,24 +201,24 @@ The full-hardware project must emit `Objects_FullHardware/OpenRF1_FullHardware.h
 
 ## Incremental Bring-Up Order
 
-1. Preserve and complete BH1750-only physical validation.
-2. Validate BMP280 alone on the shared I2C bus.
-3. Validate MPU6050 alone.
-4. Validate all three I2C devices together.
-5. Validate TCRT5000 raw inputs.
-6. Validate Hall raw input.
-7. Validate one HC-SR04 with level shifting.
+1. Preserve the recorded BH1750-only physical evidence and repeat only if wiring changes.
+2. Validate BMP280 alone at 3.3 V on the shared I2C signal bus.
+3. Validate MPU6050 alone at 5 V with AD0 -> GND.
+4. Validate all three I2C devices together without tying their VCC rails together.
+5. Validate TCRT5000 raw inputs at 3.3 V.
+6. Measure Hall `S` voltage in both magnetic states before connecting it to an STM32 input.
+7. Validate one HC-SR04 from 3.3 V and measure Echo VOH before approving direct input or adding protection.
 8. Validate all three HC-SR04 modules with staggered triggering.
 9. Validate USART2 electrical idle and loopback where safe.
 10. Validate one C1 unit on USART2.
 11. Validate USART3 loopback.
-12. Validate ESP32-C3 link.
+12. Validate ESP32-C3 link with USB disconnected from the ESP32 while OpenRF1 5 V is feeding it.
 13. Validate C1-to-ESP32 data transport.
 14. Perform full-system power and concurrency testing.
 
 ## Troubleshooting
 
-- No I2C ACK: power off, confirm straps, check SDA/SCL orientation, verify pull-up rail and common ground.
+- No I2C ACK: power off, confirm straps, check SDA/SCL orientation, verify module-specific VCC rail, inspect pull-up strength if needed, and confirm common ground.
 - BMP280 bad chip ID: stop and record the observed ID; do not treat it as a valid BMP280 reading.
 - MPU6050 bad WHO_AM_I: stop and record the observed value; do not fabricate calibration.
 - Ultrasonic timeout: preserve `valid: false`; do not convert timeout into zero distance.

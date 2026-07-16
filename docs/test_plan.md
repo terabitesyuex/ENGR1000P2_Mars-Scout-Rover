@@ -14,6 +14,7 @@ Supported phases:
 - `phase2.5`
 - `phase3.1`
 - `phase3.2a`
+- `phase3.2b`
 
 Development verification:
 
@@ -21,6 +22,7 @@ Development verification:
 .\tools\verify_phase.cmd phase2.5 -AllowDirty
 .\tools\verify_phase.cmd phase3.1 -AllowDirty
 .\tools\verify_phase.cmd phase3.2a -AllowDirty
+.\tools\verify_phase.cmd phase3.2b -AllowDirty
 ```
 
 Normal verification after commit and push:
@@ -29,6 +31,7 @@ Normal verification after commit and push:
 .\tools\verify_phase.cmd phase2.5
 .\tools\verify_phase.cmd phase3.1
 .\tools\verify_phase.cmd phase3.2a
+.\tools\verify_phase.cmd phase3.2b
 ```
 
 The verifier uses repository-local pytest basetemp under `.verification/pytest_tmp/`, checks Git state, selects Python, confirms pytest import, runs targeted tests, regressions, the complete PC suite, and configured smoke workflows.
@@ -120,6 +123,7 @@ Phase 3.1 automated tests do not open serial ports, GPIO, I2C, timers, USB devic
 Targeted:
 
 - `pc/tests/test_openrf1_bh1750.py`
+- `pc/tests/test_phase32a_physical_evidence.py`
 - `pc/tests/test_openrf1_firmware_foundation.py`
 - `pc/tests/test_stm32_serial_capture.py`
 - `pc/tests/test_stm32_sensor_protocol.py`
@@ -143,8 +147,9 @@ Smoke workflow:
 - Inspect the preserved telemetry.
 - Inspect the converted Phase 2.4 recording.
 - Generate `build_audit.txt` and `manual_hardware_status.txt`.
+- Validate the committed sanitized BH1750 physical evidence JSONL.
 
-Phase 3.2A automated tests do not open real COM ports, USB devices, GPIO, I2C, flash tools, Keil projects, network sockets, motors, or real sensors.
+Phase 3.2A automated tests do not open real COM ports, USB devices, GPIO, I2C, flash tools, network sockets, motors, or real sensors. They may validate committed recorded manual evidence integrity offline.
 
 ## Revised Phase Sequence
 
@@ -178,11 +183,11 @@ Phase 3.1:
 Phase 3.2A:
 
 - Automated software tests: OpenRF1 BH1750 address/conversion logic, nonblocking state machine, firmware source constraints, mocked serial capture, strict parser reuse, recording bridge, and verifier smoke artifacts.
-- Bench hardware tests: MANUAL_ACTION_REQUIRED for Keil build, flash, ACK at `0x23`, CH340 COM-port identification, and controlled lux response.
-- Stationary physical tests: manual cover/uncover/lamp response after successful build/flash.
+- Bench hardware tests: recorded manual evidence verifies Keil-built firmware flash, CH340/USART1 telemetry, BH1750 communication at configured address `0x23`, a 500 ms telemetry period, and controlled cover/illumination response.
+- Stationary physical tests: recorded manual cover/uncover/lamp response exists for the BH1750-only path; absolute lux calibration remains UNVERIFIED.
 - Moving-rover tests: not performed.
 - Safety tests: documentation/checklist only; motors remain disconnected for first power-on.
-- Presentation evidence: mocked telemetry, converted recording, build audit, manual status file, and future physical logs after manual bring-up.
+- Presentation evidence: mocked telemetry, converted recording, build audit, manual status file, sanitized raw BH1750 physical evidence, and physical-evidence report.
 
 Phase 3.2B:
 

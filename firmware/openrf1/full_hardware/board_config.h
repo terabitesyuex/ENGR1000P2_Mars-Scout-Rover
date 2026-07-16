@@ -20,7 +20,8 @@
 
 /*
  * CONFIRMED from Phase 3.2A evidence: OpenRF1 software I2C uses PB1/SCL
- * and PC3/SDA with board pull-ups to 3.3 V. Device ACKs remain UNVERIFIED.
+ * and PC3/SDA with board pull-ups to 3.3 V. Recorded manual evidence verifies
+ * BH1750 communication at 0x23; BMP280 and MPU6050 ACKs remain UNVERIFIED.
  */
 #define OPENRF1_I2C_SCL_PORT GPIOB
 #define OPENRF1_I2C_SCL_PIN GPIO_Pin_1

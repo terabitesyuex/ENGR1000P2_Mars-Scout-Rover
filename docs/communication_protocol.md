@@ -73,7 +73,7 @@ Phase 3.2A uses the existing `mars_scout_stm32_sensor_telemetry` version `1` pro
 - valid status: `ok` from firmware or `simulated` from deterministic test fixtures
 - error statuses: `timeout`, `not_initialized`, `stale`, or `hardware_fault`
 
-The firmware foundation is configured for OpenRF1 STM32F103RCT6 software I2C on PB1/SCL and PC3/SDA, GY-302/BH1750 address `0x23`, and USART1 PA9/PA10 at 115200 baud 8N1. The PC `capture-stm32-serial` workflow accepts either a user-selected COM port for manual tests or `--mock-input` for automated verification. Automated tests and verifier smoke runs never open a real COM port.
+The firmware foundation is configured for OpenRF1 STM32F103RCT6 software I2C on PB1/SCL and PC3/SDA, GY-302/BH1750 address `0x23`, and USART1 PA9/PA10 at 115200 baud 8N1. Recorded manual evidence verifies firmware flash, CH340/USART1 telemetry, configured-address BH1750 communication, a 500 ms telemetry period, and physical light response. The PC `capture-stm32-serial` workflow accepts either a user-selected COM port for manual tests or `--mock-input` for automated verification. Automated tests and verifier smoke runs never open a real COM port.
 
 Invalid BH1750 communication must not be represented as zero lux. A valid dark reading may be `0.0` lux only when the sensor transaction is valid.
 
@@ -124,11 +124,10 @@ The STM32 local safety path must not depend on a healthy PC connection. Timeout 
 
 The following remain UNVERIFIED:
 
-- Exact ESP32 GPIOs.
-- Exact UART assignment.
+- ESP32-C3 module-side GPIO21 TX and GPIO20 RX have CONFIRMED_MODULE_EVIDENCE for the proposed link.
+- Exact OpenRF1 UART connector-to-MCU assignment.
 - Exact STM32 GPIO, timer, UART, and I2C peripheral assignments outside the Phase 3.2A BH1750 OpenRF1 path.
-- BH1750 ACK at 7-bit address `0x23`.
-- Successful OpenRF1 CH340 COM-port path.
+- Absolute BH1750 lux calibration.
 - Exact STM32-ESP32 connector.
 - Exact packet field widths.
 - Exact checksum polynomial.

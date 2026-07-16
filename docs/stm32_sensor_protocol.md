@@ -93,7 +93,7 @@ Payload:
 
 Values must be finite and non-negative when valid. BH1750 supports controlled illuminance-change experiments only; reliable dust-storm detection is not claimed.
 
-Phase 3.2A uses this message for the OpenRF1 GY-302/BH1750 firmware foundation. Valid firmware readings use status `ok`; deterministic software fixtures may use status `simulated`. `timeout`, `not_initialized`, `stale`, and `hardware_fault` must not be represented as valid zero-lux readings. The configured public 7-bit address is `0x23`, but real ACK remains UNVERIFIED until manual bring-up.
+Phase 3.2A uses this message for the OpenRF1 GY-302/BH1750 firmware foundation. Valid firmware readings use status `ok`; deterministic software fixtures may use status `simulated`. `timeout`, `not_initialized`, `stale`, and `hardware_fault` must not be represented as valid zero-lux readings. Recorded manual evidence verifies BH1750 communication at configured public 7-bit address `0x23`, 500 ms telemetry, and physical light response. Absolute lux calibration remains UNVERIFIED.
 
 ### `barometer`
 

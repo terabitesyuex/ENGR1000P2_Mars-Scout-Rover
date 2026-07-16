@@ -49,10 +49,10 @@ def test_validation_reports_missing_required_hardware_fact() -> None:
 def test_validation_rejects_concrete_unverified_gpio() -> None:
     validator, contents, firmware_sources = loaded_repository_texts()
     contents["HARDWARE_LOCK.md"] = contents["HARDWARE_LOCK.md"].replace(
-        "exact ESP32 GPIOs: UNVERIFIED",
-        "exact ESP32 GPIOs: GPIO20",
+        "exact OpenRF1 UART assignment: UNVERIFIED",
+        "exact OpenRF1 UART assignment: USART3 pins invented",
     )
 
     errors = validator.validate_text_contents(contents, firmware_sources)
 
-    assert any("unverified GPIOs" in error for error in errors)
+    assert any("unverified OpenRF1 UART assignment" in error for error in errors)

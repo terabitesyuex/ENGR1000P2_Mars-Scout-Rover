@@ -53,14 +53,14 @@ def test_phase32a_current_plan_documents_openrf1_bh1750_boundaries():
             "OpenRF1 STM32F103RCT6",
             "simulate-bh1750-telemetry",
             "capture-stm32-serial",
-            "MANUAL_ACTION_REQUIRED",
+            "MANUAL_EVIDENCE_VERIFIED",
         ],
         "HARDWARE_LOCK.md": [
             "OpenRF1 robot controller",
             "STM32F103RCT6",
             "PB1",
             "PC3",
-            "NOT YET ACK-VERIFIED",
+            "BH1750 communication at configured address `0x23`",
         ],
         "docs/openrf1_bh1750_bringup.md": [
             "GY-302 VCC",
@@ -94,11 +94,11 @@ def test_phase32b_current_plan_documents_software_foundation_boundaries():
         "HARDWARE_LOCK.md": [
             "Phase 3.2B proposed full-hardware connection plan",
             "firmware/openrf1/full_hardware/",
-            "Physical wiring, voltage levels",
+            "Physical Phase 3.2B multisensor wiring",
         ],
         "docs/phase3_2b_full_hardware_foundation.md": [
-            "Software foundation and Keil builds are VERIFIED",
-            "Module supply compatibility is MANUAL_ACTION_REQUIRED",
+            "Software foundation and Keil builds are SOFTWARE_VERIFIED",
+            "Do not tie all I2C module VCC pins together",
             "Validate C1-to-ESP32 data transport",
         ],
         "docs/openrf1_phase32b_protocol.md": [
@@ -108,7 +108,7 @@ def test_phase32b_current_plan_documents_software_foundation_boundaries():
         ],
         "docs/wiring.md": [
             "Phase 3.2B Proposed Full-Hardware Wiring",
-            "Software cannot make Echo electrically safe",
+            "Echo level protection is conditional",
         ],
     }
 

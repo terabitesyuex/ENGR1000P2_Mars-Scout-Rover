@@ -16,9 +16,9 @@ Phase 3.2A prepares software for one GY-302/BH1750 sensor on the OpenRF1 STM32F1
 | Pull-ups | 10 kOhm to 3.3 V on PB1/SCL and PC3/SDA | CONFIRMED by schematic |
 | I2C header supply | 5 V and GND | CONFIRMED by schematic |
 | BH1750 module | GY-302 with VCC, GND, SCL, SDA, ADDR | CONFIRMED |
-| BH1750 address | 7-bit `0x23` when ADDR is grounded | PLANNED, NOT ACK-VERIFIED |
+| BH1750 address | 7-bit `0x23` when ADDR is grounded | MANUAL_EVIDENCE_VERIFIED for recorded Phase 3.2A run |
 | UART telemetry | USART1, PA9 TX, PA10 RX, 115200 baud, 8N1 | CONFIRMED reference |
-| PC COM port | User-selected CH340 COM port | UNVERIFIED |
+| PC COM port | User-selected CH340 COM port; exact identifier kept private | MANUAL_EVIDENCE_VERIFIED for CH340/USART1 telemetry path |
 
 ## Wiring Table
 
@@ -39,6 +39,38 @@ Exact wiring summary:
 - GY-302 ADDR -> OpenRF1 GND
 
 The OpenRF1 2x4 I2C header duplicates each signal row: PC3/SDA, PB1/SCL, GND, and 5V. Do not confuse this header with the adjacent SWD connector. Change wiring only while powered off.
+
+Module electrical note:
+
+- The bare BH1750 IC operates at approximately 2.4 V to 3.6 V.
+- The specific GY-302 breakout has CONFIRMED_MODULE_EVIDENCE for onboard low-dropout 3.3 V regulation, onboard logic-level conversion, module-level 3 V to 5 V supply compatibility, and onboard I2C pull-ups on the regulated logic rail.
+- GY-302 VCC -> OpenRF1 5 V is accepted for this exact module.
+- No external regulator or I2C level shifter is required for this exact module.
+- ADDR -> GND remains required for configured address `0x23`.
+
+## Recorded Physical Evidence
+
+The committed Phase 3.2A evidence file records a BH1750-only manual run using frozen firmware commit `ba2024b`.
+
+MANUAL_EVIDENCE_VERIFIED:
+
+- Firmware flash completed through FlyMcu on a user-verified CH340 port at 115200 baud.
+- STM32 ROM bootloader version, device class, flash size, erase/program/execute result, and telemetry were recorded in sanitized form.
+- Exactly 60 UTF-8 JSONL telemetry records were captured.
+- All records use protocol `mars_scout_stm32_sensor_telemetry`, version `1`, message type `illuminance`, sensor ID `bh1750_1`, and status `ok`.
+- Sequences are continuous from 769 through 828.
+- Timestamps increase by exactly 500 ms.
+- Recorded readings range from 0.00 lux when covered to 20.83 lux when illuminated.
+- The readings respond strongly to physical cover and illumination.
+
+Still UNVERIFIED:
+
+- Absolute illuminance calibration.
+- Long-duration stability.
+- Behavior with additional I2C devices on the bus.
+- Any BMP280, MPU6050, HC-SR04, TCRT5000, Hall, RPLIDAR, ESP32, motor, or full-system result.
+
+Do not record the COM number, Windows username, absolute source path, or MCU unique serial number in tracked files.
 
 ## Manual Procedure
 
@@ -97,7 +129,7 @@ No ACK at `0x23`:
 
 - Power off.
 - Recheck ADDR to GND, SDA/SCL orientation, 5 V/GND, and common ground.
-- Do not mark the address verified.
+- The committed evidence verifies one successful configured-address run. For any new wiring, do not mark the address verified again until fresh ACK or valid telemetry evidence is recorded.
 
 All-zero data:
 

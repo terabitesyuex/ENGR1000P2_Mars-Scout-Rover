@@ -60,13 +60,13 @@ ABSENT from this repository:
 - `startup_stm32f10x_hd.s`.
 - Local command-line Keil build configuration.
 
-Phase 3.2A therefore adds application-layer source under `firmware/openrf1/app/` and manual Keil integration instructions. Successful compilation, flashing, ACK at `0x23`, CH340 COM-port identity, and real lux telemetry remain MANUAL_ACTION_REQUIRED.
+Phase 3.2A therefore adds application-layer source under `firmware/openrf1/app/` and manual Keil integration instructions. Recorded manual evidence verifies firmware flash, CH340/USART1 telemetry, BH1750 communication at configured address `0x23`, a 500 ms telemetry period, and physical light response. Absolute lux calibration remains UNVERIFIED.
 
 ## Phase 3.2B OpenRF1 Update
 
 Phase 3.2B adds an isolated full-hardware software foundation under `firmware/openrf1/full_hardware/` and the separate Keil project `OpenRF1_FullHardware.uvprojx`. It prepares software for BMP280, MPU6050, HC-SR04, TCRT5000, Hall, RPLIDAR C1 byte transport, and STM32-to-ESP32 transport without performing hardware access.
 
-CONFIRMED values remain limited to the Phase 3.2A OpenRF1 facts: PB1/SCL, PC3/SDA, USART1 PA9/PA10, STM32F103RCT6, and the compatible Keil/SPL toolchain. USART2 pins, USART3 pins, PWM channel pins, line-input pins, voltage safety, I2C ACKs, physical polarity, and real sensor data remain UNVERIFIED.
+CONFIRMED values include the Phase 3.2A OpenRF1 facts: PB1/SCL, PC3/SDA, USART1 PA9/PA10, STM32F103RCT6, and the compatible Keil/SPL toolchain. Recorded manual evidence verifies the BH1750-only `0x23` communication path and physical light response. USART2 pins, USART3 pins, PWM channel pins, line-input pins, BMP280/MPU6050 ACKs, HC-SR04 Echo VOH, Hall output voltage, physical polarity, and real full-system sensor data remain UNVERIFIED.
 
 ## Future Runtime Constraints
 

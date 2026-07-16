@@ -38,7 +38,7 @@ These wire functions preserve the verified C1 harness profile. They do not prove
 - Do not connect LiDAR TX to TX or LiDAR RX to RX.
 - Do not drive LiDAR RX from a USB adapter and ESP32 at the same time.
 - Dual-C1 ESP32 wiring is UNVERIFIED.
-- Exact ESP32 GPIOs are UNVERIFIED.
+- ESP32-C3 GPIO21/GPIO20 are CONFIRMED_MODULE_EVIDENCE for the proposed module-side UART pins; OpenRF1 USART3 connector-to-MCU mapping remains UNVERIFIED.
 - Exact UART assignment is UNVERIFIED.
 
 ## Power Rules
@@ -53,7 +53,7 @@ These wire functions preserve the verified C1 harness profile. They do not prove
 ## STM32 Sensor Wiring Status
 
 - HC-SR04 logic-level interface on the physical STM32 board is UNVERIFIED.
-- HC-SR04 ECHO voltage compatibility with the STM32 input remains UNVERIFIED; do not connect ECHO directly until the exact board I/O voltage tolerance is verified.
+- HC-SR04 Echo level protection is conditional on module supply and measured Echo VOH; direct connection is not approved until measured or the exact MCU pin tolerance is established.
 - TCRT5000 active polarity is UNVERIFIED.
 - Hall active polarity is UNVERIFIED.
 - Phase 3.2A BH1750 target board is OpenRF1 with STM32F103RCT6.
@@ -61,14 +61,14 @@ These wire functions preserve the verified C1 harness profile. They do not prove
 - The OpenRF1 schematic includes 10 kOhm pull-ups from PB1/SCL and PC3/SDA to 3.3 V.
 - The OpenRF1 2x4 I2C header duplicates PC3/SDA, PB1/SCL, GND, and 5V rows.
 - The adjacent SWD connector must not be confused with the I2C header.
-- BH1750 public 7-bit address `0x23` is configured by the GY-302 ADDR-to-GND plan, but ACK at `0x23` is UNVERIFIED.
+- Recorded Phase 3.2A manual evidence verifies BH1750 communication at configured public 7-bit address `0x23`, 500 ms telemetry, and physical light response; absolute lux calibration remains UNVERIFIED.
 - BMP280 I2C address is UNVERIFIED.
 - MPU6050 I2C address is UNVERIFIED.
 - Final sensor mounting offsets are UNVERIFIED.
 
-## Phase 3.2A GY-302/BH1750 Planned Wiring
+## Phase 3.2A GY-302/BH1750 Wiring
 
-This plan is USER-CONFIRMED, NOT ELECTRICALLY TESTED:
+This wiring is MANUAL_EVIDENCE_VERIFIED for the recorded BH1750-only bring-up with baseline firmware. The GY-302 module has CONFIRMED_MODULE_EVIDENCE for onboard 3.3 V regulation, logic-level conversion, module-level 3-5 V supply compatibility, and I2C pull-ups on the regulated logic rail. Distinguish those module facts from the bare BH1750 IC limit.
 
 | GY-302 pin | OpenRF1 connection |
 | --- | --- |
@@ -78,7 +78,7 @@ This plan is USER-CONFIRMED, NOT ELECTRICALLY TESTED:
 | SDA | OpenRF1 PC3/SDA |
 | ADDR | OpenRF1 GND |
 
-Power off before changing wiring. First power-on should be performed without motors and without additional new sensors. Confirm address ACK at `0x23` and controlled lux response before marking readings verified.
+Power off before changing wiring. First power-on or repeat validation should be performed without motors and without additional new sensors. The recorded evidence verifies configured-address communication and controlled light response for this exact setup, but it does not prove laboratory lux calibration.
 
 ## Phase 3.2B Proposed Full-Hardware Wiring
 
@@ -86,12 +86,14 @@ The following is a hardware-team proposal for future validation, not verified tr
 
 ### ESP32-C3 SuperMini
 
-- ESP32 5V -> OpenRF1 Bluetooth UART 5V.
+- ESP32 5V -> OpenRF1 Bluetooth UART 5V during non-USB operation.
 - ESP32 GND -> OpenRF1 Bluetooth UART GND.
 - ESP32 GPIO21 TX -> OpenRF1 RX3.
 - ESP32 GPIO20 RX <- OpenRF1 TX3.
 
-Software intent: STM32 USART3 communicates with ESP32. USART3 is not the debug console. USART1 remains dedicated to CH340/debug telemetry.
+Software intent: STM32 USART3 communicates with ESP32. USART3 is not the debug console. USART1 remains dedicated to CH340/debug telemetry. ESP32-C3 UART logic is 3.3 V, so no STM32-to-ESP32 UART level shifter is required for the proposed link.
+
+Mandatory power rule: external 5 V power and USB power must not be connected simultaneously on the ESP32-C3 SuperMini. Disconnect the STM32/OpenRF1 5 V feed before plugging the ESP32 into USB. A removable jumper or switch in the ESP32 5 V wire is recommended as an integration aid, not a software requirement.
 
 ### RPLIDAR C1
 
@@ -109,13 +111,15 @@ Known board bus:
 - PB1 = SCL.
 - PC3 = SDA.
 
-Proposed straps:
+Proposed power and straps:
 
-- BH1750 ADDR -> GND, address `0x23`.
-- MPU6050 AD0 -> GND, address `0x68`; INT may remain disconnected for polling.
-- BMP280 CSB -> VDDIO for I2C mode, SDO -> GND, address `0x76`.
+- GY-302/BH1750 VCC -> OpenRF1 5 V, ADDR -> GND, address `0x23`.
+- GY-521/MPU6050 VCC -> OpenRF1 5 V, AD0 -> GND, address `0x68`; INT, XDA, and XCL remain disconnected for polling.
+- BMP280-3.3 VCC -> OpenRF1 3.3 V, CSB -> 3.3 V for I2C mode, SDO -> GND, address `0x76`.
 
-Exact module-board supply compatibility is MANUAL_ACTION_REQUIRED until the breakout circuitry is verified. I2C pull-up rail must be checked before adding modules.
+Do not tie all I2C module VCC pins together. All grounds are common, SCL is common, and SDA is common. Do not add external I2C pull-ups by default because the OpenRF1 board and modules already contain pull-ups; inspect parallel pull-up strength during physical bus testing if communication becomes unreliable.
+
+The BMP280-3.3 module must not connect to the I2C connector 5 V pin. No external level shifter is needed when the BMP280 module and I2C pull-ups operate at 3.3 V.
 
 ### HC-SR04
 
@@ -125,16 +129,23 @@ Proposed logical allocation:
 - `ultrasonic_2` left: Trig -> PWM channel 2, Echo -> PWM channel 3.
 - `ultrasonic_3` right: Trig -> PWM channel 4, Echo -> PWM channel 5.
 
-PWM servo supply jumper must be physically set to 5 V, not 6.5 V. Echo may be 5 V and requires an external resistor divider or suitable level shifter before the STM32 input unless verified board-level protection proves otherwise. Software cannot make Echo electrically safe.
+Preferred first test: power one wide-voltage HC-SR04 from the OpenRF1 3.3 V output, do not use the PWM servo-interface + rail, and connect only Trig/Echo to the selected PWM-channel signal pins. Measure Echo high voltage before direct STM32 connection. If Echo high is at or below the 3.3 V rail, no divider is required for that measured setup. If Echo exceeds safe STM32 input voltage, or if the module is powered from 5 V, add a divider or level shifter. Never infer safety only from the STM32 family name. Do not claim the full 450 cm range at 3.3 V until physically tested.
 
 ### TCRT5000 And Hall
 
 Proposed logical allocation:
 
+- `tcrt5000_1` VCC -> OpenRF1 3.3 V.
+- `tcrt5000_2` VCC -> OpenRF1 3.3 V.
 - `tcrt5000_1` OUT -> line input signal 1.
 - `tcrt5000_2` OUT -> line input signal 2.
+- Hall `+` -> OpenRF1 5 V.
+- Hall `-` -> OpenRF1 GND.
 - `hall_1` S -> line input signal 3.
-- common VCC and GND.
+
+TCRT5000 modules use 3.3 V for first integration to avoid a possible 5 V output-high level. If powered from 5 V later, output voltage or MCU-pin 5 V tolerance must first be verified.
+
+Hall `S` must not be declared safe for direct STM32 connection yet. First measure Hall `S` voltage in both magnetic states. Use a divider if the module produces an approximately 5 V high state, use a 3.3 V pull-up if the output is open collector without onboard 5 V pull-up, or approve direct input only after recorded evidence shows the signal is already within 3.3 V logic range.
 
 Actual STM32 GPIO pins and active polarity remain UNVERIFIED. Preserve raw digital states until physical tests establish polarity.
 
@@ -146,9 +157,9 @@ This plan is USER-CONFIRMED PLANNED CONNECTION, not electrically tested hardware
 - TCRT5000 left OUT -> signal channel 1.
 - TCRT5000 right OUT -> signal channel 2.
 - Hall sensor S -> signal channel 3.
-- Shared VCC and GND on that connector are planned.
+- The old shared-VCC plan is superseded by module-specific evidence: TCRT5000 modules should use 3.3 V and the Hall module should use 5 V. If the PH2.0-6P connector exposes only one VCC rail, it cannot safely power both module types under the revised proposal without additional measured evidence or separate power routing.
 
-Connector orientation, exact pin order, supply voltage, logic voltage, active polarity, and pull configuration remain UNVERIFIED.
+Connector orientation, exact pin order, supply voltage, logic voltage, Hall output topology, active polarity, and pull configuration remain UNVERIFIED.
 
 ## Future Verification Checklist
 

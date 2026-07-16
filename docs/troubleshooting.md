@@ -140,7 +140,7 @@ No ACK at `0x23`:
 
 - Power off before changing wiring.
 - Recheck GY-302 ADDR to GND, VCC to OpenRF1 I2C 5V, GND, SCL to PB1, and SDA to PC3.
-- Do not mark the address verified until ACK evidence is recorded.
+- The committed Phase 3.2A evidence verifies one successful configured-address run. For any new wiring or rerun, do not mark the address verified again until fresh ACK or valid telemetry evidence is recorded.
 
 All-zero lux:
 
@@ -183,8 +183,12 @@ Current Phase 3.2A automated work has no real COM-port access, STM32 flashing, G
 
 Current Phase 3.2B automated work also has no real COM-port access, STM32 flashing, GPIO, I2C, ESP32 WiFi, USB device access, or sensors. For Phase 3.2B bring-up:
 
+- Do not tie all I2C module VCC pins together: BH1750 and MPU6050 use 5 V module VCC, while BMP280 uses 3.3 V.
 - HC-SR04 timeout remains invalid data, not distance zero.
+- HC-SR04 Echo level protection is conditional on module supply and measured Echo VOH; direct connection is not approved until measured or exact MCU pin tolerance is established.
 - TCRT5000 and Hall raw state must be preserved until polarity is physically verified.
+- TCRT5000 modules use 3.3 V for first integration; Hall uses 5 V and requires Hall `S` voltage measurement before STM32 input connection.
+- Disconnect the STM32/OpenRF1 5 V feed before plugging the ESP32-C3 SuperMini into USB.
 - BMP280 and MPU6050 bad ID or NACK must be recorded as status, not converted into readings.
 - RPLIDAR overflow and ESP32 CRC errors are transport diagnostics only, not proof of working physical links.
 - Follow `docs/phase3_2b_full_hardware_foundation.md` before attaching additional hardware.

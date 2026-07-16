@@ -17,7 +17,7 @@ Major enhancements are encoder/IMU-assisted pose estimation, short-range accumul
 - Phase 2.4: multi-sensor JSONL recording, replay, reproducible synthetic datasets, hardware-inventory update, and plan rebaseline complete.
 - Phase 2.5: PC-direct C1 driver boundary, standard scan-node parsing, bounded capture into JSONL, replay, and visualization integration complete.
 - Phase 3.1: STM32 low-rate sensor telemetry protocol, deterministic simulator, strict parser, recording bridge, CLI workflows, and manual bring-up checklist complete.
-- Phase 3.2A: OpenRF1 STM32F103RCT6 + GY-302/BH1750 firmware foundation, mocked PC serial-capture workflow, documentation, and phase verification complete.
+- Phase 3.2A: OpenRF1 STM32F103RCT6 + GY-302/BH1750 firmware foundation, mocked PC serial-capture workflow, documentation, phase verification, and recorded BH1750-only physical evidence complete. Absolute lux calibration remains UNVERIFIED.
 - Phase 3.2B: OpenRF1 multisensor and communications software foundation, isolated full-hardware Keil project, PC contracts, simulators, parser/recording support, and software verification support added. Physical wiring and live sensor/link behavior remain UNVERIFIED.
 
 Phase 3.2B does not implement motors, encoders, ESP32 WiFi firmware, mapping, SLAM, navigation, obstacle avoidance, physical C1 validation, or live hardware bring-up. Automated tests do not access real COM ports, USB devices, GPIO, I2C, flashing tools, WiFi, or sensors.
@@ -85,7 +85,7 @@ Supported Phase 3.1 sensor message types are `ultrasonic`, `ground_edge`, `hall_
 
 ## Phase 3.2A OpenRF1 BH1750 Foundation
 
-Phase 3.2A locks the software target for the first real STM32 sensor path: OpenRF1 robot controller, STM32F103RCT6, software I2C on PB1/SCL and PC3/SDA, GY-302/BH1750 sensor ID `bh1750_1`, public 7-bit address `0x23`, and USART1 PA9 TX / PA10 RX at 115200 baud 8N1. The address is configured by the ADDR-to-GND plan but remains not ACK-verified.
+Phase 3.2A locks the software target for the first real STM32 sensor path: OpenRF1 robot controller, STM32F103RCT6, software I2C on PB1/SCL and PC3/SDA, GY-302/BH1750 sensor ID `bh1750_1`, public 7-bit address `0x23`, and USART1 PA9 TX / PA10 RX at 115200 baud 8N1. Recorded manual evidence marks firmware flash, CH340/USART1 telemetry, BH1750 communication at configured address `0x23`, a 500 ms telemetry period, and physical light response as MANUAL_EVIDENCE_VERIFIED; absolute lux calibration remains UNVERIFIED.
 
 Generate deterministic BH1750-only telemetry:
 
@@ -105,13 +105,13 @@ Manual capture requires an operator-selected CH340 COM port; software never gues
 python -m rplidar_c1_tools capture-stm32-serial --port <USER_VERIFIED_COM_PORT> --baud 115200 --duration 30 --telemetry-output bh1750_telemetry.jsonl --recording-output bh1750_recording.jsonl --overwrite
 ```
 
-Firmware source lives under `firmware/openrf1/app/`. It is application-layer source for the vendor OpenRF1 Keil MDK/uVision 5 STM32F103RC project and is not a standalone build tree. Keil build, firmware flash, ACK at `0x23`, COM port identity, and real lux response remain MANUAL_ACTION_REQUIRED.
+Firmware source lives under `firmware/openrf1/app/`. It is application-layer source for the vendor OpenRF1 Keil MDK/uVision 5 STM32F103RC project. The committed Phase 3.2A evidence validates a manually recorded BH1750-only run; automated tests still use mocked/file-backed inputs and do not physically access the device.
 
 ## Phase 3.2B OpenRF1 Full-Hardware Foundation
 
 Phase 3.2B keeps the Phase 3.2A BH1750-only project intact and adds a separate full-hardware firmware foundation under `firmware/openrf1/full_hardware/` with project file `firmware/openrf1/keil/OpenRF1_FullHardware.uvprojx`. The new Keil output is isolated under `Objects_FullHardware/` as `OpenRF1_FullHardware.hex`.
 
-Software foundations include shared software-I2C transactions for BH1750/BMP280/MPU6050, BMP280 and MPU6050 pure conversion logic, raw digital filtering for TCRT5000/Hall, nonblocking HC-SR04 state machines, RPLIDAR C1 USART2 byte transport counters, and a versioned STM32-to-ESP32 USART3 binary frame contract. USART2/USART3 connector-to-MCU pins, PWM channel GPIOs, line-input GPIOs, I2C ACKs, polarity, voltage safety, and real sensor data remain UNVERIFIED.
+Software foundations include shared software-I2C transactions for BH1750/BMP280/MPU6050, BMP280 and MPU6050 pure conversion logic, raw digital filtering for TCRT5000/Hall, nonblocking HC-SR04 state machines, RPLIDAR C1 USART2 byte transport counters, and a versioned STM32-to-ESP32 USART3 binary frame contract. Phase 3.2B uses module-specific electrical evidence: BH1750 and MPU6050 module VCC -> 5 V, BMP280 and TCRT5000 VCC -> 3.3 V, Hall module -> 5 V with output measurement required, ESP32 external 5 V isolated from USB, and HC-SR04 Echo protection conditional on measured VOH. USART2/USART3 connector-to-MCU pins, PWM channel GPIOs, line-input GPIOs, BMP280/MPU6050 ACKs, polarity, power integrity, and real full-system sensor data remain UNVERIFIED.
 
 Generate a deterministic Phase 3.2B telemetry fixture:
 

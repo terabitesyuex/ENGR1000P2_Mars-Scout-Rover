@@ -32,7 +32,7 @@ This directory is not a complete standalone Keil project because the repository 
 8. Add the remaining files from `app/` to the application group.
 9. Build only and resolve every compiler and linker error; do not flash until wiring and safety checks are complete.
 
-Compilation, flashing, serial readout, ACK verification at `0x23`, and lux validation are MANUAL_ACTION_REQUIRED until performed and documented.
+Keil build is SOFTWARE_VERIFIED for the local baseline project. Recorded manual evidence verifies firmware flash, CH340/USART1 telemetry, BH1750 communication at configured address `0x23`, a 500 ms telemetry period, and physical light response. Absolute lux calibration remains UNVERIFIED.
 
 ## Phase 3.2B Full-Hardware Software Foundation
 
@@ -45,6 +45,6 @@ Phase 3.2B adds a separate full-hardware software foundation under `full_hardwar
 - Full-hardware project: `firmware/openrf1/keil/OpenRF1_FullHardware.uvprojx`.
 - Full-hardware output: `firmware/openrf1/keil/Objects_FullHardware/OpenRF1_FullHardware.hex`.
 
-The Phase 3.2B source prepares bounded software foundations for the shared I2C bus, BMP280, MPU6050, HC-SR04, TCRT5000, Hall, RPLIDAR C1 byte transport, and STM32-to-ESP32 link. USART2/USART3 pins, PWM channel pins, line-input pins, voltage safety, I2C ACKs, physical polarity, RPLIDAR operation, ESP32 operation, and real sensor data remain UNVERIFIED.
+The Phase 3.2B source prepares bounded software foundations for the shared I2C signal bus, BMP280, MPU6050, HC-SR04, TCRT5000, Hall, RPLIDAR C1 byte transport, and STM32-to-ESP32 link. Module-specific evidence revises the proposed power domains, but USART2/USART3 pins, PWM channel pins, line-input pins, BMP280/MPU6050 ACKs, HC-SR04 Echo VOH, Hall output voltage, physical polarity, RPLIDAR operation, ESP32 operation, power integrity, and real full-system sensor data remain UNVERIFIED.
 
 Build only; do not flash until the manual safety checklist is complete.

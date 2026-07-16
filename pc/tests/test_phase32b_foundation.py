@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+from pathlib import Path
 
 from rplidar_c1_tools.openrf1_phase32b import (
     Bmp280Calibration,
@@ -16,6 +17,9 @@ from rplidar_c1_tools.openrf1_phase32b import (
     mpu6050_gyro_raw_to_radps,
     mpu6050_temperature_raw_to_c,
 )
+
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 def test_ring_buffer_wraparound_and_overflow_accounting():
@@ -110,3 +114,37 @@ def test_scheduler_handles_u32_rollover_and_missing_sensor_tasks_keep_running():
     assert scheduler.service(3) == ()
     assert scheduler.service(8) == ("fast",)
     assert [name for name, _now in ran] == ["fast", "fast"]
+
+
+def test_phase32b_electrical_contract_uses_module_specific_power_domains():
+    phase_doc = (REPO_ROOT / "docs" / "phase3_2b_full_hardware_foundation.md").read_text(encoding="utf-8")
+    wiring_doc = (REPO_ROOT / "docs" / "wiring.md").read_text(encoding="utf-8")
+    hardware_lock = (REPO_ROOT / "HARDWARE_LOCK.md").read_text(encoding="utf-8")
+    combined = "\n".join((phase_doc, wiring_doc, hardware_lock))
+
+    required = [
+        "Do not tie all I2C module VCC pins together",
+        "BH1750 VCC -> 5 V",
+        "MPU6050 VCC -> 5 V",
+        "BMP280 VCC -> 3.3 V",
+        "BMP280 VCC must connect to OpenRF1 3.3 V",
+        "must not connect to the I2C connector 5 V pin",
+        "external 5 V power and USB power must not be connected simultaneously",
+        "Echo level protection is conditional on module supply and measured Echo VOH",
+        "Hall `S` must not be declared safe for direct STM32 connection",
+        "measure Hall `S` voltage in both magnetic states",
+        "TCRT5000 modules should be powered from 3.3 V",
+    ]
+    obsolete = [
+        "common VCC and GND",
+        "all three I2C-module VCC pins are tied together",
+        "Echo may be 5 V and requires an external divider",
+        "requires an external resistor divider",
+        "PWM servo supply jumper must be physically set to 5 V",
+        "Exact module-board supply compatibility is MANUAL_ACTION_REQUIRED",
+    ]
+
+    for snippet in required:
+        assert snippet in combined
+    for snippet in obsolete:
+        assert snippet not in combined

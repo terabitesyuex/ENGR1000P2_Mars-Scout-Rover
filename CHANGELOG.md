@@ -103,7 +103,7 @@ All notable subsystem changes are recorded here. Track protocol, GPIO, power, da
 - Corrected the STM32 controller target for the BH1750 bring-up path to OpenRF1 with STM32F103RCT6, 64 pins, Cortex-M3, 256 KB flash, and 48 KB SRAM.
 - Recorded the intended vendor toolchain as Keil MDK/uVision 5 with STM32F10x Standard Peripheral Library, target STM32F103RC, `STM32F10X_HD`, `USE_STDPERIPH_DRIVER`, and `startup_stm32f10x_hd.s`.
 - Recorded confirmed OpenRF1 software-I2C pins PB1/SCL and PC3/SDA, 10 kOhm pull-ups to 3.3 V, duplicated 2x4 I2C header signals, and USART1 PA9/PA10 at 115200 baud 8N1.
-- Recorded the GY-302/BH1750 planned wiring table and configured public 7-bit address `0x23` with ADDR to GND; ACK and real lux readings remain UNVERIFIED.
+- Recorded the GY-302/BH1750 planned wiring table and configured public 7-bit address `0x23` with ADDR to GND; physical ACK and real lux readings were deferred to later manual evidence.
 - Added `firmware/openrf1/app/` application-layer source for board configuration, bounded software I2C, BH1750 conversion/state machine, and versioned telemetry formatting.
 - Added host-testable OpenRF1/BH1750 Python logic, deterministic BH1750 telemetry generation, mocked STM32 serial capture, and `python -m rplidar_c1_tools` CLI entrypoint.
 - Added CLI commands `simulate-bh1750-telemetry` and `capture-stm32-serial`.
@@ -125,11 +125,23 @@ All notable subsystem changes are recorded here. Track protocol, GPIO, power, da
 - Recorded proposed USART2/USART3, HC-SR04, I2C strap, TCRT5000, and Hall wiring as UNVERIFIED or MANUAL_ACTION_REQUIRED, not confirmed hardware facts.
 - Did not flash hardware, open COM ports, access USB devices, verify I2C ACKs, prove ESP32/RPLIDAR operation, implement WiFi firmware, implement motor/encoder control, or claim real sensor data.
 
+## 2026-07-17 - Phase 3.2B Electrical Evidence Revision And Phase 3.2A Physical Evidence
+
+- Integrated sanitized recorded Phase 3.2A BH1750 physical evidence for frozen firmware commit `ba2024b`.
+- Recorded firmware flash, CH340/USART1 telemetry, BH1750 communication at configured address `0x23`, a 500 ms telemetry period, and physical cover/illumination response as MANUAL_EVIDENCE_VERIFIED.
+- Preserved absolute illuminance calibration as UNVERIFIED.
+- Revised Phase 3.2B module power domains from module-specific evidence: GY-302/BH1750 and GY-521/MPU6050 module VCC on 5 V, BMP280-3.3 and TCRT5000 modules on 3.3 V, Hall module on 5 V, and common ground for all modules.
+- Removed the old all-I2C-VCC-together and TCRT5000/Hall-common-VCC assumptions.
+- Replaced unconditional HC-SR04 Echo divider language with a conditional requirement based on module supply, measured Echo VOH, or established MCU pin tolerance.
+- Added ESP32-C3 USB/external-power exclusion and recommended a removable 5 V jumper or switch for integration.
+- Added focused evidence tests for the committed BH1750 JSONL and revised electrical documentation.
+- Did not change RPLIDAR C1 transport assumptions, implement new hardware pin mappings, open real COM ports in automation, or claim full-system power/current validation.
+
 ## Change Categories
 
 - Protocol changes: Phase 2.5 adds a PC-direct standard scan-node parser boundary for C1 capture; Phase 3.1 adds the PC-side `mars_scout_stm32_sensor_telemetry` v1 diagnostic protocol; Phase 3.2A emits the existing v1 `illuminance` message for `bh1750_1`; Phase 3.2B extends v1 telemetry with raw IMU and status/transport diagnostics and defines a separate STM32-to-ESP32 binary frame contract; no ESP32 WiFi protocol implementation.
 - GPIO changes: Phase 3.2A locks OpenRF1 software-I2C PB1/SCL and PC3/SDA for BH1750 only; other GPIO values remain unset.
-- Power changes: hardware values documented; supply model unverified.
+- Power changes: hardware values documented; Phase 3.2B module-specific evidence defines proposed 5 V and 3.3 V domains, but full-system power budget and physical integration remain unverified.
 - Data-format changes: Phase 2.1 adds the PC-side `ScanFrame` software interface; Phase 2.2 adds Cartesian transform models; Phase 2.3 adds PNG visualization export; Phase 2.4 adds the multi-sensor JSONL recording format; Phase 2.5 reuses that JSONL format for PC-direct C1 captures; Phase 3.1 reuses it for STM32 low-rate sensor telemetry recordings with optional status/raw fields; Phase 3.2A reuses the same recording format for mocked BH1750 serial capture.
 - Firmware changes: Phase 3.2A adds OpenRF1 application-layer STM32F103RCT6 BH1750 source, not a complete standalone Keil build tree.
 - Calibration changes: calibration process documented only.
