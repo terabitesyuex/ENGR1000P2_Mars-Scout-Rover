@@ -532,7 +532,7 @@
             ".verification/phase3.2a/build_audit.txt",
             ".verification/phase3.2a/manual_hardware_status.txt"
           ],
-          "warning": "Keil build, flash, ACK at 0x23, COM-port identity, and real lux validation remain UNVERIFIED."
+          "warning": "Keil build is VERIFIED; flash, ACK at 0x23, COM-port identity, and real lux validation remain UNVERIFIED."
         }
       ]
     }
