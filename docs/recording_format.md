@@ -51,6 +51,8 @@ Neutral IDs are used until mounting is physically verified:
 - `mpu6050_1`
 - `hall_1`
 - `rover_pose`
+- `stm32_subsystem`
+- `esp32_link`
 
 Duplicate sensor IDs are rejected. Unknown sensor IDs in later records are rejected.
 
@@ -185,6 +187,52 @@ Fields:
 
 BH1750 and BMP280 support environmental-change indication. Reliable real-world dust-storm detection is not claimed.
 
+### `subsystem_status`
+
+Fields:
+
+- `sensor_id`: `stm32_subsystem`.
+- `subsystem`
+- `health`
+- `error_count`
+- optional `detail`
+- optional `status`
+- optional `source_sequence`
+
+This records software health only; it is not physical hardware evidence.
+
+### `link_status`
+
+Fields:
+
+- `sensor_id`: `esp32_link`.
+- `link_name`
+- `healthy`
+- `rx_bytes`
+- `tx_bytes`
+- `malformed_frames`
+- `crc_errors`
+- `sequence_gaps`
+- optional `last_rx_ms`
+- optional `status`
+- optional `source_sequence`
+
+### `lidar_transport_stats`
+
+Fields:
+
+- `sensor_id`: `c1_1` or `c1_2`.
+- `rx_bytes`
+- `bytes_read`
+- `overflow_count`
+- `framing_error_count`
+- `chunks_forwarded`
+- `last_rx_tick_ms`
+- optional `status`
+- optional `source_sequence`
+
+These counters do not imply successful physical RPLIDAR operation.
+
 ## Corruption Behavior
 
 Readers reject:
@@ -235,7 +283,7 @@ python -m rplidar_c1_tools.cli render-recording .verification\phase2.4\synthetic
 
 ## Limitations
 
-- Phase 2.4 data is synthetic; Phase 2.5 can write PC-direct C1 records only when fixture bytes or an explicit user-verified serial port are provided; Phase 3.1 can write STM32 telemetry records only from deterministic files or injected streams; Phase 3.2A can write BH1750 records from mock input or a future explicit user-selected COM port.
+- Phase 2.4 data is synthetic; Phase 2.5 can write PC-direct C1 records only when fixture bytes or an explicit user-verified serial port are provided; Phase 3.1 can write STM32 telemetry records only from deterministic files or injected streams; Phase 3.2A can write BH1750 records from mock input or a future explicit user-selected COM port; Phase 3.2B can write deterministic raw-IMU and transport-status records from software fixtures only.
 - No WiFi, live STM32 firmware, serial port, GPIO, I2C, mapping, SLAM, odometry, navigation, or obstacle avoidance is implemented.
 - No mounting transforms are recorded or applied.
 - No sensor calibration is implied.

@@ -180,3 +180,11 @@ PC-direct port remains locked:
 - Future hardware check: unplug and reconnect the USB adapter if the operating system still holds the port.
 
 Current Phase 3.2A automated work has no real COM-port access, STM32 flashing, GPIO, I2C, ESP32 communication, WiFi sockets, mapping, SLAM, odometry, navigation, obstacle avoidance, motors, encoders, or additional sensors.
+
+Current Phase 3.2B automated work also has no real COM-port access, STM32 flashing, GPIO, I2C, ESP32 WiFi, USB device access, or sensors. For Phase 3.2B bring-up:
+
+- HC-SR04 timeout remains invalid data, not distance zero.
+- TCRT5000 and Hall raw state must be preserved until polarity is physically verified.
+- BMP280 and MPU6050 bad ID or NACK must be recorded as status, not converted into readings.
+- RPLIDAR overflow and ESP32 CRC errors are transport diagnostics only, not proof of working physical links.
+- Follow `docs/phase3_2b_full_hardware_foundation.md` before attaching additional hardware.

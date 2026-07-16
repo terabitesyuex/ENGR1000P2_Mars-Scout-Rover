@@ -77,6 +77,32 @@ The firmware foundation is configured for OpenRF1 STM32F103RCT6 software I2C on 
 
 Invalid BH1750 communication must not be represented as zero lux. A valid dark reading may be `0.0` lux only when the sensor transaction is valid.
 
+## Phase 3.2B OpenRF1 Full-Hardware Foundation
+
+Phase 3.2B adds software contracts only:
+
+- USART2 is the proposed RPLIDAR C1 byte-transport link at 460800 baud 8N1, but OpenRF1 connector-to-MCU pins remain UNVERIFIED.
+- USART3 is the proposed STM32-to-ESP32 link. The software configuration uses a provisional 921600 baud because 115200 is not automatically sufficient for lidar chunks. This baud is NOT PHYSICALLY VERIFIED.
+- USART1 remains the CH340/debug telemetry path at 115200 baud 8N1 and must not carry high-rate lidar payload.
+
+The STM32-to-ESP32 binary frame is documented in `docs/openrf1_phase32b_protocol.md`. It uses:
+
+- Magic `0xA5 0x5A`.
+- Version `1`.
+- Little-endian sequence, timestamp, payload length, and CRC fields.
+- Maximum payload length 256 bytes.
+- CRC-16/CCITT-FALSE over version through payload.
+- Resynchronization by scanning for the magic bytes and rejecting malformed length or CRC failures.
+
+New JSON telemetry message types for PC inspection and recording fixtures:
+
+- `imu_raw`
+- `subsystem_status`
+- `link_status`
+- `lidar_transport_stats`
+
+These contracts are SOFTWARE_VERIFIED by tests only. They do not prove ESP32 operation, RPLIDAR operation, UART electrical idle, framing integrity on real wires, or WiFi behavior.
+
 ## Transport Expectations
 
 - Include sequence numbers.
@@ -109,3 +135,6 @@ The following remain UNVERIFIED:
 - Exact bandwidth budget.
 - Exact reconnection timing.
 - Simultaneous dual-C1 transport feasibility.
+- OpenRF1 USART2 connector-to-MCU pins.
+- OpenRF1 USART3 connector-to-MCU pins.
+- Physical STM32-to-ESP32 baud rate.

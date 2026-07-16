@@ -80,6 +80,64 @@ This plan is USER-CONFIRMED, NOT ELECTRICALLY TESTED:
 
 Power off before changing wiring. First power-on should be performed without motors and without additional new sensors. Confirm address ACK at `0x23` and controlled lux response before marking readings verified.
 
+## Phase 3.2B Proposed Full-Hardware Wiring
+
+The following is a hardware-team proposal for future validation, not verified truth.
+
+### ESP32-C3 SuperMini
+
+- ESP32 5V -> OpenRF1 Bluetooth UART 5V.
+- ESP32 GND -> OpenRF1 Bluetooth UART GND.
+- ESP32 GPIO21 TX -> OpenRF1 RX3.
+- ESP32 GPIO20 RX <- OpenRF1 TX3.
+
+Software intent: STM32 USART3 communicates with ESP32. USART3 is not the debug console. USART1 remains dedicated to CH340/debug telemetry.
+
+### RPLIDAR C1
+
+- C1 VCC -> OpenRF1 user UART 5V.
+- C1 GND -> OpenRF1 user UART GND.
+- C1 TX -> OpenRF1 RX2.
+- C1 RX <- OpenRF1 TX2.
+
+C1 transport target: 3.3 V TTL UART, 460800 baud, 8 data bits, no parity, 1 stop bit. Do not trust wire colors alone; verify signal identity from adapter-board labels or continuity testing.
+
+### Shared Software I2C
+
+Known board bus:
+
+- PB1 = SCL.
+- PC3 = SDA.
+
+Proposed straps:
+
+- BH1750 ADDR -> GND, address `0x23`.
+- MPU6050 AD0 -> GND, address `0x68`; INT may remain disconnected for polling.
+- BMP280 CSB -> VDDIO for I2C mode, SDO -> GND, address `0x76`.
+
+Exact module-board supply compatibility is MANUAL_ACTION_REQUIRED until the breakout circuitry is verified. I2C pull-up rail must be checked before adding modules.
+
+### HC-SR04
+
+Proposed logical allocation:
+
+- `ultrasonic_1` front: Trig -> PWM channel 0, Echo -> PWM channel 1.
+- `ultrasonic_2` left: Trig -> PWM channel 2, Echo -> PWM channel 3.
+- `ultrasonic_3` right: Trig -> PWM channel 4, Echo -> PWM channel 5.
+
+PWM servo supply jumper must be physically set to 5 V, not 6.5 V. Echo may be 5 V and requires an external resistor divider or suitable level shifter before the STM32 input unless verified board-level protection proves otherwise. Software cannot make Echo electrically safe.
+
+### TCRT5000 And Hall
+
+Proposed logical allocation:
+
+- `tcrt5000_1` OUT -> line input signal 1.
+- `tcrt5000_2` OUT -> line input signal 2.
+- `hall_1` S -> line input signal 3.
+- common VCC and GND.
+
+Actual STM32 GPIO pins and active polarity remain UNVERIFIED. Preserve raw digital states until physical tests establish polarity.
+
 ## User-Confirmed Planned Ground/Landmark Connector
 
 This plan is USER-CONFIRMED PLANNED CONNECTION, not electrically tested hardware evidence:

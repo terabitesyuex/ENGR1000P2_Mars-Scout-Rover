@@ -1,6 +1,6 @@
 # Architecture
 
-The rover architecture separates hardware access, transport, data models, algorithms, visualization, recording, and replay. Phase 3.2A adds an OpenRF1 STM32F103RCT6 + GY-302/BH1750 firmware foundation and mocked PC serial-capture path while preserving the Phase 2.4 recording and replay pipeline.
+The rover architecture separates hardware access, transport, data models, algorithms, visualization, recording, and replay. Phase 3.2B adds an isolated OpenRF1 multisensor and communications software foundation while preserving the Phase 3.2A BH1750-only path and the Phase 2.4 recording/replay pipeline.
 
 ## Sensor Layer
 
@@ -84,6 +84,7 @@ Synthetic LiDAR source
 PC-direct C1 byte stream with explicit user-provided port or fixture bytes
 STM32 low-rate sensor telemetry simulator / future forwarded telemetry
 OpenRF1 BH1750 mocked serial capture / future user-selected CH340 COM port
+OpenRF1 Phase 3.2B full-hardware fixtures and STM32-to-ESP32 frame codec
     -> ScanFrame data model
     -> STM32 telemetry parser / recording bridge
     -> scan builder / coordinate transforms
@@ -93,7 +94,7 @@ OpenRF1 BH1750 mocked serial capture / future user-selected CH340 COM port
     -> replay visualization
 ```
 
-The Phase 2.4 JSONL recording format is a PC-side reproducibility format. Phase 2.5 writes PC-direct C1 captures into that same format. Phase 3.1 writes validated STM32 low-rate sensor telemetry into that same format. Phase 3.2A writes mocked or manually captured BH1750 serial telemetry into that same format. JSONL recordings are not the future on-wire ESP32 protocol.
+The Phase 2.4 JSONL recording format is a PC-side reproducibility format. Phase 2.5 writes PC-direct C1 captures into that same format. Phase 3.1 writes validated STM32 low-rate sensor telemetry into that same format. Phase 3.2A writes mocked or manually captured BH1750 serial telemetry into that same format. Phase 3.2B writes deterministic raw-IMU and transport-status fixture records into that same format. JSONL recordings are not the future on-wire ESP32 protocol.
 
 ## Two-C1 Policy
 
@@ -111,6 +112,8 @@ Phase 3.1 does not implement real STM32 sensor acquisition, serial ports, GPIO, 
 
 Phase 3.2A implements application-layer firmware source for one GY-302/BH1750 sensor on OpenRF1 software I2C PB1/PC3, plus a mockable PC serial-capture layer for versioned `illuminance` telemetry from `bh1750_1`. Automated tests use pure logic and file-backed mock readers only.
 
-Phase 3.2A does not implement BMP280, HC-SR04, TCRT5000, Hall, MPU6050, motors, encoders, ESP32/WiFi, C1 hardware integration, mapping, SLAM, navigation, obstacle avoidance, or Phase 3.2B. Keil build, flash, real COM port, ACK at `0x23`, and real lux response remain manual and UNVERIFIED.
+Phase 3.2A remains the BH1750-only firmware path. Keil build, flash, real COM port, ACK at `0x23`, and real lux response remain manual and UNVERIFIED until evidence exists.
+
+Phase 3.2B implements an isolated full-hardware firmware foundation under `firmware/openrf1/full_hardware/`, a separate Keil project/output, raw sensor/status telemetry contracts, deterministic PC fixtures, and the STM32-side binary frame contract for the future ESP32 link. It does not implement ESP32 WiFi firmware, motor/encoder control, physical sensor validation, mapping, SLAM, navigation, obstacle avoidance, or autonomous motion. USART2/USART3 pins, PWM pins, line-input pins, I2C ACKs, voltage safety, sensor polarity, RPLIDAR operation, ESP32 operation, and real sensor data remain UNVERIFIED.
 
 Emergency stopping remains a local STM32 safety responsibility in the plan. PC mapping occurs later and is short-range accumulated mapping, not a required reusable global SLAM map. ROS is not required.

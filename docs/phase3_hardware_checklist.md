@@ -104,3 +104,24 @@ The following is USER-CONFIRMED PLANNED CONNECTION only:
 - Shared connector VCC and GND are planned.
 
 Before use, verify connector orientation, exact pin order, supply voltage, logic voltage, common ground, and polarity.
+
+## Phase 3.2B Manual Bring-Up Order
+
+Do not mark these items complete automatically.
+
+1. Preserve and complete BH1750-only physical validation.
+2. Validate BMP280 alone on the shared I2C bus.
+3. Validate MPU6050 alone.
+4. Validate all three I2C devices together.
+5. Validate TCRT5000 raw inputs.
+6. Validate Hall raw input.
+7. Validate one HC-SR04 with level shifting.
+8. Validate all three HC-SR04 modules with staggered triggering.
+9. Validate USART2 electrical idle and loopback where safe.
+10. Validate one C1 unit on USART2.
+11. Validate USART3 loopback.
+12. Validate ESP32-C3 link.
+13. Validate C1-to-ESP32 data transport.
+14. Perform full-system power and concurrency testing.
+
+Record voltage levels, common ground, exact connector pins, observed raw states, pass/fail, and evidence paths for each step. Physical Phase 3.2B remains UNVERIFIED until this evidence exists.

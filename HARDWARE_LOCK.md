@@ -92,6 +92,17 @@ GY-302/BH1750 Phase 3.2A planned wiring:
 
 The GY-302 module marking and pin labels VCC, GND, SCL, SDA, and ADDR are CONFIRMED by user-provided physical observation. With ADDR grounded, the configured public BH1750 7-bit address is `0x23`. This address is CONFIGURED BY ADDR-TO-GND PLAN, NOT YET ACK-VERIFIED. No real ACK, address scan, lux reading, calibration, successful firmware build, successful flash, successful hardware telemetry, or PC COM-port path has been measured by repository automation.
 
+Phase 3.2B proposed full-hardware connection plan, supplied for software preparation only:
+
+- ESP32-C3 SuperMini proposed link: GPIO21 TX -> OpenRF1 RX3, GPIO20 RX <- OpenRF1 TX3, with common ground and proposed 5 V supply from the OpenRF1 Bluetooth UART header.
+- RPLIDAR C1 proposed link: C1 TX -> OpenRF1 RX2, C1 RX <- OpenRF1 TX2, VCC -> OpenRF1 user UART 5 V, GND -> user UART GND.
+- Shared I2C proposal: BH1750, MPU6050, and BMP280 share PB1/SCL and PC3/SDA.
+- Proposed straps: BH1750 ADDR -> GND for `0x23`; MPU6050 AD0 -> GND for `0x68`; BMP280 CSB -> VDDIO and SDO -> GND for `0x76`.
+- HC-SR04 logical proposal: front trig/echo -> PWM channels 0/1, left -> 2/3, right -> 4/5.
+- TCRT5000/Hall logical proposal: `tcrt5000_1` -> line input signal 1, `tcrt5000_2` -> signal 2, `hall_1` -> signal 3.
+
+This entire Phase 3.2B connection plan is UNVERIFIED physical evidence. It does not confirm connector orientation, exact MCU pins, timer channels, DMA channels, voltage safety, level shifting, I2C ACKs, UART operation, sensor polarity, RPLIDAR operation, ESP32 operation, or real sensor data.
+
 ## CONFIRMED ELECTRICAL FACTS
 
 Verified RPLIDAR C1 facts from earlier hardware lock work:
@@ -174,6 +185,10 @@ PC planned responsibilities:
 - exact ESP32 GPIOs: UNVERIFIED.
 - exact UART assignment: UNVERIFIED.
 - exact STM32-ESP32 connector: UNVERIFIED.
+- exact USART2 user-UART MCU pins: UNVERIFIED.
+- exact USART3 Bluetooth-UART MCU pins: UNVERIFIED.
+- exact PWM channel 0 through 5 MCU pins/timers: UNVERIFIED.
+- exact line input signal 1 through 3 MCU pins: UNVERIFIED.
 - exact HC-SR04 level-shifting requirements on the physical board: UNVERIFIED.
 - HC-SR04 ECHO voltage compatibility with STM32 inputs: UNVERIFIED.
 - BH1750 address `0x23` ACK verification: UNVERIFIED.
@@ -223,6 +238,16 @@ PC planned responsibilities:
 - No real COM port, USB device, GPIO, I2C bus, flash action, Keil build, or real sensor is accessed by repository automation.
 - Keil build, firmware flashing, CH340 COM-port selection, BH1750 ACK at `0x23`, and real lux validation are MANUAL_ACTION_REQUIRED.
 
+## Phase 3.2B Software Boundary Status
+
+- Phase 3.2B adds an isolated OpenRF1 full-hardware firmware foundation and PC-side contracts/tests for proposed multisensor and communications integration.
+- `firmware/openrf1/app/` remains the BH1750-only Phase 3.2A source boundary.
+- `firmware/openrf1/full_hardware/` is the Phase 3.2B software foundation boundary.
+- The Phase 3.2B full-hardware Keil project outputs to `Objects_FullHardware/` and must not overwrite `Objects/OpenRF1_BH1750.hex`.
+- Automated Phase 3.2B tests use pure logic, deterministic files, and build/artifact audits only.
+- No real COM port, USB device, GPIO, I2C bus, WiFi socket, flash action, or real sensor is accessed by repository automation.
+- Physical wiring, voltage levels, power integrity, USART2/USART3 operation, I2C ACKs, TCRT5000/Hall polarity, HC-SR04 echo timing, RPLIDAR transport, ESP32 link, and real sensor data remain UNVERIFIED.
+
 ## Safety Rules
 
 - Do not connect the LiDAR red wire to ESP32 3.3 V.
@@ -233,3 +258,7 @@ PC planned responsibilities:
 - Power off before changing GY-302 wiring.
 - Do not confuse the OpenRF1 I2C header with the adjacent SWD connector.
 - Do not report zero lux as an error sentinel; distinguish valid darkness from invalid telemetry.
+- Do not connect HC-SR04 Echo directly until 5 V-to-STM32 input safety is verified or level shifting is installed.
+- Do not set the PWM servo supply rail to 6.5 V for HC-SR04 modules; use 5 V if that rail is used.
+- Do not infer C1 signal identity from wire color alone.
+- Do not use USART1 for high-rate lidar payload.

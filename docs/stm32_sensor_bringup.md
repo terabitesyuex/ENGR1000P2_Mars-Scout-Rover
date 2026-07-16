@@ -62,6 +62,12 @@ ABSENT from this repository:
 
 Phase 3.2A therefore adds application-layer source under `firmware/openrf1/app/` and manual Keil integration instructions. Successful compilation, flashing, ACK at `0x23`, CH340 COM-port identity, and real lux telemetry remain MANUAL_ACTION_REQUIRED.
 
+## Phase 3.2B OpenRF1 Update
+
+Phase 3.2B adds an isolated full-hardware software foundation under `firmware/openrf1/full_hardware/` and the separate Keil project `OpenRF1_FullHardware.uvprojx`. It prepares software for BMP280, MPU6050, HC-SR04, TCRT5000, Hall, RPLIDAR C1 byte transport, and STM32-to-ESP32 transport without performing hardware access.
+
+CONFIRMED values remain limited to the Phase 3.2A OpenRF1 facts: PB1/SCL, PC3/SDA, USART1 PA9/PA10, STM32F103RCT6, and the compatible Keil/SPL toolchain. USART2 pins, USART3 pins, PWM channel pins, line-input pins, voltage safety, I2C ACKs, physical polarity, and real sensor data remain UNVERIFIED.
+
 ## Future Runtime Constraints
 
 - Do not use long blocking delays in embedded runtime paths.

@@ -108,6 +108,75 @@ Payload:
 
 Temperature and pressure must be finite when valid. Pressure is in pascals. Altitude is not part of Phase 3.1 and must not be inferred.
 
+### `imu_raw`
+
+Sensor ID:
+
+- `mpu6050_1`
+
+Payload:
+
+- `accel_x_raw`, `accel_y_raw`, `accel_z_raw`
+- `gyro_x_raw`, `gyro_y_raw`, `gyro_z_raw`
+- `temperature_raw`
+- `accel_range_g`
+- `gyro_range_dps`
+- `calibration_state`
+
+Phase 3.2B records raw MPU6050 samples and deterministic conversion helpers only. It does not claim calibration, sensor fusion, orientation, odometry, SLAM, or navigation.
+
+### `subsystem_status`
+
+Sensor ID:
+
+- `stm32_subsystem`
+
+Payload:
+
+- `subsystem`
+- `health`
+- `error_count`
+- optional `detail`
+
+This is software status. It is not a physical sensor reading.
+
+### `link_status`
+
+Sensor ID:
+
+- `esp32_link`
+
+Payload:
+
+- `link_name`
+- `healthy`
+- `rx_bytes`
+- `tx_bytes`
+- `malformed_frames`
+- `crc_errors`
+- `sequence_gaps`
+- `last_rx_ms`
+
+Phase 3.2B uses this for the STM32-side USART3 foundation. It is not proof that a real ESP32-C3 link is operating.
+
+### `lidar_transport_stats`
+
+Sensor IDs:
+
+- `c1_1`
+- `c1_2`
+
+Payload:
+
+- `rx_bytes`
+- `bytes_read`
+- `overflow_count`
+- `framing_error_count`
+- `chunks_forwarded`
+- `last_rx_tick_ms`
+
+These are byte-transport counters only. They do not claim RPLIDAR packet parsing, mapping, or a successful physical C1 connection.
+
 ## Recording Bridge
 
 The PC bridge converts validated messages into `mars_scout_multisensor_recording` version `1`.
@@ -117,5 +186,9 @@ The PC bridge converts validated messages into `mars_scout_multisensor_recording
 - `hall_landmark` -> `hall_landmark`
 - `illuminance` -> `illuminance`
 - `barometer` -> `barometer`
+- `imu_raw` -> `imu`
+- `subsystem_status` -> `subsystem_status`
+- `link_status` -> `link_status`
+- `lidar_transport_stats` -> `lidar_transport_stats`
 
 The bridge preserves sensor IDs, timestamps, status, raw values, and source telemetry sequence where supported. It does not create LiDAR scans.

@@ -111,9 +111,23 @@ All notable subsystem changes are recorded here. Track protocol, GPIO, power, da
 - Added OpenRF1 BH1750 bring-up documentation and a build-audit helper for verifier artifacts.
 - Did not run Keil, flash STM32, open real COM ports, access USB devices, run I2C/GPIO, or implement BMP280, HC-SR04, TCRT5000, Hall, MPU6050, motors, encoders, ESP32/WiFi, C1 hardware integration, mapping, SLAM, navigation, obstacle avoidance, or Phase 3.2B.
 
+## 2026-07-16 - Phase 3.2B OpenRF1 Multisensor And Communications Software Foundation
+
+- Frozen the Phase 3.2A BH1750 HEX externally before source changes; physical hardware testing remains independent.
+- Added isolated Phase 3.2B firmware source under `firmware/openrf1/full_hardware/` without modifying the BH1750-only `firmware/openrf1/app/` scope.
+- Added a separate Keil project `OpenRF1_FullHardware.uvprojx` with output directory `Objects_FullHardware/` and output name `OpenRF1_FullHardware`.
+- Added feature flags for BH1750, BMP280, MPU6050, HC-SR04, TCRT5000, Hall, RPLIDAR C1 transport, and ESP32 link foundations.
+- Added bounded ring buffers, cooperative scheduler, shared software-I2C wrapper, BMP280 compensation foundation, MPU6050 raw conversion foundation, digital debounce, HC-SR04 timeout state machine, RPLIDAR byte transport counters, and STM32-to-ESP32 binary frame encoding.
+- Extended `mars_scout_stm32_sensor_telemetry` version `1` with `imu_raw`, `subsystem_status`, `link_status`, and `lidar_transport_stats`.
+- Extended deterministic PC simulation, strict parsing, recording bridge support, and tests for Phase 3.2B contracts.
+- Added Phase 3.2B architecture, wiring, protocol, memory-budget, bring-up, troubleshooting, and verification documentation.
+- Added `phase3.2b` verifier manifest support and `tools/audit_phase32b.py`.
+- Recorded proposed USART2/USART3, HC-SR04, I2C strap, TCRT5000, and Hall wiring as UNVERIFIED or MANUAL_ACTION_REQUIRED, not confirmed hardware facts.
+- Did not flash hardware, open COM ports, access USB devices, verify I2C ACKs, prove ESP32/RPLIDAR operation, implement WiFi firmware, implement motor/encoder control, or claim real sensor data.
+
 ## Change Categories
 
-- Protocol changes: Phase 2.5 adds a PC-direct standard scan-node parser boundary for C1 capture; Phase 3.1 adds the PC-side `mars_scout_stm32_sensor_telemetry` v1 diagnostic protocol; Phase 3.2A emits the existing v1 `illuminance` message for `bh1750_1`; no ESP32 or WiFi protocol changes.
+- Protocol changes: Phase 2.5 adds a PC-direct standard scan-node parser boundary for C1 capture; Phase 3.1 adds the PC-side `mars_scout_stm32_sensor_telemetry` v1 diagnostic protocol; Phase 3.2A emits the existing v1 `illuminance` message for `bh1750_1`; Phase 3.2B extends v1 telemetry with raw IMU and status/transport diagnostics and defines a separate STM32-to-ESP32 binary frame contract; no ESP32 WiFi protocol implementation.
 - GPIO changes: Phase 3.2A locks OpenRF1 software-I2C PB1/SCL and PC3/SDA for BH1750 only; other GPIO values remain unset.
 - Power changes: hardware values documented; supply model unverified.
 - Data-format changes: Phase 2.1 adds the PC-side `ScanFrame` software interface; Phase 2.2 adds Cartesian transform models; Phase 2.3 adds PNG visualization export; Phase 2.4 adds the multi-sensor JSONL recording format; Phase 2.5 reuses that JSONL format for PC-direct C1 captures; Phase 3.1 reuses it for STM32 low-rate sensor telemetry recordings with optional status/raw fields; Phase 3.2A reuses the same recording format for mocked BH1750 serial capture.

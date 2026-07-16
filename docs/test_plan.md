@@ -311,3 +311,22 @@ System:
 `tools/validate_current_plan.py` checks explicit text anchors in authoritative current-plan files. It verifies selected facts such as two C1 units, BH1750/BMP280 presence, STM32/ESP32/PC roles, WiFi baseline, ROS/Linux non-goal status, dual-C1 optional status, and the revised phase order.
 
 Limit: the validator checks literal text snippets only; it is not semantic AI analysis and does not validate historical documents unless they are treated as current-plan authorities.
+
+## Phase 3.2B Software Foundation Tests
+
+Run:
+
+```powershell
+.\tools\verify_phase.cmd phase3.2b -AllowDirty
+```
+
+The Phase 3.2B verifier covers:
+
+- pure ring-buffer, scheduler, BMP280, MPU6050, debounce, and HC-SR04 state-machine tests
+- STM32-to-ESP32 binary frame golden vectors, CRC failures, malformed-frame recovery, and sequence gaps
+- strict JSON telemetry parsing for `imu_raw`, `subsystem_status`, `link_status`, and `lidar_transport_stats`
+- deterministic Phase 3.2B telemetry generation, recording conversion, and inspection
+- static firmware source audit for bounded buffers, feature flags, no dynamic allocation, no unbounded high-rate debug output, and isolated Keil outputs
+- baseline Phase 3.2A and full-hardware Phase 3.2B Keil build evidence
+
+Phase 3.2B automated tests do not open real COM ports, USB devices, WiFi sockets, GPIO, I2C, flashing tools, or sensors.

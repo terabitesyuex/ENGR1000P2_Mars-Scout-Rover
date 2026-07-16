@@ -1,12 +1,14 @@
 # RPLIDAR C1 PC Tools
 
-PC-side package for synthetic scans, coordinate transforms, visualization, Phase 2.4 multi-sensor recording, deterministic replay, Phase 2.5 PC-direct C1 capture, Phase 3.1 STM32 telemetry simulation/parsing/recording bridge, Phase 3.2A OpenRF1 BH1750 mocked serial capture, and later mapping work.
+PC-side package for synthetic scans, coordinate transforms, visualization, Phase 2.4 multi-sensor recording, deterministic replay, Phase 2.5 PC-direct C1 capture, Phase 3.1 STM32 telemetry simulation/parsing/recording bridge, Phase 3.2A OpenRF1 BH1750 mocked serial capture, Phase 3.2B multisensor/link fixtures, and later mapping work.
 
 Phase 2.5 automated tests use mocked C1 byte streams only. Manual PC-direct capture can use an explicit user-verified port, but this package does not invent ports, access STM32/ESP32 firmware, use WiFi sockets, implement mapping, implement SLAM, or implement obstacle avoidance.
 
 Phase 3.1 STM32 telemetry tools use deterministic files and in-memory streams only. They do not open serial ports, GPIO, I2C, USB devices, timers, or network sockets.
 
 Phase 3.2A capture tools use file-backed mock input in automated tests. Manual live capture requires an explicit user-selected CH340 COM port; no COM port is guessed.
+
+Phase 3.2B tools use deterministic fixtures and pure codecs only. They do not open USART2, USART3, real COM ports, USB devices, WiFi sockets, GPIO, I2C, flashing tools, or sensors.
 
 ## Install For Development
 
@@ -128,6 +130,16 @@ If pyserial is unavailable for manual live capture, install it only in the repos
 ```powershell
 pc\.venv\Scripts\python.exe -m pip install pyserial
 ```
+
+## Phase 3.2B Full-Hardware Fixtures
+
+```powershell
+python -m rplidar_c1_tools.cli simulate-stm32-sensors --cycles 2 --scenario phase32b_full_foundation --output .verification\phase3.2b\phase32b_full_telemetry.jsonl --overwrite
+python -m rplidar_c1_tools.cli record-stm32-telemetry --input .verification\phase3.2b\phase32b_full_telemetry.jsonl --output .verification\phase3.2b\phase32b_full_recording.jsonl --overwrite
+python -m rplidar_c1_tools.cli inspect-recording .verification\phase3.2b\phase32b_full_recording.jsonl --output .verification\phase3.2b\phase32b_recording_inspection.txt
+```
+
+The fixture includes `imu_raw`, `subsystem_status`, `link_status`, and `lidar_transport_stats`. These records are software diagnostics, not physical sensor evidence.
 
 ## Data Location
 
