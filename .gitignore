@@ -33,6 +33,7 @@ Thumbs.db
 
 # Keil / MDK generated files
 firmware/openrf1/keil/Objects/
+firmware/openrf1/keil/Objects_FullHardware/
 firmware/openrf1/keil/Listings/
 firmware/openrf1/keil/DebugConfig/
 firmware/openrf1/keil/*.uvguix.*

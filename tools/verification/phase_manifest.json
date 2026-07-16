@@ -7,7 +7,8 @@
     "phase2.4",
     "phase2.5",
     "phase3.1",
-    "phase3.2a"
+    "phase3.2a",
+    "phase3.2b"
   ],
   "phases": {
     "phase1": {
@@ -533,6 +534,111 @@
             ".verification/phase3.2a/manual_hardware_status.txt"
           ],
           "warning": "Keil build is VERIFIED; flash, ACK at 0x23, COM-port identity, and real lux validation remain UNVERIFIED."
+        }
+      ]
+    },
+    "phase3.2b": {
+      "display_name": "Phase 3.2B",
+      "required_files": [
+        "docs/phase3_2b_full_hardware_foundation.md",
+        "docs/openrf1_phase32b_protocol.md",
+        "firmware/openrf1/full_hardware/board_config.h",
+        "firmware/openrf1/full_hardware/memory_budget.h",
+        "firmware/openrf1/full_hardware/main_full_hardware.c",
+        "firmware/openrf1/keil/OpenRF1_FullHardware.uvprojx",
+        "pc/src/rplidar_c1_tools/openrf1_phase32b.py",
+        "pc/src/rplidar_c1_tools/esp32_link_codec.py",
+        "pc/tests/test_phase32b_foundation.py",
+        "pc/tests/test_esp32_link_codec.py",
+        "pc/tests/test_openrf1_phase32b_firmware_foundation.py",
+        "tools/audit_phase32b.py"
+      ],
+      "targeted": [
+        "pc/tests/test_phase32b_foundation.py",
+        "pc/tests/test_esp32_link_codec.py",
+        "pc/tests/test_openrf1_phase32b_firmware_foundation.py",
+        "pc/tests/test_stm32_sensor_protocol.py",
+        "pc/tests/test_stm32_sensor_simulator.py",
+        "pc/tests/test_stm32_recording_bridge.py"
+      ],
+      "regression": [
+        "pc/tests/test_openrf1_bh1750.py",
+        "pc/tests/test_openrf1_firmware_foundation.py",
+        "pc/tests/test_stm32_serial_capture.py",
+        "pc/tests/test_stm32_sensor_models.py",
+        "pc/tests/test_stm32_sensor_cli.py",
+        "pc/tests/test_recording.py",
+        "pc/tests/test_replay.py",
+        "pc/tests/test_c1_pc_direct.py",
+        "pc/tests/test_hardware_lock_validation.py",
+        "pc/tests/test_phase3_current_plan.py"
+      ],
+      "full": [
+        "pc/tests"
+      ],
+      "python_commands": [
+        {
+          "label": "Phase 3.2B generate full telemetry",
+          "args": [
+            "-m",
+            "rplidar_c1_tools.cli",
+            "simulate-stm32-sensors",
+            "--cycles",
+            "2",
+            "--scenario",
+            "phase32b_full_foundation",
+            "--output",
+            ".verification/phase3.2b/phase32b_full_telemetry.jsonl",
+            "--overwrite"
+          ],
+          "expected_files": [
+            ".verification/phase3.2b/phase32b_full_telemetry.jsonl"
+          ]
+        },
+        {
+          "label": "Phase 3.2B convert full telemetry",
+          "args": [
+            "-m",
+            "rplidar_c1_tools.cli",
+            "record-stm32-telemetry",
+            "--input",
+            ".verification/phase3.2b/phase32b_full_telemetry.jsonl",
+            "--output",
+            ".verification/phase3.2b/phase32b_full_recording.jsonl",
+            "--overwrite"
+          ],
+          "expected_files": [
+            ".verification/phase3.2b/phase32b_full_recording.jsonl"
+          ]
+        },
+        {
+          "label": "Phase 3.2B inspect recording",
+          "args": [
+            "-m",
+            "rplidar_c1_tools.cli",
+            "inspect-recording",
+            ".verification/phase3.2b/phase32b_full_recording.jsonl",
+            "--output",
+            ".verification/phase3.2b/phase32b_recording_inspection.txt"
+          ],
+          "expected_files": [
+            ".verification/phase3.2b/phase32b_recording_inspection.txt"
+          ]
+        },
+        {
+          "label": "Phase 3.2B software audit",
+          "args": [
+            "tools/audit_phase32b.py",
+            "--audit-output",
+            ".verification/phase3.2b/software_audit.txt",
+            "--manual-output",
+            ".verification/phase3.2b/manual_hardware_status.txt"
+          ],
+          "expected_files": [
+            ".verification/phase3.2b/software_audit.txt",
+            ".verification/phase3.2b/manual_hardware_status.txt"
+          ],
+          "warning": "Software foundation and Keil builds are VERIFIED when this audit passes; physical wiring, power integrity, voltage levels, USART2/USART3 operation, I2C ACKs, sensor polarity, ultrasonic timing, RPLIDAR transport, ESP32 link, and real sensor data remain UNVERIFIED."
         }
       ]
     }
