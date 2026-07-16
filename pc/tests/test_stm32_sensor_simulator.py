@@ -62,3 +62,17 @@ def test_environment_change_scenario_changes_environment_values():
     assert lux_values == [320.0, 335.0]
     assert pressure_values == [101_325.0, 101_300.0]
 
+
+def test_phase32b_scenario_adds_raw_imu_and_link_diagnostics():
+    messages = generate_synthetic_stm32_session(cycles=1, scenario="phase32b_full_foundation")
+    message_types = {message.message_type for message in messages}
+
+    assert {
+        "imu_raw",
+        "subsystem_status",
+        "link_status",
+        "lidar_transport_stats",
+    }.issubset(message_types)
+    assert any(message.sensor_id == "mpu6050_1" for message in messages)
+    assert any(message.sensor_id == "esp32_link" for message in messages)
+

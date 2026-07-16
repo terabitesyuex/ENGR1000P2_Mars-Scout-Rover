@@ -37,13 +37,13 @@ def test_stm32_message_model_is_canonical_and_payload_is_read_only():
 
 
 def test_phase31_model_constants_cover_required_sensors_and_statuses():
-    assert set(MESSAGE_TYPES) == {
+    assert {
         "ultrasonic",
         "ground_edge",
         "hall_landmark",
         "illuminance",
         "barometer",
-    }
+    }.issubset(set(MESSAGE_TYPES))
     assert SENSOR_IDS_BY_MESSAGE_TYPE["ultrasonic"] == (
         "ultrasonic_1",
         "ultrasonic_2",
@@ -56,4 +56,17 @@ def test_phase31_model_constants_cover_required_sensors_and_statuses():
     assert {"ok", "timeout", "out_of_range", "invalid_reading", "simulated"}.issubset(
         set(TELEMETRY_STATUSES)
     )
+
+
+def test_phase32b_model_constants_cover_status_and_raw_imu_messages():
+    assert {
+        "imu_raw",
+        "subsystem_status",
+        "link_status",
+        "lidar_transport_stats",
+    }.issubset(set(MESSAGE_TYPES))
+    assert SENSOR_IDS_BY_MESSAGE_TYPE["imu_raw"] == ("mpu6050_1",)
+    assert SENSOR_IDS_BY_MESSAGE_TYPE["subsystem_status"] == ("stm32_subsystem",)
+    assert SENSOR_IDS_BY_MESSAGE_TYPE["link_status"] == ("esp32_link",)
+    assert SENSOR_IDS_BY_MESSAGE_TYPE["lidar_transport_stats"] == ("c1_1", "c1_2")
 

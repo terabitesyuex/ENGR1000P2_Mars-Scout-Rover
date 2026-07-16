@@ -16,6 +16,8 @@ AUTHORITATIVE_FILES = (
     "docs/stm32_sensor_protocol.md",
     "docs/phase3_hardware_checklist.md",
     "docs/openrf1_bh1750_bringup.md",
+    "docs/phase3_2b_full_hardware_foundation.md",
+    "docs/openrf1_phase32b_protocol.md",
     "docs/test_plan.md",
 )
 
@@ -67,6 +69,11 @@ REQUIRED_SNIPPETS = (
     RequiredSnippet("HARDWARE_LOCK.md", "0x23", "BH1750 address plan documented"),
     RequiredSnippet("docs/openrf1_bh1750_bringup.md", "GY-302 VCC", "BH1750 wiring procedure documented"),
     RequiredSnippet("docs/openrf1_bh1750_bringup.md", "Do not invent a COM port", "COM-port honesty documented"),
+    RequiredSnippet("README.md", "phase3.2b", "Phase 3.2B verifier documented"),
+    RequiredSnippet("AGENTS.md", "Phase 3.2B software work is complete", "Phase 3.2B software status documented"),
+    RequiredSnippet("HARDWARE_LOCK.md", "Phase 3.2B proposed full-hardware connection plan", "Phase 3.2B proposal status documented"),
+    RequiredSnippet("docs/phase3_2b_full_hardware_foundation.md", "physical wiring, power integrity", "Phase 3.2B manual warning documented"),
+    RequiredSnippet("docs/openrf1_phase32b_protocol.md", "CRC-16/CCITT-FALSE", "Phase 3.2B binary CRC documented"),
 )
 
 

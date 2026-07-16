@@ -87,6 +87,62 @@ def test_valid_round_trip_for_every_phase31_message_type():
         assert parsed == message
 
 
+def test_valid_round_trip_for_phase32b_message_types():
+    messages = [
+        _message(
+            "imu_raw",
+            "mpu6050_1",
+            {
+                "accel_x_raw": 0,
+                "accel_y_raw": 0,
+                "accel_z_raw": 16384,
+                "gyro_x_raw": 0,
+                "gyro_y_raw": 0,
+                "gyro_z_raw": 131,
+                "temperature_raw": 0,
+                "accel_range_g": 2,
+                "gyro_range_dps": 250,
+                "calibration_state": "uncalibrated",
+            },
+        ),
+        _message(
+            "subsystem_status",
+            "stm32_subsystem",
+            {"subsystem": "scheduler", "health": "ok", "error_count": 0, "detail": "fixture"},
+        ),
+        _message(
+            "link_status",
+            "esp32_link",
+            {
+                "link_name": "usart3_esp32",
+                "healthy": True,
+                "rx_bytes": 1,
+                "tx_bytes": 2,
+                "malformed_frames": 0,
+                "crc_errors": 0,
+                "sequence_gaps": 0,
+                "last_rx_ms": 10,
+            },
+        ),
+        _message(
+            "lidar_transport_stats",
+            "c1_1",
+            {
+                "rx_bytes": 10,
+                "bytes_read": 4,
+                "overflow_count": 0,
+                "framing_error_count": 0,
+                "chunks_forwarded": 1,
+                "last_rx_tick_ms": 100,
+            },
+        ),
+    ]
+
+    for message in messages:
+        parsed = parse_stm32_telemetry_line(encode_stm32_telemetry_message(message))
+        assert parsed == message
+
+
 @pytest.mark.parametrize(
     ("line", "match"),
     [
@@ -207,6 +263,62 @@ def test_environment_payload_rules_and_no_altitude_field():
                 message_type="barometer",
                 sensor_id="bmp280_1",
                 payload={"temperature_c": 20.0, "pressure_pa": 101_000.0, "altitude_m": 5.0},
+            )
+        )
+
+
+def test_phase32b_payload_errors_are_rejected():
+    with pytest.raises(Stm32TelemetryFormatError, match="accel_range_g"):
+        parse_stm32_telemetry_line(
+            _line_with(
+                message_type="imu_raw",
+                sensor_id="mpu6050_1",
+                payload={
+                    "accel_x_raw": 0,
+                    "accel_y_raw": 0,
+                    "accel_z_raw": 0,
+                    "gyro_x_raw": 0,
+                    "gyro_y_raw": 0,
+                    "gyro_z_raw": 0,
+                    "temperature_raw": 0,
+                    "accel_range_g": 3,
+                    "gyro_range_dps": 250,
+                    "calibration_state": "uncalibrated",
+                },
+            )
+        )
+    with pytest.raises(Stm32TelemetryFormatError, match="sensor_id"):
+        parse_stm32_telemetry_line(
+            _line_with(
+                message_type="link_status",
+                sensor_id="c1_1",
+                payload={
+                    "link_name": "usart3_esp32",
+                    "healthy": True,
+                    "rx_bytes": 0,
+                    "tx_bytes": 0,
+                    "malformed_frames": 0,
+                    "crc_errors": 0,
+                    "sequence_gaps": 0,
+                    "last_rx_ms": None,
+                },
+            )
+        )
+    with pytest.raises(Stm32TelemetryFormatError, match="crc_errors"):
+        parse_stm32_telemetry_line(
+            _line_with(
+                message_type="link_status",
+                sensor_id="esp32_link",
+                payload={
+                    "link_name": "usart3_esp32",
+                    "healthy": True,
+                    "rx_bytes": 0,
+                    "tx_bytes": 0,
+                    "malformed_frames": 0,
+                    "crc_errors": -1,
+                    "sequence_gaps": 0,
+                    "last_rx_ms": None,
+                },
             )
         )
 
