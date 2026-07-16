@@ -11,11 +11,15 @@ from .stm32_sensor_models import (
     BAROMETER_SENSOR_IDS,
     GROUND_EDGE_SENSOR_IDS,
     HALL_SENSOR_IDS,
+    IMU_RAW_SENSOR_IDS,
     ILLUMINANCE_SENSOR_IDS,
+    LIDAR_TRANSPORT_STATS_SENSOR_IDS,
+    LINK_STATUS_SENSOR_IDS,
     MESSAGE_TYPES,
     SENSOR_IDS_BY_MESSAGE_TYPE,
     STM32_TELEMETRY_PROTOCOL,
     STM32_TELEMETRY_VERSION,
+    SUBSYSTEM_STATUS_SENSOR_IDS,
     TELEMETRY_STATUSES,
     ULTRASONIC_SENSOR_IDS,
     Stm32TelemetryMessage,
@@ -153,6 +157,14 @@ def _validate_payload(message: Stm32TelemetryMessage, line_number: int | None) -
         _validate_illuminance(message, line_number)
     elif message.message_type == "barometer":
         _validate_barometer(message, line_number)
+    elif message.message_type == "imu_raw":
+        _validate_imu_raw(message, line_number)
+    elif message.message_type == "subsystem_status":
+        _validate_subsystem_status(message, line_number)
+    elif message.message_type == "link_status":
+        _validate_link_status(message, line_number)
+    elif message.message_type == "lidar_transport_stats":
+        _validate_lidar_transport_stats(message, line_number)
     else:
         raise Stm32TelemetryFormatError("unknown message_type", line_number=line_number)
 
@@ -257,6 +269,101 @@ def _validate_barometer(message: Stm32TelemetryMessage, line_number: int | None)
             _validate_positive_finite(pressure, "payload.pressure_pa", line_number)
 
 
+def _validate_imu_raw(message: Stm32TelemetryMessage, line_number: int | None) -> None:
+    _require_sensor_id(message.sensor_id, IMU_RAW_SENSOR_IDS, line_number)
+    payload = dict(message.payload)
+    allowed = {
+        "accel_x_raw",
+        "accel_y_raw",
+        "accel_z_raw",
+        "gyro_x_raw",
+        "gyro_y_raw",
+        "gyro_z_raw",
+        "temperature_raw",
+        "accel_range_g",
+        "gyro_range_dps",
+        "calibration_state",
+    }
+    _require_allowed_fields(payload, allowed, line_number)
+    for key in (
+        "accel_x_raw",
+        "accel_y_raw",
+        "accel_z_raw",
+        "gyro_x_raw",
+        "gyro_y_raw",
+        "gyro_z_raw",
+        "temperature_raw",
+    ):
+        _validate_signed_int(payload.get(key), f"payload.{key}", line_number)
+    accel_range_g = payload.get("accel_range_g")
+    if accel_range_g not in (2, 4, 8, 16):
+        raise Stm32TelemetryFormatError("payload.accel_range_g must be 2, 4, 8, or 16", line_number=line_number)
+    gyro_range_dps = payload.get("gyro_range_dps")
+    if gyro_range_dps not in (250, 500, 1000, 2000):
+        raise Stm32TelemetryFormatError(
+            "payload.gyro_range_dps must be 250, 500, 1000, or 2000",
+            line_number=line_number,
+        )
+    calibration_state = payload.get("calibration_state")
+    if not isinstance(calibration_state, str) or not calibration_state:
+        raise Stm32TelemetryFormatError("payload.calibration_state must be a non-empty string", line_number=line_number)
+
+
+def _validate_subsystem_status(message: Stm32TelemetryMessage, line_number: int | None) -> None:
+    _require_sensor_id(message.sensor_id, SUBSYSTEM_STATUS_SENSOR_IDS, line_number)
+    payload = dict(message.payload)
+    _require_allowed_fields(payload, {"subsystem", "health", "error_count", "detail"}, line_number)
+    for key in ("subsystem", "health"):
+        value = payload.get(key)
+        if not isinstance(value, str) or not value:
+            raise Stm32TelemetryFormatError(f"payload.{key} must be a non-empty string", line_number=line_number)
+    _validate_non_negative_int(payload.get("error_count"), "payload.error_count", line_number)
+    detail = payload.get("detail")
+    if detail is not None and not isinstance(detail, str):
+        raise Stm32TelemetryFormatError("payload.detail must be a string or null", line_number=line_number)
+
+
+def _validate_link_status(message: Stm32TelemetryMessage, line_number: int | None) -> None:
+    _require_sensor_id(message.sensor_id, LINK_STATUS_SENSOR_IDS, line_number)
+    payload = dict(message.payload)
+    allowed = {
+        "link_name",
+        "healthy",
+        "rx_bytes",
+        "tx_bytes",
+        "malformed_frames",
+        "crc_errors",
+        "sequence_gaps",
+        "last_rx_ms",
+    }
+    _require_allowed_fields(payload, allowed, line_number)
+    if not isinstance(payload.get("link_name"), str) or not payload.get("link_name"):
+        raise Stm32TelemetryFormatError("payload.link_name must be a non-empty string", line_number=line_number)
+    if not isinstance(payload.get("healthy"), bool):
+        raise Stm32TelemetryFormatError("payload.healthy must be a boolean", line_number=line_number)
+    for key in ("rx_bytes", "tx_bytes", "malformed_frames", "crc_errors", "sequence_gaps"):
+        _validate_non_negative_int(payload.get(key), f"payload.{key}", line_number)
+    last_rx_ms = payload.get("last_rx_ms")
+    if last_rx_ms is not None:
+        _validate_non_negative_int(last_rx_ms, "payload.last_rx_ms", line_number)
+
+
+def _validate_lidar_transport_stats(message: Stm32TelemetryMessage, line_number: int | None) -> None:
+    _require_sensor_id(message.sensor_id, LIDAR_TRANSPORT_STATS_SENSOR_IDS, line_number)
+    payload = dict(message.payload)
+    allowed = {
+        "rx_bytes",
+        "bytes_read",
+        "overflow_count",
+        "framing_error_count",
+        "chunks_forwarded",
+        "last_rx_tick_ms",
+    }
+    _require_allowed_fields(payload, allowed, line_number)
+    for key in allowed:
+        _validate_non_negative_int(payload.get(key), f"payload.{key}", line_number)
+
+
 def _require_allowed_fields(
     payload: dict[str, Any],
     allowed: set[str],
@@ -298,6 +405,11 @@ def _require_object(payload: dict[str, Any], key: str, line_number: int | None) 
 def _validate_non_negative_int(value: object, name: str, line_number: int | None) -> None:
     if isinstance(value, bool) or not isinstance(value, int) or value < 0:
         raise Stm32TelemetryFormatError(f"{name} must be a non-negative integer", line_number=line_number)
+
+
+def _validate_signed_int(value: object, name: str, line_number: int | None) -> None:
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise Stm32TelemetryFormatError(f"{name} must be an integer", line_number=line_number)
 
 
 def _validate_finite(value: object, name: str, line_number: int | None) -> None:

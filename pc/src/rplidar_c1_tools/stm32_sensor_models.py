@@ -27,6 +27,10 @@ MESSAGE_TYPES = (
     "hall_landmark",
     "illuminance",
     "barometer",
+    "imu_raw",
+    "subsystem_status",
+    "link_status",
+    "lidar_transport_stats",
 )
 
 ULTRASONIC_SENSOR_IDS = ("ultrasonic_1", "ultrasonic_2", "ultrasonic_3")
@@ -34,6 +38,10 @@ GROUND_EDGE_SENSOR_IDS = ("tcrt5000_1", "tcrt5000_2")
 HALL_SENSOR_IDS = ("hall_1",)
 ILLUMINANCE_SENSOR_IDS = ("bh1750_1",)
 BAROMETER_SENSOR_IDS = ("bmp280_1",)
+IMU_RAW_SENSOR_IDS = ("mpu6050_1",)
+SUBSYSTEM_STATUS_SENSOR_IDS = ("stm32_subsystem",)
+LINK_STATUS_SENSOR_IDS = ("esp32_link",)
+LIDAR_TRANSPORT_STATS_SENSOR_IDS = ("c1_1", "c1_2")
 
 SENSOR_IDS_BY_MESSAGE_TYPE = {
     "ultrasonic": ULTRASONIC_SENSOR_IDS,
@@ -41,6 +49,10 @@ SENSOR_IDS_BY_MESSAGE_TYPE = {
     "hall_landmark": HALL_SENSOR_IDS,
     "illuminance": ILLUMINANCE_SENSOR_IDS,
     "barometer": BAROMETER_SENSOR_IDS,
+    "imu_raw": IMU_RAW_SENSOR_IDS,
+    "subsystem_status": SUBSYSTEM_STATUS_SENSOR_IDS,
+    "link_status": LINK_STATUS_SENSOR_IDS,
+    "lidar_transport_stats": LIDAR_TRANSPORT_STATS_SENSOR_IDS,
 }
 
 

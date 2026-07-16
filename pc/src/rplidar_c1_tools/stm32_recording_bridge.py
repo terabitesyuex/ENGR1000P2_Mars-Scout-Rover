@@ -11,8 +11,17 @@ from .recording_models import (
     GroundEdgeSample,
     HallLandmarkSample,
     IlluminanceSample,
+    ImuSample,
+    LidarTransportStatsSample,
+    LinkStatusSample,
+    SubsystemStatusSample,
     UltrasonicSample,
     default_sensor_inventory,
+)
+from .openrf1_phase32b import (
+    mpu6050_accel_raw_to_mps2,
+    mpu6050_gyro_raw_to_radps,
+    mpu6050_temperature_raw_to_c,
 )
 from .stm32_sensor_models import Stm32TelemetryMessage
 from .stm32_sensor_protocol import iter_stm32_telemetry, validate_stm32_telemetry_message
@@ -87,6 +96,81 @@ def stm32_message_to_recording_sample(message: Stm32TelemetryMessage) -> tuple[s
         )
         return ("barometer", sample)
 
+    if message.message_type == "imu_raw":
+        sample = ImuSample(
+            timestamp_us=timestamp_us,
+            sensor_id=message.sensor_id,
+            accel_x_mps2=mpu6050_accel_raw_to_mps2(
+                int(payload["accel_x_raw"]),
+                accel_range_g=int(payload["accel_range_g"]),
+            ),
+            accel_y_mps2=mpu6050_accel_raw_to_mps2(
+                int(payload["accel_y_raw"]),
+                accel_range_g=int(payload["accel_range_g"]),
+            ),
+            accel_z_mps2=mpu6050_accel_raw_to_mps2(
+                int(payload["accel_z_raw"]),
+                accel_range_g=int(payload["accel_range_g"]),
+            ),
+            gyro_x_radps=mpu6050_gyro_raw_to_radps(
+                int(payload["gyro_x_raw"]),
+                gyro_range_dps=int(payload["gyro_range_dps"]),
+            ),
+            gyro_y_radps=mpu6050_gyro_raw_to_radps(
+                int(payload["gyro_y_raw"]),
+                gyro_range_dps=int(payload["gyro_range_dps"]),
+            ),
+            gyro_z_radps=mpu6050_gyro_raw_to_radps(
+                int(payload["gyro_z_raw"]),
+                gyro_range_dps=int(payload["gyro_range_dps"]),
+            ),
+            temperature_c=mpu6050_temperature_raw_to_c(int(payload["temperature_raw"])),
+        )
+        return ("imu", sample)
+
+    if message.message_type == "subsystem_status":
+        sample = SubsystemStatusSample(
+            timestamp_us=timestamp_us,
+            subsystem=str(payload["subsystem"]),
+            health=str(payload["health"]),
+            error_count=int(payload["error_count"]),
+            status=message.status,
+            detail=payload.get("detail") if payload.get("detail") is not None else None,
+            source_sequence=source_sequence,
+        )
+        return ("subsystem_status", sample)
+
+    if message.message_type == "link_status":
+        sample = LinkStatusSample(
+            timestamp_us=timestamp_us,
+            link_name=str(payload["link_name"]),
+            healthy=bool(payload["healthy"]),
+            rx_bytes=int(payload["rx_bytes"]),
+            tx_bytes=int(payload["tx_bytes"]),
+            malformed_frames=int(payload["malformed_frames"]),
+            crc_errors=int(payload["crc_errors"]),
+            sequence_gaps=int(payload["sequence_gaps"]),
+            status=message.status,
+            last_rx_ms=payload.get("last_rx_ms") if payload.get("last_rx_ms") is not None else None,
+            source_sequence=source_sequence,
+        )
+        return ("link_status", sample)
+
+    if message.message_type == "lidar_transport_stats":
+        sample = LidarTransportStatsSample(
+            timestamp_us=timestamp_us,
+            sensor_id=message.sensor_id,
+            rx_bytes=int(payload["rx_bytes"]),
+            bytes_read=int(payload["bytes_read"]),
+            overflow_count=int(payload["overflow_count"]),
+            framing_error_count=int(payload["framing_error_count"]),
+            chunks_forwarded=int(payload["chunks_forwarded"]),
+            last_rx_tick_ms=int(payload["last_rx_tick_ms"]),
+            status=message.status,
+            source_sequence=source_sequence,
+        )
+        return ("lidar_transport_stats", sample)
+
     raise ValueError(f"unsupported message_type: {message.message_type}")
 
 
@@ -106,6 +190,14 @@ def bridge_stm32_message_to_recording(
         return recorder.write_illuminance_sample(sample)  # type: ignore[arg-type]
     if record_type == "barometer":
         return recorder.write_barometer_sample(sample)  # type: ignore[arg-type]
+    if record_type == "imu":
+        return recorder.write_imu_sample(sample)  # type: ignore[arg-type]
+    if record_type == "subsystem_status":
+        return recorder.write_subsystem_status_sample(sample)  # type: ignore[arg-type]
+    if record_type == "link_status":
+        return recorder.write_link_status_sample(sample)  # type: ignore[arg-type]
+    if record_type == "lidar_transport_stats":
+        return recorder.write_lidar_transport_stats_sample(sample)  # type: ignore[arg-type]
     raise ValueError(f"unsupported record_type: {record_type}")
 
 

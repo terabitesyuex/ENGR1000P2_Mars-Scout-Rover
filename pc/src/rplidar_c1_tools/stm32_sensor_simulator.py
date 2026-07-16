@@ -15,6 +15,7 @@ STM32_SIMULATOR_SCENARIOS = (
     "hall_polarity_unverified",
     "environment_change",
     "mixed_faults",
+    "phase32b_full_foundation",
 )
 
 
@@ -134,4 +135,62 @@ def _cycle_samples(
         },
         "simulated",
     )
+
+    if scenario == "phase32b_full_foundation":
+        yield (
+            "imu_raw",
+            "mpu6050_1",
+            {
+                "accel_x_raw": 0,
+                "accel_y_raw": 0,
+                "accel_z_raw": 16384,
+                "gyro_x_raw": 0,
+                "gyro_y_raw": 0,
+                "gyro_z_raw": 131 + cycle,
+                "temperature_raw": 0,
+                "accel_range_g": 2,
+                "gyro_range_dps": 250,
+                "calibration_state": "uncalibrated",
+            },
+            "simulated",
+        )
+        yield (
+            "subsystem_status",
+            "stm32_subsystem",
+            {
+                "subsystem": "scheduler",
+                "health": "ok",
+                "error_count": 0,
+                "detail": "software_fixture",
+            },
+            "simulated",
+        )
+        yield (
+            "link_status",
+            "esp32_link",
+            {
+                "link_name": "usart3_esp32",
+                "healthy": True,
+                "rx_bytes": 32 + cycle,
+                "tx_bytes": 64 + cycle,
+                "malformed_frames": 0,
+                "crc_errors": 0,
+                "sequence_gaps": 0,
+                "last_rx_ms": cycle * 100,
+            },
+            "simulated",
+        )
+        yield (
+            "lidar_transport_stats",
+            "c1_1",
+            {
+                "rx_bytes": 128 + cycle,
+                "bytes_read": 64 + cycle,
+                "overflow_count": 0,
+                "framing_error_count": 0,
+                "chunks_forwarded": 1 + cycle,
+                "last_rx_tick_ms": cycle * 100,
+            },
+            "simulated",
+        )
 

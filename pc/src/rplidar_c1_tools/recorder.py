@@ -14,10 +14,13 @@ from .recording_models import (
     HallLandmarkSample,
     IlluminanceSample,
     ImuSample,
+    LidarTransportStatsSample,
+    LinkStatusSample,
     RoverPose,
     SCHEMA_NAME,
     SCHEMA_VERSION,
     SensorDefinition,
+    SubsystemStatusSample,
     UltrasonicSample,
     default_sensor_inventory,
     pose_to_json,
@@ -135,6 +138,15 @@ class MultiSensorRecorder:
 
     def write_barometer_sample(self, sample: BarometerSample) -> int:
         return self._write_sample_record("barometer", sample)
+
+    def write_subsystem_status_sample(self, sample: SubsystemStatusSample) -> int:
+        return self._write_sample_record("subsystem_status", sample)
+
+    def write_link_status_sample(self, sample: LinkStatusSample) -> int:
+        return self._write_sample_record("link_status", sample)
+
+    def write_lidar_transport_stats_sample(self, sample: LidarTransportStatsSample) -> int:
+        return self._write_sample_record("lidar_transport_stats", sample)
 
     def _write_sample_record(self, record_type: str, sample: object) -> int:
         try:

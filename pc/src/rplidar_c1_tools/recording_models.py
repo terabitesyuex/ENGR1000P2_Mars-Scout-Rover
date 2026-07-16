@@ -104,6 +104,48 @@ class BarometerSample:
     source_sequence: int | None = None
 
 
+@dataclass(frozen=True, slots=True)
+class SubsystemStatusSample:
+    timestamp_us: int
+    subsystem: str
+    health: str
+    error_count: int
+    sensor_id: str = "stm32_subsystem"
+    status: str = "ok"
+    detail: str | None = None
+    source_sequence: int | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class LinkStatusSample:
+    timestamp_us: int
+    link_name: str
+    healthy: bool
+    rx_bytes: int
+    tx_bytes: int
+    malformed_frames: int
+    crc_errors: int
+    sequence_gaps: int
+    sensor_id: str = "esp32_link"
+    status: str = "ok"
+    last_rx_ms: int | None = None
+    source_sequence: int | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class LidarTransportStatsSample:
+    timestamp_us: int
+    sensor_id: str
+    rx_bytes: int
+    bytes_read: int
+    overflow_count: int
+    framing_error_count: int
+    chunks_forwarded: int
+    last_rx_tick_ms: int
+    status: str = "ok"
+    source_sequence: int | None = None
+
+
 def default_sensor_inventory(
     *,
     lidar_count: int = 2,
@@ -184,6 +226,18 @@ def default_sensor_inventory(
                     "synthetic_rover_pose",
                     "Optional replay pose estimate; not hardware odometry",
                     ("x_m", "y_m", "yaw_rad"),
+                ),
+                SensorDefinition(
+                    "stm32_subsystem",
+                    "subsystem_status",
+                    "Software status for STM32 scheduler and sensor subsystems",
+                    ("health", "error_count"),
+                ),
+                SensorDefinition(
+                    "esp32_link",
+                    "esp32_link_status",
+                    "Software status for the planned STM32-to-ESP32 link",
+                    ("rx_bytes", "tx_bytes", "crc_errors"),
                 ),
             ]
         )

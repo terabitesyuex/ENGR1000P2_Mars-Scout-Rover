@@ -1,0 +1,18 @@
+#pragma once
+
+#include <stdint.h>
+
+typedef enum {
+    OPENRF1_STATUS_OK = 0,
+    OPENRF1_STATUS_DISABLED,
+    OPENRF1_STATUS_NOT_INITIALIZED,
+    OPENRF1_STATUS_TIMEOUT,
+    OPENRF1_STATUS_NACK,
+    OPENRF1_STATUS_INVALID_ARGUMENT,
+    OPENRF1_STATUS_HARDWARE_FAULT,
+    OPENRF1_STATUS_STALE,
+    OPENRF1_STATUS_OVERFLOW,
+    OPENRF1_STATUS_BAD_ID
+} OpenRf1Status;
+
+const char *openrf1_status_to_text(OpenRf1Status status);
