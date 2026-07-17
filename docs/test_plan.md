@@ -15,6 +15,7 @@ Supported phases:
 - `phase3.1`
 - `phase3.2a`
 - `phase3.2b`
+- `phase3.2c`
 
 Development verification:
 
@@ -23,6 +24,7 @@ Development verification:
 .\tools\verify_phase.cmd phase3.1 -AllowDirty
 .\tools\verify_phase.cmd phase3.2a -AllowDirty
 .\tools\verify_phase.cmd phase3.2b -AllowDirty
+.\tools\verify_phase.cmd phase3.2c -AllowDirty
 ```
 
 Normal verification after commit and push:
@@ -32,6 +34,7 @@ Normal verification after commit and push:
 .\tools\verify_phase.cmd phase3.1
 .\tools\verify_phase.cmd phase3.2a
 .\tools\verify_phase.cmd phase3.2b
+.\tools\verify_phase.cmd phase3.2c
 ```
 
 The verifier uses repository-local pytest basetemp under `.verification/pytest_tmp/`, checks Git state, selects Python, confirms pytest import, runs targeted tests, regressions, the complete PC suite, and configured smoke workflows.
@@ -150,6 +153,29 @@ Smoke workflow:
 - Validate the committed sanitized BH1750 physical evidence JSONL.
 
 Phase 3.2A automated tests do not open real COM ports, USB devices, GPIO, I2C, flash tools, network sockets, motors, or real sensors. They may validate committed recorded manual evidence integrity offline.
+
+## Phase 3.2C Automated Software Tests
+
+Targeted:
+
+- `pc/tests/test_openrf1_bmp280_bringup.py`
+
+Regression:
+
+- Phase 3.2B firmware foundation tests.
+- Phase 3.2A BH1750 firmware/evidence tests.
+- STM32 protocol and recording bridge tests.
+- Phase 3 current-plan anchors.
+
+Smoke workflow:
+
+- Audit required BMP280 bring-up files.
+- Confirm the isolated Keil target and output directory.
+- Confirm BMP280 register configuration constants.
+- Confirm generated Keil artifacts are not tracked.
+- Confirm BMP280, BH1750, and FullHardware Keil build evidence when local builds have been run.
+
+Phase 3.2C automated tests do not open real COM ports, USB devices, GPIO, I2C, flash tools, network sockets, motors, or real sensors. ACK at `0x76`, chip ID `0x58`, calibration read, configuration readback, live temperature, and live pressure remain manual hardware evidence.
 
 ## Revised Phase Sequence
 
@@ -335,3 +361,21 @@ The Phase 3.2B verifier covers:
 - baseline Phase 3.2A and full-hardware Phase 3.2B Keil build evidence
 
 Phase 3.2B automated tests do not open real COM ports, USB devices, WiFi sockets, GPIO, I2C, flashing tools, or sensors.
+
+## Phase 3.2C BMP280 Bring-Up Tests
+
+Run:
+
+```powershell
+.\tools\verify_phase.cmd phase3.2c -AllowDirty
+```
+
+The Phase 3.2C verifier covers:
+
+- BMP280 chip ID, calibration parsing, raw sample decoding, configuration register constants, compensation, and JSONL telemetry formatting
+- static source checks for the BMP280-only firmware boundary
+- Keil target isolation under `Objects_BMP280_Bringup/`
+- regression tests for Phase 3.2A and Phase 3.2B software contracts
+- build evidence audits for BH1750, FullHardware, and BMP280 bring-up targets
+
+Physical BMP280 testing still requires the manual procedure in `docs/openrf1_bmp280_bringup.md`.

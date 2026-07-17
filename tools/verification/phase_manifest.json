@@ -8,7 +8,8 @@
     "phase2.5",
     "phase3.1",
     "phase3.2a",
-    "phase3.2b"
+    "phase3.2b",
+    "phase3.2c"
   ],
   "phases": {
     "phase1": {
@@ -644,6 +645,56 @@
             ".verification/phase3.2b/manual_hardware_status.txt"
           ],
           "warning": "Software foundation and Keil builds are VERIFIED when this audit passes; recorded Phase 3.2A BH1750 evidence is MANUAL_EVIDENCE_VERIFIED; all other real multisensor, UART2/UART3, ultrasonic, TCRT5000, Hall, RPLIDAR, ESP32, power-integrity, concurrent-operation, and full-system sensor results remain UNVERIFIED."
+        }
+      ]
+    },
+    "phase3.2c": {
+      "display_name": "Phase 3.2C",
+      "required_files": [
+        "docs/openrf1_bmp280_bringup.md",
+        "firmware/openrf1/bmp280_bringup/board_config.h",
+        "firmware/openrf1/bmp280_bringup/main_bmp280_bringup.c",
+        "firmware/openrf1/bmp280_bringup/platform_bmp280_bringup.c",
+        "firmware/openrf1/bmp280_bringup/telemetry_bmp280_bringup.c",
+        "firmware/openrf1/full_hardware/bmp280.c",
+        "firmware/openrf1/full_hardware/bmp280.h",
+        "firmware/openrf1/keil/OpenRF1_BMP280_Bringup.uvprojx",
+        "firmware/openrf1/keil/RTE/_OpenRF1_BMP280_Bringup/RTE_Components.h",
+        "pc/src/rplidar_c1_tools/openrf1_bmp280_bringup.py",
+        "pc/tests/test_openrf1_bmp280_bringup.py",
+        "tools/audit_phase32c.py"
+      ],
+      "targeted": [
+        "pc/tests/test_openrf1_bmp280_bringup.py"
+      ],
+      "regression": [
+        "pc/tests/test_phase32b_foundation.py",
+        "pc/tests/test_openrf1_phase32b_firmware_foundation.py",
+        "pc/tests/test_openrf1_bh1750.py",
+        "pc/tests/test_phase32a_physical_evidence.py",
+        "pc/tests/test_openrf1_firmware_foundation.py",
+        "pc/tests/test_stm32_sensor_protocol.py",
+        "pc/tests/test_stm32_recording_bridge.py",
+        "pc/tests/test_phase3_current_plan.py"
+      ],
+      "full": [
+        "pc/tests"
+      ],
+      "python_commands": [
+        {
+          "label": "Phase 3.2C BMP280 bring-up audit",
+          "args": [
+            "tools/audit_phase32c.py",
+            "--audit-output",
+            ".verification/phase3.2c/software_audit.txt",
+            "--manual-output",
+            ".verification/phase3.2c/manual_hardware_status.txt"
+          ],
+          "expected_files": [
+            ".verification/phase3.2c/software_audit.txt",
+            ".verification/phase3.2c/manual_hardware_status.txt"
+          ],
+          "warning": "Software and Keil builds are verification evidence only; BMP280 ACK, chip ID, calibration read, and live temperature/pressure remain MANUAL_ACTION_REQUIRED until physical telemetry is captured."
         }
       ]
     }

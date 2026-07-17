@@ -156,20 +156,26 @@ function Test-DirectoryUsable {
 }
 
 function Initialize-PytestTempRoot {
-    param([string]$LogRoot)
-    $pytestTempRoot = Join-Path $LogRoot "pytest_tmp"
-    if (Test-DirectoryUsable -Path $pytestTempRoot) {
-        return $pytestTempRoot
+    param(
+        [string]$LogRoot,
+        [string]$RunId
+    )
+    $preferredParent = Join-Path $LogRoot "pytest_tmp"
+    if (Test-DirectoryUsable -Path $preferredParent) {
+        $runRoot = Join-Path $preferredParent $RunId
+        New-LocalDirectory -Path $runRoot
+        return $runRoot
     }
 
-    Assert-ChildPath -Path $pytestTempRoot -ParentPath $LogRoot
-    Write-LogLine ("Recreating inaccessible pytest temp root: {0}" -f $pytestTempRoot)
-    Remove-Item -LiteralPath $pytestTempRoot -Recurse -Force -ErrorAction Stop
-    New-LocalDirectory -Path $pytestTempRoot
-    if (-not (Test-DirectoryUsable -Path $pytestTempRoot)) {
-        throw "pytest temp root is not usable: $pytestTempRoot"
+    $fallbackParent = Join-Path $LogRoot "pytest_tmp_runs"
+    Assert-ChildPath -Path $fallbackParent -ParentPath $LogRoot
+    Write-LogLine ("Preferred pytest temp root is not usable, using fallback: {0}" -f $fallbackParent)
+    if (-not (Test-DirectoryUsable -Path $fallbackParent)) {
+        throw "pytest fallback temp root is not usable: $fallbackParent"
     }
-    return $pytestTempRoot
+    $runRoot = Join-Path $fallbackParent $RunId
+    New-LocalDirectory -Path $runRoot
+    return $runRoot
 }
 
 function Invoke-PytestSet {
@@ -240,7 +246,7 @@ try {
     New-Item -ItemType Directory -Force -Path $logRoot | Out-Null
     $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
     $script:PytestRunId = "{0}_{1}_{2}" -f $timestamp, $PID, ([guid]::NewGuid().ToString("N").Substring(0, 8))
-    $script:PytestTempRoot = Initialize-PytestTempRoot -LogRoot $logRoot
+    $script:PytestTempRoot = Initialize-PytestTempRoot -LogRoot $logRoot -RunId $script:PytestRunId
     $safePhase = $Phase -replace "[^A-Za-z0-9_.-]", "_"
     $script:LogPath = Join-Path $logRoot ("verify_{0}_{1}.log" -f $safePhase, $timestamp)
     $latestLog = Join-Path $logRoot "latest.log"
