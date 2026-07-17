@@ -218,4 +218,4 @@ Temperature or pressure is null:
 - Check the `status`, `initialization_stage`, and `error_code` fields.
 - Null values indicate invalid data, not zero temperature or zero pressure.
 
-The Phase 3.2C automated verifier does not flash, open a COM port, access USB, GPIO, I2C, or sensors. Physical ACK, chip ID, calibration read, configuration readback, and live samples remain MANUAL_ACTION_REQUIRED until sanitized telemetry evidence is committed.
+The Phase 3.2C automated verifier does not flash, open a COM port, access USB, GPIO, I2C, or sensors. It validates the committed sanitized evidence offline. Isolated BMP280 ACK, chip ID, calibration-register path, configuration readback, live compensated samples, and 500 ms cadence are PHYSICAL_EVIDENCE_VERIFIED for the formal 30-second capture; absolute accuracy, long-duration operation, shared-I2C concurrency, and full-hardware operation remain UNVERIFIED.

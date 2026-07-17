@@ -70,6 +70,8 @@ Evidence table fields:
 - Document environmental-change limitations.
 - Do not claim reliable dust-storm detection.
 
+Phase 3.2C recorded evidence verifies one isolated BMP280-only capture at address `0x76` with chip ID `0x58`, configuration readback, compensated live temperature/pressure telemetry, exact 500 ms periodicity, and no I2C errors during the formal 30-second run. This does not verify absolute temperature/pressure accuracy, environmental-reference comparison, long-duration operation, shared-I2C concurrency, or full-hardware operation.
+
 ## Phase 3.2A OpenRF1 GY-302/BH1750
 
 Do not mark these items complete automatically.
@@ -120,7 +122,7 @@ Before use, verify connector orientation, exact pin order, supply rails, logic v
 Do not mark these items complete automatically.
 
 1. Preserve the committed BH1750-only physical evidence and repeat only if wiring or firmware changes.
-2. Validate BMP280 alone at 3.3 V on the shared I2C signal bus.
+2. Preserve the committed Phase 3.2C isolated BMP280 evidence and repeat only if wiring or firmware changes; shared-bus BMP280 operation with other I2C devices remains a separate validation.
 3. Validate MPU6050 alone at 5 V with AD0 -> GND.
 4. Validate all three I2C devices together without tying their VCC rails together.
 5. Validate TCRT5000 raw inputs at 3.3 V.

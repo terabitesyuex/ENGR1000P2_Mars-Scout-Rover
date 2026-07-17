@@ -209,7 +209,7 @@ PC planned responsibilities:
 - exact HC-SR04 Echo protection requirement on the physical board: UNVERIFIED until module supply and Echo VOH are measured.
 - HC-SR04 ECHO voltage compatibility with STM32 inputs: UNVERIFIED.
 - BH1750 absolute illuminance calibration: UNVERIFIED.
-- actual BMP280 I2C address: UNVERIFIED.
+- BMP280 address in isolated Phase 3.2C capture: PHYSICAL_EVIDENCE_VERIFIED at `0x76`; full shared-I2C BMP280 operation remains UNVERIFIED.
 - actual MPU6050 I2C address: UNVERIFIED.
 - TCRT5000 and Hall output polarity remains UNVERIFIED.
 - physical TCRT5000 active polarity: UNVERIFIED.
@@ -275,13 +275,16 @@ PC planned responsibilities:
 - Phase 3.2C adds an isolated OpenRF1 BMP280-only firmware boundary under `firmware/openrf1/bmp280_bringup/`.
 - The Phase 3.2C Keil project is `firmware/openrf1/keil/OpenRF1_BMP280_Bringup.uvprojx`.
 - The Phase 3.2C output directory is `Objects_BMP280_Bringup/` and must not overwrite `Objects/OpenRF1_BH1750.hex` or `Objects_FullHardware/OpenRF1_FullHardware.hex`.
-- Planned BMP280-only wiring: VCC -> OpenRF1 3.3 V, GND -> OpenRF1 GND, SCL -> PB1 / connector B1, SDA -> PC3 / connector C3, CSB -> 3.3 V, and SDO -> GND.
-- Planned configured address `0x76` follows from SDO grounded; actual BMP280 ACK remains UNVERIFIED.
-- Expected BMP280 chip ID register check is `0xD0 -> 0x58`; physical chip ID readback remains UNVERIFIED.
+- BMP280-only wiring for the formal evidence capture: VCC -> OpenRF1 3.3 V, GND -> OpenRF1 GND, SCL -> PB1 / connector B1, SDA -> PC3 / connector C3, CSB -> 3.3 V, and SDO -> GND.
+- Committed Phase 3.2C evidence file `evidence/phase3.2c/bmp280_physical_adef636_20260718_002346.jsonl` has SHA-256 `1BB0C5BE149DC7C49A3C63432D1CAE4AACAE3D5A80265FE879CA06D1E1A74805`.
+- Formal Keil HEX SHA-256 for the evidence run is `85101B9F76C27FDFA019E382FC7285F239F78FA78FB0722B0400F8DDFF67E27E`.
+- BMP280 address `0x76`, ACK at `0x76`, and chip ID register readback `0xD0 -> 0x58`: PHYSICAL_EVIDENCE_VERIFIED for the isolated BMP280-only capture.
 - Firmware configures `config = 0x80` and `ctrl_meas = 0x27` for 500 ms standby, filter off, temperature x1, pressure x1, and normal mode.
-- Automated Phase 3.2C tests use pure logic, static source checks, and build/artifact audits only.
+- Configuration readback `config = 0x80` and `ctrl_meas = 0x27`: PHYSICAL_EVIDENCE_VERIFIED.
+- Calibration-register path sufficient for compensated output, continuous compensated temperature telemetry, continuous compensated pressure telemetry, 500 ms periodicity, and stable 30-second capture: PHYSICAL_EVIDENCE_VERIFIED.
+- Automated Phase 3.2C tests use pure logic, static source checks, build/artifact audits, and committed evidence validation only.
 - No real COM port, USB device, GPIO, I2C bus, flash action, or real sensor is accessed by repository automation.
-- Physical BMP280 wiring, ACK at `0x76`, chip ID `0x58`, calibration read, configuration readback, live temperature, live pressure, and 500 ms physical telemetry remain MANUAL_ACTION_REQUIRED.
+- Absolute temperature accuracy, absolute pressure accuracy, environmental-reference comparison, long-duration operation beyond the formal capture, full multi-device shared-I2C concurrency, and complete full-hardware operation remain UNVERIFIED.
 
 ## Safety Rules
 

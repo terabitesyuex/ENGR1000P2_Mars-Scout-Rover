@@ -660,12 +660,17 @@
         "firmware/openrf1/full_hardware/bmp280.h",
         "firmware/openrf1/keil/OpenRF1_BMP280_Bringup.uvprojx",
         "firmware/openrf1/keil/RTE/_OpenRF1_BMP280_Bringup/RTE_Components.h",
+        "evidence/phase3.2c/bmp280_physical_adef636_20260718_002346.jsonl",
+        "evidence/phase3.2c/bmp280_physical_evidence.md",
         "pc/src/rplidar_c1_tools/openrf1_bmp280_bringup.py",
+        "pc/src/rplidar_c1_tools/phase32c_evidence.py",
         "pc/tests/test_openrf1_bmp280_bringup.py",
+        "pc/tests/test_phase32c_physical_evidence.py",
         "tools/audit_phase32c.py"
       ],
       "targeted": [
-        "pc/tests/test_openrf1_bmp280_bringup.py"
+        "pc/tests/test_openrf1_bmp280_bringup.py",
+        "pc/tests/test_phase32c_physical_evidence.py"
       ],
       "regression": [
         "pc/tests/test_phase32b_foundation.py",
@@ -694,7 +699,7 @@
             ".verification/phase3.2c/software_audit.txt",
             ".verification/phase3.2c/manual_hardware_status.txt"
           ],
-          "warning": "Software and Keil builds are verification evidence only; BMP280 ACK, chip ID, calibration read, and live temperature/pressure remain MANUAL_ACTION_REQUIRED until physical telemetry is captured."
+          "warning": "Recorded Phase 3.2C physical evidence verifies isolated BMP280 ACK, address 0x76, chip ID 0x58, configuration readback, compensated live temperature/pressure telemetry, and 500 ms periodicity. Absolute temperature/pressure accuracy, long-duration operation, shared-I2C concurrency, and full-hardware operation remain UNVERIFIED."
         }
       ]
     }

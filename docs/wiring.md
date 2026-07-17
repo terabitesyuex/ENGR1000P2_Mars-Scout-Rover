@@ -62,7 +62,7 @@ These wire functions preserve the verified C1 harness profile. They do not prove
 - The OpenRF1 2x4 I2C header duplicates PC3/SDA, PB1/SCL, GND, and 5V rows.
 - The adjacent SWD connector must not be confused with the I2C header.
 - Recorded Phase 3.2A manual evidence verifies BH1750 communication at configured public 7-bit address `0x23`, 500 ms telemetry, and physical light response; absolute lux calibration remains UNVERIFIED.
-- BMP280 I2C address is UNVERIFIED.
+- BMP280 I2C address is PHYSICAL_EVIDENCE_VERIFIED at `0x76` for the isolated Phase 3.2C BMP280-only capture; shared-bus operation remains UNVERIFIED.
 - MPU6050 I2C address is UNVERIFIED.
 - Final sensor mounting offsets are UNVERIFIED.
 
@@ -128,13 +128,13 @@ This is the isolated Phase 3.2C bench target, not the full Phase 3.2B shared-bus
 | BMP280 pin | OpenRF1 connection | Status |
 | --- | --- | --- |
 | VCC | 3.3 V | CONFIRMED_MODULE_EVIDENCE for BMP280-3.3 supply rule |
-| GND | GND | PLANNED |
+| GND | GND | PHYSICAL_EVIDENCE_VERIFIED for isolated capture |
 | SCL | PB1 / connector B1 | CONFIRMED OpenRF1 software-I2C signal |
 | SDA | PC3 / connector C3 | CONFIRMED OpenRF1 software-I2C signal |
-| CSB | 3.3 V | PLANNED I2C-mode strap |
-| SDO | GND | PLANNED address strap for `0x76` |
+| CSB | 3.3 V | PHYSICAL_EVIDENCE_VERIFIED I2C-mode strap for isolated capture |
+| SDO | GND | PHYSICAL_EVIDENCE_VERIFIED address strap for `0x76` in isolated capture |
 
-Expected address `0x76` and chip ID `0x58` are firmware checks, not physical evidence yet. ACK, chip ID, calibration read, configuration readback, and live temperature/pressure remain MANUAL_ACTION_REQUIRED.
+Committed Phase 3.2C evidence verifies ACK at `0x76`, chip ID `0x58`, calibration-register path sufficient for compensated output, `ctrl_meas = 0x27` and `config = 0x80` readback, live compensated temperature/pressure telemetry, exact 500 ms periodicity, and a stable 30-second BMP280-only capture. Absolute temperature/pressure accuracy, environmental-reference comparison, long-duration operation, and shared-I2C concurrency remain UNVERIFIED.
 
 ### HC-SR04
 

@@ -114,7 +114,7 @@ These facts do not verify the wiring, mounting, serial identifiers, revisions, o
 - Exact UART assignment.
 - Exact STM32-ESP32 connector.
 - Exact HC-SR04 level-shifting requirements on the physical board.
-- BH1750 communication at configured address `0x23` is MANUAL_EVIDENCE_VERIFIED for the recorded Phase 3.2A run; BMP280 and MPU6050 real I2C addresses/ACKs remain UNVERIFIED.
+- BH1750 communication at configured address `0x23` is MANUAL_EVIDENCE_VERIFIED for the recorded Phase 3.2A run. BMP280 ACK/address `0x76`, chip ID `0x58`, configuration readback, compensated live temperature/pressure telemetry, and 500 ms periodicity are PHYSICAL_EVIDENCE_VERIFIED for the isolated Phase 3.2C capture. BMP280 shared-I2C concurrency and MPU6050 real I2C address/ACK remain UNVERIFIED.
 - Physical TCRT5000 and Hall active polarity.
 - Battery voltage and capacity unless measured.
 - Final power-distribution topology.
@@ -127,7 +127,7 @@ These facts do not verify the wiring, mounting, serial identifiers, revisions, o
 - Phase 3.1: STM32 low-rate sensor telemetry software foundation, deterministic simulator, strict PC parser, Phase 2.4 recording bridge, and manual bring-up checklist.
 - Phase 3.2A: OpenRF1 STM32F103RCT6 + GY-302/BH1750 firmware foundation, mocked PC serial-capture workflow, and manual bring-up procedure.
 - Phase 3.2B: OpenRF1 multisensor and communications software foundation for proposed wiring; physical STM32 integration and validation remain manual future work.
-- Phase 3.2C: isolated OpenRF1 BMP280-only physical bring-up firmware and Keil target; physical BMP280 ACK, chip ID, calibration read, and live temperature/pressure remain manual future evidence.
+- Phase 3.2C: isolated OpenRF1 BMP280-only physical bring-up firmware, Keil target, and recorded BMP280-only physical evidence; absolute accuracy, long-duration operation, shared-I2C concurrency, and full-hardware operation remain unverified.
 - Phase 4: wheel encoders, MPU6050, mecanum kinematics, closed-loop motion, and odometry.
 - Phase 5: STM32-ESP32-computer communication, WiFi transport, one-C1 baseline integration, then optional dual-C1 feasibility evaluation.
 - Phase 6: real-time computer visualization, rover trajectory, and short-range encoder/IMU-assisted accumulated 2D mapping.
@@ -164,7 +164,7 @@ Phase 3.2B is a software-foundation phase for the proposed complete OpenRF1 hard
 
 Phase 3.2B automated evidence is software-only: pure logic tests, deterministic telemetry fixtures, strict parser and recording bridge coverage, binary frame golden vectors, static firmware/source audits, and local Keil build evidence. It does not access real COM ports, USB devices, GPIO, I2C, WiFi, flashing tools, or sensors. The revised electrical contract uses module-specific evidence for separate 5 V and 3.3 V domains but does not prove physical integration. Physical multisensor wiring, voltage levels, power integrity, BMP280/MPU6050 ACKs, USART2/USART3 operation, sensor polarity, ultrasonic Echo VOH/timing, RPLIDAR operation, ESP32 operation, concurrent operation, and real full-system sensor data remain UNVERIFIED.
 
-Phase 3.2C isolates BMP280 physical bring-up from the Phase 3.2A BH1750 target and the Phase 3.2B full-hardware target. It adds `OpenRF1_BMP280_Bringup.uvprojx`, source under `firmware/openrf1/bmp280_bringup/`, and host-side tests for chip ID `0x58`, calibration parsing, configuration register values, compensation, telemetry formatting, and target isolation. The planned wiring for this target is BMP280 VCC -> OpenRF1 3.3 V, GND -> GND, SCL -> PB1/B1, SDA -> PC3/C3, CSB -> 3.3 V, and SDO -> GND for address `0x76`. Repository automation does not flash hardware or access real GPIO/I2C/COM ports; ACK at `0x76`, chip ID readback, configuration readback, calibration read, live temperature, and live pressure remain UNVERIFIED until manual evidence is captured.
+Phase 3.2C isolates BMP280 physical bring-up from the Phase 3.2A BH1750 target and the Phase 3.2B full-hardware target. It adds `OpenRF1_BMP280_Bringup.uvprojx`, source under `firmware/openrf1/bmp280_bringup/`, host-side tests for chip ID `0x58`, calibration parsing, configuration register values, compensation, telemetry formatting, target isolation, and committed evidence validation. The formal capture uses BMP280 VCC -> OpenRF1 3.3 V, GND -> GND, SCL -> PB1/B1, SDA -> PC3/C3, CSB -> 3.3 V, and SDO -> GND for address `0x76`. Repository automation does not flash hardware or access real GPIO/I2C/COM ports; it validates the committed evidence offline. ACK at `0x76`, chip ID `0x58`, configuration readback, calibration-register path sufficient for compensated output, live compensated temperature/pressure telemetry, exact 500 ms periodicity, no I2C errors, and a stable 30-second isolated capture are PHYSICAL_EVIDENCE_VERIFIED. Absolute temperature/pressure accuracy, environmental-reference comparison, long-duration operation, shared-I2C concurrency, and complete full-hardware operation remain UNVERIFIED.
 
 Phase 3.2B does not implement ESP32 WiFi firmware, motor/encoder control, mecanum kinematics, sensor fusion, mapping, SLAM, navigation, obstacle avoidance, or autonomous motion.
 

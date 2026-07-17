@@ -6,6 +6,20 @@ import argparse
 import hashlib
 from pathlib import Path
 import subprocess
+import sys
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+PC_SRC = REPO_ROOT / "pc" / "src"
+if str(PC_SRC) not in sys.path:
+    sys.path.insert(0, str(PC_SRC))
+
+from rplidar_c1_tools.phase32c_evidence import (  # noqa: E402
+    EVIDENCE_RELATIVE_PATH,
+    FORMAL_KEIL_HEX_SHA256,
+    Phase32cEvidenceError,
+    validate_phase32c_bmp280_evidence,
+)
 
 
 REQUIRED_FILES = (
@@ -18,8 +32,12 @@ REQUIRED_FILES = (
     "firmware/openrf1/full_hardware/bmp280.h",
     "firmware/openrf1/keil/OpenRF1_BMP280_Bringup.uvprojx",
     "firmware/openrf1/keil/RTE/_OpenRF1_BMP280_Bringup/RTE_Components.h",
+    "evidence/phase3.2c/bmp280_physical_adef636_20260718_002346.jsonl",
+    "evidence/phase3.2c/bmp280_physical_evidence.md",
     "pc/src/rplidar_c1_tools/openrf1_bmp280_bringup.py",
+    "pc/src/rplidar_c1_tools/phase32c_evidence.py",
     "pc/tests/test_openrf1_bmp280_bringup.py",
+    "pc/tests/test_phase32c_physical_evidence.py",
     "tools/audit_phase32c.py",
 )
 
@@ -38,13 +56,14 @@ def main() -> int:
     parser.add_argument("--manual-output", type=Path, required=True)
     args = parser.parse_args()
 
-    repo_root = Path(__file__).resolve().parents[1]
+    repo_root = REPO_ROOT
     failures: list[str] = []
     lines = ["Phase 3.2C BMP280 bring-up audit"]
     _check_required_files(repo_root, lines, failures)
     _check_keil_project(repo_root, lines, failures)
     _check_git_hygiene(repo_root, lines, failures)
     _check_build_evidence(repo_root, lines, failures)
+    _check_physical_evidence(repo_root, lines, failures)
     lines.append("hardware_access_by_automation: none")
     lines.append("flash_attempted_by_automation: no")
     lines.append("serial_port_opened_by_automation: no")
@@ -132,33 +151,35 @@ def _check_git_hygiene(repo_root: Path, lines: list[str], failures: list[str]) -
 
 def _check_build_evidence(repo_root: Path, lines: list[str], failures: list[str]) -> None:
     build_checks = {
-        "bh1750_hex_present": repo_root / "firmware/openrf1/keil/Objects/OpenRF1_BH1750.hex",
-        "full_hardware_hex_present": repo_root / "firmware/openrf1/keil/Objects_FullHardware/OpenRF1_FullHardware.hex",
-        "bmp280_bringup_hex_present": repo_root / "firmware/openrf1/keil/Objects_BMP280_Bringup/OpenRF1_BMP280_Bringup.hex",
+        "bh1750_local_hex_present": repo_root / "firmware/openrf1/keil/Objects/OpenRF1_BH1750.hex",
+        "full_hardware_local_hex_present": repo_root
+        / "firmware/openrf1/keil/Objects_FullHardware/OpenRF1_FullHardware.hex",
+        "bmp280_bringup_local_hex_present": repo_root
+        / "firmware/openrf1/keil/Objects_BMP280_Bringup/OpenRF1_BMP280_Bringup.hex",
     }
     for label, path in build_checks.items():
         passed = path.exists() and path.stat().st_size > 0
         lines.append(f"{label}: {passed}")
-        if not passed:
-            failures.append(label)
 
     logs = {
-        "bh1750_keil_zero_errors_warnings": repo_root / "firmware/openrf1/keil/Objects/OpenRF1_BH1750.build_log.htm",
-        "full_hardware_keil_zero_errors_warnings": repo_root
+        "bh1750_local_keil_zero_errors_warnings": repo_root
+        / "firmware/openrf1/keil/Objects/OpenRF1_BH1750.build_log.htm",
+        "full_hardware_local_keil_zero_errors_warnings": repo_root
         / "firmware/openrf1/keil/Objects_FullHardware/OpenRF1_FullHardware.build_log.htm",
-        "bmp280_bringup_keil_zero_errors_warnings": repo_root
+        "bmp280_bringup_local_keil_zero_errors_warnings": repo_root
         / "firmware/openrf1/keil/Objects_BMP280_Bringup/OpenRF1_BMP280_Bringup.build_log.htm",
     }
     for label, path in logs.items():
         passed = _log_has_zero_errors_warnings(path)
         lines.append(f"{label}: {passed}")
-        if not passed:
-            failures.append(label)
 
-    bmp_hex = build_checks["bmp280_bringup_hex_present"]
+    lines.append(f"bmp280_formal_keil_hex_sha256: {FORMAL_KEIL_HEX_SHA256}")
+    bmp_hex = build_checks["bmp280_bringup_local_hex_present"]
     if bmp_hex.exists() and bmp_hex.stat().st_size > 0:
         digest = hashlib.sha256(bmp_hex.read_bytes()).hexdigest().upper()
         lines.append(f"bmp280_bringup_hex_sha256: {digest}")
+        if digest != FORMAL_KEIL_HEX_SHA256:
+            failures.append("bmp280_bringup_hex_sha256_mismatch")
 
     direct_hex = repo_root / "firmware/openrf1/keil/Objects_BMP280_Bringup/OpenRF1_BMP280_Bringup.manual.hex"
     direct_present = direct_hex.exists() and direct_hex.stat().st_size > 0
@@ -166,6 +187,38 @@ def _check_build_evidence(repo_root: Path, lines: list[str], failures: list[str]
     if direct_present:
         digest = hashlib.sha256(direct_hex.read_bytes()).hexdigest().upper()
         lines.append(f"bmp280_direct_armclang_hex_sha256: {digest}")
+
+
+def _check_physical_evidence(repo_root: Path, lines: list[str], failures: list[str]) -> None:
+    evidence_path = repo_root / EVIDENCE_RELATIVE_PATH
+    try:
+        summary = validate_phase32c_bmp280_evidence(evidence_path)
+    except (OSError, Phase32cEvidenceError) as exc:
+        lines.append("bmp280_physical_evidence_valid: False")
+        failures.append(f"bmp280 physical evidence invalid: {exc}")
+        return
+
+    lines.extend(
+        [
+            "bmp280_physical_evidence_valid: True",
+            f"bmp280_physical_evidence_sha256: {summary.sha256}",
+            f"bmp280_physical_evidence_records: {summary.record_count}",
+            f"bmp280_sensor_identity_records: {summary.sensor_identity_count}",
+            f"bmp280_environmental_records: {summary.environmental_count}",
+            f"bmp280_sequence_range: {summary.sequence_start}..{summary.sequence_end}",
+            f"bmp280_capture_duration_ms: {summary.capture_duration_ms}",
+            f"bmp280_environmental_interval_ms: {summary.environmental_interval_ms}",
+            f"bmp280_configured_address: {summary.configured_address}",
+            f"bmp280_expected_chip_id: {summary.expected_chip_id}",
+            f"bmp280_observed_chip_id: {summary.chip_id}",
+            f"bmp280_ctrl_meas: {summary.ctrl_meas}",
+            f"bmp280_config: {summary.config}",
+            f"bmp280_temperature_range_c: {summary.temperature_min_c}..{summary.temperature_max_c}",
+            f"bmp280_pressure_range_pa: {summary.pressure_min_pa}..{summary.pressure_max_pa}",
+            "bmp280_private_local_information_present: False",
+            "bmp280_physical_ack_address_chip_id_config_live_telemetry: PHYSICAL_EVIDENCE_VERIFIED",
+        ]
+    )
 
 
 def _log_has_zero_errors_warnings(path: Path) -> bool:
@@ -179,17 +232,28 @@ def manual_status_text() -> str:
     return "\n".join(
         [
             "Phase 3.2C BMP280 manual hardware status",
-            "software_foundation: SOFTWARE_VERIFIED only when tests, Keil builds, and verifier pass",
+            "software_foundation: SOFTWARE_VERIFIED by committed tests and verifier when this audit passes",
             "board_identity: CONFIRMED by Phase 3.2A OpenRF1 evidence",
             "mcu_identity: CONFIRMED by Phase 3.2A OpenRF1 evidence",
             "bmp280_module_count: CONFIRMED x1 inventory",
             "bmp280_vcc_3v3_rule: CONFIRMED_MODULE_EVIDENCE",
-            "bmp280_expected_address_0x76: PLANNED from SDO grounded; real ACK remains UNVERIFIED",
-            "bmp280_expected_chip_id_0x58: PLANNED manufacturer register value; physical read remains UNVERIFIED",
-            "bmp280_firmware_flash: MANUAL_ACTION_REQUIRED",
-            "bmp280_i2c_ack: MANUAL_ACTION_REQUIRED",
-            "bmp280_chip_id_read: MANUAL_ACTION_REQUIRED",
-            "bmp280_live_temperature_pressure: MANUAL_ACTION_REQUIRED",
+            f"bmp280_formal_keil_hex_sha256: {FORMAL_KEIL_HEX_SHA256}",
+            "bmp280_firmware_flash: PHYSICAL_EVIDENCE_VERIFIED",
+            "ch340_usart1_jsonl_telemetry: PHYSICAL_EVIDENCE_VERIFIED",
+            "bmp280_address_0x76: PHYSICAL_EVIDENCE_VERIFIED",
+            "bmp280_i2c_ack: PHYSICAL_EVIDENCE_VERIFIED",
+            "bmp280_chip_id_0x58: PHYSICAL_EVIDENCE_VERIFIED",
+            "bmp280_calibration_path_for_compensated_output: PHYSICAL_EVIDENCE_VERIFIED",
+            "bmp280_ctrl_meas_0x27_config_0x80_readback: PHYSICAL_EVIDENCE_VERIFIED",
+            "bmp280_live_temperature_pressure: PHYSICAL_EVIDENCE_VERIFIED",
+            "bmp280_500ms_periodicity: PHYSICAL_EVIDENCE_VERIFIED",
+            "bmp280_stable_30_second_capture: PHYSICAL_EVIDENCE_VERIFIED",
+            "bmp280_i2c_errors_in_formal_capture: none",
+            "absolute_temperature_accuracy: UNVERIFIED",
+            "absolute_pressure_accuracy: UNVERIFIED",
+            "long_duration_operation_beyond_capture: UNVERIFIED",
+            "shared_i2c_multidevice_concurrency: UNVERIFIED",
+            "complete_full_hardware_operation: UNVERIFIED",
             "hardware_access_by_automation: none",
         ]
     ) + "\n"

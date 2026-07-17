@@ -159,6 +159,7 @@ Phase 3.2A automated tests do not open real COM ports, USB devices, GPIO, I2C, f
 Targeted:
 
 - `pc/tests/test_openrf1_bmp280_bringup.py`
+- `pc/tests/test_phase32c_physical_evidence.py`
 
 Regression:
 
@@ -172,10 +173,11 @@ Smoke workflow:
 - Audit required BMP280 bring-up files.
 - Confirm the isolated Keil target and output directory.
 - Confirm BMP280 register configuration constants.
+- Validate the committed BMP280 physical evidence JSONL exact SHA-256 and internal structure.
 - Confirm generated Keil artifacts are not tracked.
-- Confirm BMP280, BH1750, and FullHardware Keil build evidence when local builds have been run.
+- Report BMP280, BH1750, and FullHardware local Keil build evidence when local builds have been run.
 
-Phase 3.2C automated tests do not open real COM ports, USB devices, GPIO, I2C, flash tools, network sockets, motors, or real sensors. ACK at `0x76`, chip ID `0x58`, calibration read, configuration readback, live temperature, and live pressure remain manual hardware evidence.
+Phase 3.2C automated tests do not open real COM ports, USB devices, GPIO, I2C, flash tools, network sockets, motors, or real sensors. They validate the committed evidence file offline. The formal evidence marks isolated BMP280 ACK/address `0x76`, chip ID `0x58`, configuration readback, live compensated temperature/pressure telemetry, exact 500 ms periodicity, and stable 30-second capture as PHYSICAL_EVIDENCE_VERIFIED. Absolute temperature/pressure accuracy, long-duration operation, shared-I2C concurrency, and complete full-hardware operation remain UNVERIFIED.
 
 ## Revised Phase Sequence
 
@@ -375,7 +377,8 @@ The Phase 3.2C verifier covers:
 - BMP280 chip ID, calibration parsing, raw sample decoding, configuration register constants, compensation, and JSONL telemetry formatting
 - static source checks for the BMP280-only firmware boundary
 - Keil target isolation under `Objects_BMP280_Bringup/`
+- exact SHA-256 and structure of the committed BMP280 physical evidence
 - regression tests for Phase 3.2A and Phase 3.2B software contracts
-- build evidence audits for BH1750, FullHardware, and BMP280 bring-up targets
+- local build evidence reporting for BH1750, FullHardware, and BMP280 bring-up targets
 
-Physical BMP280 testing still requires the manual procedure in `docs/openrf1_bmp280_bringup.md`.
+Recorded BMP280 physical evidence is documented in `evidence/phase3.2c/bmp280_physical_evidence.md`. Future repeat testing should follow `docs/openrf1_bmp280_bringup.md` and must keep private local details out of tracked files.

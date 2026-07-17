@@ -72,7 +72,9 @@ CONFIRMED values include the Phase 3.2A OpenRF1 facts: PB1/SCL, PC3/SDA, USART1 
 
 Phase 3.2C adds the isolated BMP280-only target `OpenRF1_BMP280_Bringup.uvprojx` and source under `firmware/openrf1/bmp280_bringup/`. It is for one BMP280 module on PB1/SCL and PC3/SDA only, with USART1 JSONL debug telemetry at 115200 8N1. It does not run BH1750, MPU6050, HC-SR04, TCRT5000, Hall, RPLIDAR, ESP32, motors, or encoders.
 
-The planned BMP280 wiring is VCC -> 3.3 V, GND -> GND, SCL -> PB1/B1, SDA -> PC3/C3, CSB -> 3.3 V, and SDO -> GND. Address `0x76`, chip ID `0x58`, configuration readback, calibration read, live temperature, and live pressure remain UNVERIFIED until manual telemetry evidence is captured.
+Committed Phase 3.2C evidence verifies the isolated BMP280-only path: firmware flash, CH340/USART1 JSONL telemetry, I2C ACK/address `0x76`, chip ID `0x58`, configuration readback `ctrl_meas = 0x27` and `config = 0x80`, calibration-register path sufficient for compensated output, live compensated temperature and pressure telemetry, exact 500 ms periodicity, no I2C errors, and a stable 30-second capture.
+
+Absolute temperature accuracy, absolute pressure accuracy, environmental-reference comparison, operation beyond the 30-second capture, full multi-device shared-I2C concurrency, and complete full-hardware operation remain UNVERIFIED.
 
 ## Future Runtime Constraints
 
