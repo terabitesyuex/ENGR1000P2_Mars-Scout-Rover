@@ -270,6 +270,19 @@ PC planned responsibilities:
 - No real COM port, USB device, GPIO, I2C bus, WiFi socket, flash action, or real sensor is accessed by repository automation.
 - Physical Phase 3.2B multisensor wiring, voltage levels, power integrity, USART2/USART3 operation, BMP280/MPU6050 ACKs, TCRT5000/Hall polarity, HC-SR04 Echo VOH/timing, RPLIDAR transport, ESP32 link, concurrent operation, and real full-system sensor data remain UNVERIFIED.
 
+## Phase 3.2C BMP280 Bring-Up Boundary Status
+
+- Phase 3.2C adds an isolated OpenRF1 BMP280-only firmware boundary under `firmware/openrf1/bmp280_bringup/`.
+- The Phase 3.2C Keil project is `firmware/openrf1/keil/OpenRF1_BMP280_Bringup.uvprojx`.
+- The Phase 3.2C output directory is `Objects_BMP280_Bringup/` and must not overwrite `Objects/OpenRF1_BH1750.hex` or `Objects_FullHardware/OpenRF1_FullHardware.hex`.
+- Planned BMP280-only wiring: VCC -> OpenRF1 3.3 V, GND -> OpenRF1 GND, SCL -> PB1 / connector B1, SDA -> PC3 / connector C3, CSB -> 3.3 V, and SDO -> GND.
+- Planned configured address `0x76` follows from SDO grounded; actual BMP280 ACK remains UNVERIFIED.
+- Expected BMP280 chip ID register check is `0xD0 -> 0x58`; physical chip ID readback remains UNVERIFIED.
+- Firmware configures `config = 0x80` and `ctrl_meas = 0x27` for 500 ms standby, filter off, temperature x1, pressure x1, and normal mode.
+- Automated Phase 3.2C tests use pure logic, static source checks, and build/artifact audits only.
+- No real COM port, USB device, GPIO, I2C bus, flash action, or real sensor is accessed by repository automation.
+- Physical BMP280 wiring, ACK at `0x76`, chip ID `0x58`, calibration read, configuration readback, live temperature, live pressure, and 500 ms physical telemetry remain MANUAL_ACTION_REQUIRED.
+
 ## Safety Rules
 
 - Do not connect the LiDAR red wire to ESP32 3.3 V.
@@ -284,6 +297,7 @@ PC planned responsibilities:
 - Do not use the PWM servo-interface + rail for the first HC-SR04 test; start with one module powered from the OpenRF1 3.3 V output and measure Echo high voltage.
 - Disconnect the STM32/OpenRF1 5 V feed before plugging the ESP32-C3 SuperMini into USB; external 5 V and USB power must not be connected simultaneously.
 - Do not power the BMP280-3.3 module from the I2C connector 5 V pin.
+- For the BMP280-only bring-up, connect CSB to 3.3 V for I2C mode and SDO to GND for the planned `0x76` address before power-up.
 - Do not treat Hall `S` as STM32-safe until its high/low voltage is measured in both magnetic states.
 - Do not infer C1 signal identity from wire color alone.
 - Do not use USART1 for high-rate lidar payload.

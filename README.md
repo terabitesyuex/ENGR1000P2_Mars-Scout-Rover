@@ -19,8 +19,9 @@ Major enhancements are encoder/IMU-assisted pose estimation, short-range accumul
 - Phase 3.1: STM32 low-rate sensor telemetry protocol, deterministic simulator, strict parser, recording bridge, CLI workflows, and manual bring-up checklist complete.
 - Phase 3.2A: OpenRF1 STM32F103RCT6 + GY-302/BH1750 firmware foundation, mocked PC serial-capture workflow, documentation, phase verification, and recorded BH1750-only physical evidence complete. Absolute lux calibration remains UNVERIFIED.
 - Phase 3.2B: OpenRF1 multisensor and communications software foundation, isolated full-hardware Keil project, PC contracts, simulators, parser/recording support, and software verification support added. Physical wiring and live sensor/link behavior remain UNVERIFIED.
+- Phase 3.2C: isolated OpenRF1 BMP280-only bring-up firmware, Keil target, host-side BMP280 register/telemetry tests, and verifier support added. Physical BMP280 ACK, chip ID, and live temperature/pressure remain UNVERIFIED until manual telemetry evidence is captured.
 
-Phase 3.2B does not implement motors, encoders, ESP32 WiFi firmware, mapping, SLAM, navigation, obstacle avoidance, physical C1 validation, or live hardware bring-up. Automated tests do not access real COM ports, USB devices, GPIO, I2C, flashing tools, WiFi, or sensors.
+Phase 3.2C does not implement motors, encoders, ESP32 WiFi firmware, mapping, SLAM, navigation, obstacle avoidance, physical C1 validation, or full multisensor hardware integration. Automated tests do not access real COM ports, USB devices, GPIO, I2C, flashing tools, WiFi, or sensors.
 
 ## Confirmed Hardware Inventory
 
@@ -125,6 +126,14 @@ Convert it to the existing recording format:
 python -m rplidar_c1_tools.cli record-stm32-telemetry --input .verification\phase3.2b\phase32b_full_telemetry.jsonl --output .verification\phase3.2b\phase32b_full_recording.jsonl --overwrite
 ```
 
+## Phase 3.2C OpenRF1 BMP280 Bring-Up
+
+Phase 3.2C adds a BMP280-only physical bring-up target under `firmware/openrf1/bmp280_bringup/` with Keil project `firmware/openrf1/keil/OpenRF1_BMP280_Bringup.uvprojx`. Its output is isolated under `Objects_BMP280_Bringup/` as `OpenRF1_BMP280_Bringup.hex`.
+
+The dedicated firmware expects only `bmp280_1` on software I2C PB1/SCL and PC3/SDA: VCC -> 3.3 V, GND -> GND, CSB -> 3.3 V for I2C mode, and SDO -> GND for planned address `0x76`. It probes `0x76`, reads chip ID register `0xD0`, expects `0x58`, reads calibration, writes `config = 0x80`, writes `ctrl_meas = 0x27`, and emits `environmental` JSONL every 500 ms on USART1 PA9/PA10 at 115200 8N1.
+
+See `docs/openrf1_bmp280_bringup.md` for the manual FlyMcu/CH340 procedure. Repository automation does not flash, open a COM port, or prove the real BMP280 ACK/chip ID/live readings.
+
 ## Preserved Verified C1 Facts
 
 - Exact model in earlier verified files: SLAMTEC RPLIDAR C1M1-R2.
@@ -216,7 +225,7 @@ Captured files use the existing `mars_scout_multisensor_recording` JSONL schema.
 
 ## Phase Verification
 
-Supported phases include `phase1`, `phase2.1`, `phase2.2`, `phase2.3`, `phase2.4`, `phase2.5`, `phase3.1`, `phase3.2a`, and `phase3.2b`.
+Supported phases include `phase1`, `phase2.1`, `phase2.2`, `phase2.3`, `phase2.4`, `phase2.5`, `phase3.1`, `phase3.2a`, `phase3.2b`, and `phase3.2c`.
 
 Development verification:
 
@@ -225,6 +234,7 @@ Development verification:
 .\tools\verify_phase.cmd phase3.1 -AllowDirty
 .\tools\verify_phase.cmd phase3.2a -AllowDirty
 .\tools\verify_phase.cmd phase3.2b -AllowDirty
+.\tools\verify_phase.cmd phase3.2c -AllowDirty
 ```
 
 Normal verification after commit and push:
@@ -234,6 +244,7 @@ Normal verification after commit and push:
 .\tools\verify_phase.cmd phase3.1
 .\tools\verify_phase.cmd phase3.2a
 .\tools\verify_phase.cmd phase3.2b
+.\tools\verify_phase.cmd phase3.2c
 ```
 
 The verifier checks Git state, Python selection, pytest import, targeted tests, regressions, the complete PC suite, and configured smoke workflows. Hardware and safety facts still require physical verification.
@@ -245,6 +256,7 @@ The verifier checks Git state, Python selection, pytest import, targeted tests, 
 - Phase 3.1: STM32 low-rate sensor telemetry software foundation, deterministic simulator, PC parser, recording bridge, and manual bring-up checklist.
 - Phase 3.2A: OpenRF1 STM32F103RCT6 + GY-302/BH1750 firmware foundation, mocked serial-capture workflow, and manual bring-up procedure.
 - Phase 3.2B: OpenRF1 multisensor and communications software foundation; physical integration remains future manual validation.
+- Phase 3.2C: OpenRF1 BMP280-only physical bring-up firmware; physical validation remains manual evidence.
 - Phase 4: wheel encoders, MPU6050, mecanum kinematics, closed-loop motion, and odometry.
 - Phase 5: STM32-ESP32-computer communication, WiFi transport, one-C1 baseline integration, then optional dual-C1 feasibility evaluation.
 - Phase 6: real-time PC visualization, rover trajectory, and short-range encoder/IMU-assisted accumulated 2D mapping.

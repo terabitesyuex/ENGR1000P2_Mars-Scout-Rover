@@ -5,6 +5,8 @@
 #define BMP280_REG_CHIP_ID ((uint8_t)0xD0u)
 #define BMP280_REG_CALIB_START ((uint8_t)0x88u)
 #define BMP280_REG_PRESS_MSB ((uint8_t)0xF7u)
+#define BMP280_REG_CTRL_MEAS ((uint8_t)0xF4u)
+#define BMP280_REG_CONFIG ((uint8_t)0xF5u)
 
 static uint16_t u16_le(uint8_t lsb, uint8_t msb) {
     return (uint16_t)((uint16_t)lsb | ((uint16_t)msb << 8u));
@@ -12,6 +14,15 @@ static uint16_t u16_le(uint8_t lsb, uint8_t msb) {
 
 static int16_t s16_le(uint8_t lsb, uint8_t msb) {
     return (int16_t)u16_le(lsb, msb);
+}
+
+static OpenRf1Status write_register(uint8_t address_7bit, uint8_t reg, uint8_t value) {
+    uint8_t buffer[2u] = {reg, value};
+    return openrf1_i2c_write(address_7bit, buffer, (uint8_t)sizeof(buffer));
+}
+
+static OpenRf1Status read_register(uint8_t address_7bit, uint8_t reg, uint8_t *value) {
+    return openrf1_i2c_write_read(address_7bit, &reg, 1u, value, 1u);
 }
 
 OpenRf1Status bmp280_validate_chip_id(uint8_t chip_id) {
@@ -53,6 +64,33 @@ OpenRf1Status bmp280_read_calibration(uint8_t address_7bit, Bmp280Calibration *c
     calibration->dig_p8 = s16_le(buffer[20], buffer[21]);
     calibration->dig_p9 = s16_le(buffer[22], buffer[23]);
     return OPENRF1_STATUS_OK;
+}
+
+OpenRf1Status bmp280_configure_normal_mode(uint8_t address_7bit) {
+    OpenRf1Status status = write_register(
+        address_7bit,
+        BMP280_REG_CONFIG,
+        BMP280_CONFIG_STANDBY_500_MS_FILTER_OFF
+    );
+    if (status != OPENRF1_STATUS_OK) {
+        return status;
+    }
+    return write_register(
+        address_7bit,
+        BMP280_REG_CTRL_MEAS,
+        BMP280_CTRL_MEAS_TEMP_X1_PRESS_X1_NORMAL
+    );
+}
+
+OpenRf1Status bmp280_read_configuration(uint8_t address_7bit, uint8_t *ctrl_meas, uint8_t *config) {
+    if (ctrl_meas == 0 || config == 0) {
+        return OPENRF1_STATUS_INVALID_ARGUMENT;
+    }
+    OpenRf1Status status = read_register(address_7bit, BMP280_REG_CTRL_MEAS, ctrl_meas);
+    if (status != OPENRF1_STATUS_OK) {
+        return status;
+    }
+    return read_register(address_7bit, BMP280_REG_CONFIG, config);
 }
 
 OpenRf1Status bmp280_read_raw_sample(uint8_t address_7bit, Bmp280RawSample *raw_sample) {

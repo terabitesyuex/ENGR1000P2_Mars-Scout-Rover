@@ -45,6 +45,14 @@ Phase 3.2B adds a separate full-hardware software foundation under `full_hardwar
 - Full-hardware project: `firmware/openrf1/keil/OpenRF1_FullHardware.uvprojx`.
 - Full-hardware output: `firmware/openrf1/keil/Objects_FullHardware/OpenRF1_FullHardware.hex`.
 
+Phase 3.2C adds a separate BMP280-only bring-up target:
+
+- BMP280 bring-up source: `firmware/openrf1/bmp280_bringup/`.
+- BMP280 bring-up project: `firmware/openrf1/keil/OpenRF1_BMP280_Bringup.uvprojx`.
+- BMP280 bring-up output: `firmware/openrf1/keil/Objects_BMP280_Bringup/OpenRF1_BMP280_Bringup.hex`.
+
+The BMP280 target is for one module on PB1/SCL and PC3/SDA with VCC on 3.3 V, CSB tied to 3.3 V, and SDO tied to GND for the planned `0x76` address. It does not run the BH1750 or full-hardware application. Physical BMP280 ACK, chip ID, and live readings remain manual validation.
+
 The Phase 3.2B source prepares bounded software foundations for the shared I2C signal bus, BMP280, MPU6050, HC-SR04, TCRT5000, Hall, RPLIDAR C1 byte transport, and STM32-to-ESP32 link. Module-specific evidence revises the proposed power domains, but USART2/USART3 pins, PWM channel pins, line-input pins, BMP280/MPU6050 ACKs, HC-SR04 Echo VOH, Hall output voltage, physical polarity, RPLIDAR operation, ESP32 operation, power integrity, and real full-system sensor data remain UNVERIFIED.
 
 Build only; do not flash until the manual safety checklist is complete.

@@ -137,11 +137,21 @@ All notable subsystem changes are recorded here. Track protocol, GPIO, power, da
 - Added focused evidence tests for the committed BH1750 JSONL and revised electrical documentation.
 - Did not change RPLIDAR C1 transport assumptions, implement new hardware pin mappings, open real COM ports in automation, or claim full-system power/current validation.
 
+## 2026-07-17 - Phase 3.2C OpenRF1 BMP280 Bring-Up Firmware
+
+- Added isolated BMP280-only firmware source under `firmware/openrf1/bmp280_bringup/` without modifying the Phase 3.2A BH1750 runtime or enabling BMP280 in the Phase 3.2B full-hardware runtime.
+- Added Keil target `OpenRF1_BMP280_Bringup.uvprojx` with output directory `Objects_BMP280_Bringup/` and HEX name `OpenRF1_BMP280_Bringup.hex`.
+- Added BMP280 driver configuration writes for `config = 0x80` and `ctrl_meas = 0x27`, plus configuration readback support.
+- Recorded Phase 3.2C planned BMP280 wiring: VCC -> OpenRF1 3.3 V, GND -> GND, SCL -> PB1/B1, SDA -> PC3/C3, CSB -> 3.3 V, SDO -> GND, expected address `0x76`, and expected chip ID `0x58`.
+- Added host-testable BMP280 bring-up helpers for chip ID validation, calibration parsing, raw sample decoding, register configuration values, environmental telemetry, and error telemetry.
+- Added Phase 3.2C tests and verifier audit support for target isolation, telemetry formatting, configuration register values, compensation behavior, and generated-artifact hygiene.
+- Did not flash hardware, open COM ports, access USB devices, verify I2C ACKs, prove chip ID readback, prove live temperature/pressure, run other sensors, implement ESP32 communication, or begin Phase 4.
+
 ## Change Categories
 
-- Protocol changes: Phase 2.5 adds a PC-direct standard scan-node parser boundary for C1 capture; Phase 3.1 adds the PC-side `mars_scout_stm32_sensor_telemetry` v1 diagnostic protocol; Phase 3.2A emits the existing v1 `illuminance` message for `bh1750_1`; Phase 3.2B extends v1 telemetry with raw IMU and status/transport diagnostics and defines a separate STM32-to-ESP32 binary frame contract; no ESP32 WiFi protocol implementation.
-- GPIO changes: Phase 3.2A locks OpenRF1 software-I2C PB1/SCL and PC3/SDA for BH1750 only; other GPIO values remain unset.
+- Protocol changes: Phase 2.5 adds a PC-direct standard scan-node parser boundary for C1 capture; Phase 3.1 adds the PC-side `mars_scout_stm32_sensor_telemetry` v1 diagnostic protocol; Phase 3.2A emits the existing v1 `illuminance` message for `bh1750_1`; Phase 3.2B extends v1 telemetry with raw IMU and status/transport diagnostics and defines a separate STM32-to-ESP32 binary frame contract; Phase 3.2C emits BMP280 bring-up `sensor_identity` and `environmental` JSONL on USART1; no ESP32 WiFi protocol implementation.
+- GPIO changes: Phase 3.2A locks OpenRF1 software-I2C PB1/SCL and PC3/SDA for BH1750 only; Phase 3.2C reuses PB1/SCL, PC3/SDA, and USART1 PA9/PA10 for an isolated BMP280-only target; other GPIO values remain unset.
 - Power changes: hardware values documented; Phase 3.2B module-specific evidence defines proposed 5 V and 3.3 V domains, but full-system power budget and physical integration remain unverified.
-- Data-format changes: Phase 2.1 adds the PC-side `ScanFrame` software interface; Phase 2.2 adds Cartesian transform models; Phase 2.3 adds PNG visualization export; Phase 2.4 adds the multi-sensor JSONL recording format; Phase 2.5 reuses that JSONL format for PC-direct C1 captures; Phase 3.1 reuses it for STM32 low-rate sensor telemetry recordings with optional status/raw fields; Phase 3.2A reuses the same recording format for mocked BH1750 serial capture.
-- Firmware changes: Phase 3.2A adds OpenRF1 application-layer STM32F103RCT6 BH1750 source, not a complete standalone Keil build tree.
+- Data-format changes: Phase 2.1 adds the PC-side `ScanFrame` software interface; Phase 2.2 adds Cartesian transform models; Phase 2.3 adds PNG visualization export; Phase 2.4 adds the multi-sensor JSONL recording format; Phase 2.5 reuses that JSONL format for PC-direct C1 captures; Phase 3.1 reuses it for STM32 low-rate sensor telemetry recordings with optional status/raw fields; Phase 3.2A reuses the same recording format for mocked BH1750 serial capture; Phase 3.2C adds BMP280 bring-up JSONL examples for manual bench capture.
+- Firmware changes: Phase 3.2A adds OpenRF1 application-layer STM32F103RCT6 BH1750 source, Phase 3.2B adds an isolated full-hardware foundation, and Phase 3.2C adds an isolated BMP280-only bring-up Keil target.
 - Calibration changes: calibration process documented only.

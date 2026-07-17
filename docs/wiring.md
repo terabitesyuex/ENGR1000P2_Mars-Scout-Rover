@@ -121,6 +121,21 @@ Do not tie all I2C module VCC pins together. All grounds are common, SCL is comm
 
 The BMP280-3.3 module must not connect to the I2C connector 5 V pin. No external level shifter is needed when the BMP280 module and I2C pull-ups operate at 3.3 V.
 
+## Phase 3.2C BMP280-Only Bring-Up Wiring
+
+This is the isolated Phase 3.2C bench target, not the full Phase 3.2B shared-bus integration. Connect only the BMP280 module:
+
+| BMP280 pin | OpenRF1 connection | Status |
+| --- | --- | --- |
+| VCC | 3.3 V | CONFIRMED_MODULE_EVIDENCE for BMP280-3.3 supply rule |
+| GND | GND | PLANNED |
+| SCL | PB1 / connector B1 | CONFIRMED OpenRF1 software-I2C signal |
+| SDA | PC3 / connector C3 | CONFIRMED OpenRF1 software-I2C signal |
+| CSB | 3.3 V | PLANNED I2C-mode strap |
+| SDO | GND | PLANNED address strap for `0x76` |
+
+Expected address `0x76` and chip ID `0x58` are firmware checks, not physical evidence yet. ACK, chip ID, calibration read, configuration readback, and live temperature/pressure remain MANUAL_ACTION_REQUIRED.
+
 ### HC-SR04
 
 Proposed logical allocation:

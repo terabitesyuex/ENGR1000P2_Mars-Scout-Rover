@@ -192,3 +192,30 @@ Current Phase 3.2B automated work also has no real COM-port access, STM32 flashi
 - BMP280 and MPU6050 bad ID or NACK must be recorded as status, not converted into readings.
 - RPLIDAR overflow and ESP32 CRC errors are transport diagnostics only, not proof of working physical links.
 - Follow `docs/phase3_2b_full_hardware_foundation.md` before attaching additional hardware.
+
+## Phase 3.2C OpenRF1 BMP280
+
+No identity line:
+
+- Confirm the `OpenRF1_BMP280_Bringup.hex` image was flashed, not the BH1750 or FullHardware target.
+- Confirm USART1 PA9/PA10 CH340 capture at 115200 8N1.
+- Do not record the COM port number in committed evidence.
+
+NACK at `0x76`:
+
+- Power off before changing wiring.
+- Confirm BMP280 VCC is connected to 3.3 V, not the OpenRF1 I2C 5 V pin.
+- Confirm GND is common, SCL is PB1/B1, SDA is PC3/C3, CSB is 3.3 V, and SDO is GND.
+- Treat NACK as failed communication; do not fabricate temperature or pressure.
+
+Bad chip ID:
+
+- Record the observed chip ID and stop.
+- Do not mark the BMP280 verified unless register `0xD0` returns `0x58` from the wired module.
+
+Temperature or pressure is null:
+
+- Check the `status`, `initialization_stage`, and `error_code` fields.
+- Null values indicate invalid data, not zero temperature or zero pressure.
+
+The Phase 3.2C automated verifier does not flash, open a COM port, access USB, GPIO, I2C, or sensors. Physical ACK, chip ID, calibration read, configuration readback, and live samples remain MANUAL_ACTION_REQUIRED until sanitized telemetry evidence is committed.

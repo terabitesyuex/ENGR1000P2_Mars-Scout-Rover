@@ -5,6 +5,8 @@
 #include "openrf1_status.h"
 
 #define BMP280_CHIP_ID_EXPECTED ((uint8_t)0x58u)
+#define BMP280_CTRL_MEAS_TEMP_X1_PRESS_X1_NORMAL ((uint8_t)0x27u)
+#define BMP280_CONFIG_STANDBY_500_MS_FILTER_OFF ((uint8_t)0x80u)
 
 typedef struct {
     uint16_t dig_t1;
@@ -35,6 +37,8 @@ typedef struct {
 OpenRf1Status bmp280_validate_chip_id(uint8_t chip_id);
 OpenRf1Status bmp280_read_chip_id(uint8_t address_7bit, uint8_t *chip_id);
 OpenRf1Status bmp280_read_calibration(uint8_t address_7bit, Bmp280Calibration *calibration);
+OpenRf1Status bmp280_configure_normal_mode(uint8_t address_7bit);
+OpenRf1Status bmp280_read_configuration(uint8_t address_7bit, uint8_t *ctrl_meas, uint8_t *config);
 OpenRf1Status bmp280_read_raw_sample(uint8_t address_7bit, Bmp280RawSample *raw_sample);
 OpenRf1Status bmp280_compensate(
     const Bmp280Calibration *calibration,

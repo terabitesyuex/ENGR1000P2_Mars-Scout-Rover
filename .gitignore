@@ -34,9 +34,11 @@ Thumbs.db
 # Keil / MDK generated files
 firmware/openrf1/keil/Objects/
 firmware/openrf1/keil/Objects_FullHardware/
+firmware/openrf1/keil/Objects_BMP280_Bringup/
 firmware/openrf1/keil/Listings/
 firmware/openrf1/keil/DebugConfig/
 firmware/openrf1/keil/*.uvguix.*
 firmware/openrf1/keil/*.uvoptx
+firmware/openrf1/keil/*.lst
 firmware/openrf1/keil/RTE/**/*.base@*
 firmware/openrf1/keil/RTE/**/*.dbgconf

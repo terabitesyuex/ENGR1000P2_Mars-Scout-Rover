@@ -25,6 +25,7 @@ This repository is the ENGR1000P2 Mars Scout Rover software and documentation ba
 - Phase 3.1 software work is complete: versioned STM32 low-rate sensor telemetry, deterministic PC simulator, strict parser, and recording bridge are implemented.
 - Phase 3.2A software work is complete: OpenRF1 STM32F103RCT6 + GY-302/BH1750 firmware foundation, mocked PC serial capture, documentation, and verifier support are implemented. Recorded manual evidence verifies the BH1750-only flash, CH340/USART1 telemetry, configured `0x23` BH1750 communication, 500 ms telemetry period, and physical light response; absolute lux calibration remains UNVERIFIED.
 - Phase 3.2B software work is complete: isolated OpenRF1 full-hardware firmware foundation, PC contracts, deterministic fixtures, documentation, and verifier support are implemented. Phase 3.2B physical sensor integration has not started.
+- Phase 3.2C software implementation is present: isolated OpenRF1 BMP280-only bring-up firmware, Keil target, tests, documentation, and verifier support are implemented. PC tests pass, but uVision BMP280 target build evidence remains BLOCKED/MANUAL_ACTION_REQUIRED until the local Keil compiler registration issue is resolved. Physical BMP280 ACK, chip ID, calibration read, configuration readback, live temperature, and live pressure remain MANUAL_ACTION_REQUIRED.
 - Do not begin Phase 3.2B physical integration, additional physical sensor bring-up, motor/encoder work, ESP32/WiFi implementation, or hardware bring-up without an explicit request and the documented hardware-safety prerequisites.
 
 ## Confirmed Inventory
@@ -73,6 +74,7 @@ Do not treat BH1750 communication failures as zero-lux readings; valid darkness 
 - Phase 3.1: STM32 low-rate sensor telemetry software foundation, simulator, parser, recording bridge, and manual bring-up checklist.
 - Phase 3.2A: OpenRF1 STM32F103RCT6 + GY-302/BH1750 firmware foundation and mocked PC serial-capture workflow.
 - Phase 3.2B: OpenRF1 multisensor and communications software foundation for proposed wiring; physical validation remains manual and UNVERIFIED.
+- Phase 3.2C: OpenRF1 BMP280-only bring-up firmware and Keil target; physical validation remains manual and UNVERIFIED.
 - Phase 4: wheel encoders, MPU6050, mecanum kinematics, closed-loop motion, and odometry.
 - Phase 5: STM32-ESP32-PC communication, WiFi transport, one-C1 baseline integration, then optional dual-C1 feasibility evaluation.
 - Phase 6: real-time PC visualization, rover trajectory, and short-range encoder/IMU-assisted accumulated 2D mapping.
@@ -90,6 +92,7 @@ Run targeted tests, regression tests, the complete PC suite, and the phase verif
 .\tools\verify_phase.cmd phase3.1 -AllowDirty
 .\tools\verify_phase.cmd phase3.2a -AllowDirty
 .\tools\verify_phase.cmd phase3.2b -AllowDirty
+.\tools\verify_phase.cmd phase3.2c -AllowDirty
 ```
 
 Normal verification after commit and push:
@@ -99,6 +102,7 @@ Normal verification after commit and push:
 .\tools\verify_phase.cmd phase3.1
 .\tools\verify_phase.cmd phase3.2a
 .\tools\verify_phase.cmd phase3.2b
+.\tools\verify_phase.cmd phase3.2c
 ```
 
 Generated recordings, logs, and figures belong under `.verification/` or ignored data directories and must not be committed.
