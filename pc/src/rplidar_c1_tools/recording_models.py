@@ -146,6 +146,58 @@ class LidarTransportStatsSample:
     source_sequence: int | None = None
 
 
+@dataclass(frozen=True, slots=True)
+class WheelEncoderDeltaSample:
+    timestamp_us: int
+    interval_ms: int
+    front_left_raw_count_delta: int
+    front_right_raw_count_delta: int
+    rear_left_raw_count_delta: int
+    rear_right_raw_count_delta: int
+    front_left_signed_count_delta: int
+    front_right_signed_count_delta: int
+    rear_left_signed_count_delta: int
+    rear_right_signed_count_delta: int
+    sensor_id: str = "wheel_encoders"
+    status: str = "simulated"
+    source_sequence: int | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class WheelAngularVelocitySample:
+    timestamp_us: int
+    front_left_rad_s: float
+    front_right_rad_s: float
+    rear_left_rad_s: float
+    rear_right_rad_s: float
+    sensor_id: str = "mecanum_wheels"
+    status: str = "software_derived"
+    source_sequence: int | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class BodyTwistSample:
+    timestamp_us: int
+    vx_m_s: float
+    vy_m_s: float
+    yaw_rate_rad_s: float
+    sensor_id: str = "rover_body"
+    status: str = "software_derived"
+    source_sequence: int | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class OdometryPoseSample:
+    timestamp_us: int
+    x_m: float
+    y_m: float
+    yaw_rad: float
+    integration_method: str = "se2_constant_twist_exponential"
+    sensor_id: str = "rover_odometry"
+    status: str = "software_derived"
+    source_sequence: int | None = None
+
+
 def default_sensor_inventory(
     *,
     lidar_count: int = 2,
@@ -238,6 +290,30 @@ def default_sensor_inventory(
                     "esp32_link_status",
                     "Software status for the planned STM32-to-ESP32 link",
                     ("rx_bytes", "tx_bytes", "crc_errors"),
+                ),
+                SensorDefinition(
+                    "wheel_encoders",
+                    "wheel_encoder_delta",
+                    "Raw and explicitly sign-corrected wheel counts; hardware values unverified",
+                    ("count_delta", "interval_ms"),
+                ),
+                SensorDefinition(
+                    "mecanum_wheels",
+                    "software_derived_wheel_velocity",
+                    "Wheel rates derived from explicit encoder configuration",
+                    ("rad_s",),
+                ),
+                SensorDefinition(
+                    "rover_body",
+                    "software_derived_body_twist",
+                    "Body twist derived by Phase 4A forward kinematics",
+                    ("m_s", "rad_s"),
+                ),
+                SensorDefinition(
+                    "rover_odometry",
+                    "software_derived_odometry_pose",
+                    "SE(2)-integrated software odometry; not physical accuracy evidence",
+                    ("x_m", "y_m", "yaw_rad"),
                 ),
             ]
         )

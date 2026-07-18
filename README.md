@@ -23,8 +23,23 @@ Major enhancements are encoder/IMU-assisted pose estimation, short-range accumul
 - Phase 3.2D: isolated OpenRF1 MPU6050-only bring-up firmware foundation, Keil target, host-side MPU6050 register/telemetry tests, and verifier support complete. Physical ACK, WHO_AM_I, live IMU telemetry, calibration, and axis orientation remain UNVERIFIED.
 - Phase 3.2E: isolated OpenRF1 HC-SR04-only bring-up firmware foundation, PA5/PA4/CN6/TIM6 vendor-documented design lock, required external ECHO divider, Keil target, host-side HC-SR04 tests, and verifier support complete. Physical wiring, trigger/echo pulses, real distance data, timeout behavior, and distance accuracy remain UNVERIFIED.
 - Phase 3.2F: isolated OpenRF1 ground-sensor firmware foundation, X1/PC4 left TCRT5000 mapping, X2/PC5 right TCRT5000 mapping, X3/protected PB0 Hall mapping, X4 conflict documentation, independent debounce, Keil target, host-side tests, and verifier support complete. Physical wiring, voltage levels, active polarity, surface response, magnetic behavior, and serial periodicity remain UNVERIFIED.
+- Phase 4A: standard X-layout mecanum kinematics, explicit wheel-side encoder conversion, body-twist estimation, exact SE(2) odometry integration, deterministic simulation, version-1 telemetry/recording compatibility, tests, documentation, and verifier support complete as a software-only foundation. All rover geometry, encoder resolution/signs, roller orientation, hardware acquisition, and physical odometry accuracy remain UNVERIFIED.
 
-Phase 3.2F does not implement motors, encoders, ESP32 WiFi firmware, mapping, SLAM, navigation, obstacle avoidance, physical C1 validation, sensor fusion, odometry, or full multisensor hardware integration. Automated tests do not access real COM ports, USB devices, GPIO, timer peripherals, I2C, flashing tools, WiFi, or sensors.
+Phase 4A does not implement motor/PWM control, encoder GPIO/timers/interrupts, ESP32 WiFi firmware, mapping, SLAM, navigation, obstacle avoidance, physical C1 validation, MPU6050 fusion, closed-loop motion, or full multisensor hardware integration. Automated tests do not access real COM ports, USB devices, GPIO, timer peripherals, I2C, encoders, motors, flashing tools, WiFi, or sensors.
+
+## Phase 4A Mecanum Kinematics and Odometry
+
+Phase 4A preserves `+x` forward, `+y` left, and positive counterclockwise yaw. It implements the documented standard X-layout equations in wheel order `front_left`, `front_right`, `rear_left`, `rear_right`. Positive wheel rotation is mathematical and independent of physical wiring or encoder polarity.
+
+Callers must explicitly provide finite positive `wheel_radius_m`, `half_length_m`, `half_width_m`, and wheel-side `counts_per_wheel_revolution`, plus four direction multipliers restricted to `+1` or `-1`. No physical geometry, encoder resolution, gear ratio, counter width, or sign is defaulted.
+
+Generate a deterministic fixture using values explicitly labelled synthetic, not rover measurements:
+
+```powershell
+python -m rplidar_c1_tools.cli simulate-mecanum-odometry --wheel-radius-m 0.05 --half-length-m 0.18 --half-width-m 0.16 --counts-per-wheel-revolution 2048 --front-left-direction 1 --front-right-direction 1 --rear-left-direction 1 --rear-right-direction 1 --scenario combined_curved_motion --steps 5 --interval-ms 100 --output .verification\phase4a\mecanum_odometry.jsonl --overwrite
+```
+
+See `docs/phase4a_mecanum_kinematics_odometry_foundation.md` for formulas, encoder interpretation, SE(2) integration, telemetry/recording fields, and the complete UNVERIFIED hardware boundary.
 
 ## Confirmed Hardware Inventory
 
@@ -254,7 +269,7 @@ Captured files use the existing `mars_scout_multisensor_recording` JSONL schema.
 
 ## Phase Verification
 
-Supported phases include `phase1`, `phase2.1`, `phase2.2`, `phase2.3`, `phase2.4`, `phase2.5`, `phase3.1`, `phase3.2a`, `phase3.2b`, `phase3.2c`, `phase3.2d`, `phase3.2e`, and `phase3.2f`.
+Supported phases include `phase1`, `phase2.1`, `phase2.2`, `phase2.3`, `phase2.4`, `phase2.5`, `phase3.1`, `phase3.2a`, `phase3.2b`, `phase3.2c`, `phase3.2d`, `phase3.2e`, `phase3.2f`, and `phase4a`.
 
 Development verification:
 
@@ -267,6 +282,7 @@ Development verification:
 .\tools\verify_phase.cmd phase3.2d -AllowDirty
 .\tools\verify_phase.cmd phase3.2e -AllowDirty
 .\tools\verify_phase.cmd phase3.2f -AllowDirty
+.\tools\verify_phase.cmd phase4a -AllowDirty
 ```
 
 Normal verification after commit and push:
@@ -280,6 +296,7 @@ Normal verification after commit and push:
 .\tools\verify_phase.cmd phase3.2d
 .\tools\verify_phase.cmd phase3.2e
 .\tools\verify_phase.cmd phase3.2f
+.\tools\verify_phase.cmd phase4a
 ```
 
 The verifier checks Git state, Python selection, pytest import, targeted tests, regressions, the complete PC suite, and configured smoke workflows. Hardware and safety facts still require physical verification.
@@ -295,7 +312,8 @@ The verifier checks Git state, Python selection, pytest import, targeted tests, 
 - Phase 3.2D: OpenRF1 MPU6050-only software bring-up firmware; physical ACK, WHO_AM_I, live IMU telemetry, calibration, and axis orientation remain unverified.
 - Phase 3.2E: OpenRF1 HC-SR04-only software bring-up firmware; physical wiring, pulses, real distance data, timeout behavior, and accuracy remain unverified.
 - Phase 3.2F: OpenRF1 ground-sensor-only software bring-up firmware; physical wiring, voltage levels, active polarity, surface behavior, magnetic behavior, and serial periodicity remain unverified.
-- Phase 4: wheel encoders, MPU6050, mecanum kinematics, closed-loop motion, and odometry.
+- Phase 4A: software-only mecanum kinematics, explicit encoder conversion, deterministic body-twist estimation, and SE(2) odometry foundation.
+- Later Phase 4 hardware/control work: wheel encoder acquisition, measured geometry/sign configuration, MPU6050 integration, motor control, closed-loop motion, calibration, and physical odometry validation.
 - Phase 5: STM32-ESP32-computer communication, WiFi transport, one-C1 baseline integration, then optional dual-C1 feasibility evaluation.
 - Phase 6: real-time PC visualization, rover trajectory, and short-range encoder/IMU-assisted accumulated 2D mapping.
 - Phase 7: local autonomous obstacle stop/turn behavior.

@@ -10,6 +10,7 @@ from typing import Any, TextIO
 from .data_models import MetadataValue, ScanFrame
 from .recording_models import (
     BarometerSample,
+    BodyTwistSample,
     GroundEdgeSample,
     HallLandmarkSample,
     IlluminanceSample,
@@ -22,6 +23,9 @@ from .recording_models import (
     SensorDefinition,
     SubsystemStatusSample,
     UltrasonicSample,
+    OdometryPoseSample,
+    WheelAngularVelocitySample,
+    WheelEncoderDeltaSample,
     default_sensor_inventory,
     pose_to_json,
     sample_to_json,
@@ -147,6 +151,18 @@ class MultiSensorRecorder:
 
     def write_lidar_transport_stats_sample(self, sample: LidarTransportStatsSample) -> int:
         return self._write_sample_record("lidar_transport_stats", sample)
+
+    def write_wheel_encoder_delta_sample(self, sample: WheelEncoderDeltaSample) -> int:
+        return self._write_sample_record("wheel_encoder_delta", sample)
+
+    def write_wheel_angular_velocity_sample(self, sample: WheelAngularVelocitySample) -> int:
+        return self._write_sample_record("wheel_angular_velocity", sample)
+
+    def write_body_twist_sample(self, sample: BodyTwistSample) -> int:
+        return self._write_sample_record("body_twist", sample)
+
+    def write_odometry_pose_sample(self, sample: OdometryPoseSample) -> int:
+        return self._write_sample_record("odometry_pose", sample)
 
     def _write_sample_record(self, record_type: str, sample: object) -> int:
         try:

@@ -233,6 +233,31 @@ Fields:
 
 These counters do not imply successful physical RPLIDAR operation.
 
+### `wheel_encoder_delta`
+
+Fields:
+
+- `sensor_id`: `wheel_encoders`;
+- positive `interval_ms`;
+- four `*_raw_count_delta` fields;
+- four `*_signed_count_delta` fields after explicit direction multipliers;
+- `status`, which is `simulated` for Phase 4A fixtures;
+- optional `source_sequence`.
+
+Physical encoder polarity, resolution, counter width, and timing remain UNVERIFIED.
+
+### `wheel_angular_velocity`
+
+Fields are `front_left_rad_s`, `front_right_rad_s`, `rear_left_rad_s`, and `rear_right_rad_s` for sensor ID `mecanum_wheels`, plus `status: software_derived` and optional `source_sequence`.
+
+### `body_twist`
+
+Fields are `vx_m_s`, `vy_m_s`, and `yaw_rate_rad_s` for sensor ID `rover_body`, plus `status: software_derived` and optional `source_sequence`. The rover convention remains `+x` forward, `+y` left, and positive counterclockwise yaw.
+
+### `odometry_pose`
+
+Fields are `x_m`, `y_m`, `yaw_rad`, and `integration_method: se2_constant_twist_exponential` for sensor ID `rover_odometry`, plus `status: software_derived` and optional `source_sequence`. This record is not sensor fusion or physical odometry accuracy evidence.
+
 ## Corruption Behavior
 
 Readers reject:
@@ -253,7 +278,7 @@ Errors include useful line numbers when a line is involved.
 
 ## Forward Compatibility
 
-New record types may be added in a later schema version. Phase 2.4 readers reject unsupported schema versions instead of silently guessing.
+The version-1 container permits additive record types whose sensor IDs are declared in the header inventory; Phase 4A uses that existing rule. Existing record types and semantics are unchanged. Readers still reject unsupported schema versions instead of silently guessing.
 
 ## CLI Examples
 
@@ -283,7 +308,7 @@ python -m rplidar_c1_tools.cli render-recording .verification\phase2.4\synthetic
 
 ## Limitations
 
-- Phase 2.4 data is synthetic; Phase 2.5 can write PC-direct C1 records only when fixture bytes or an explicit user-verified serial port are provided; Phase 3.1 can write STM32 telemetry records only from deterministic files or injected streams; Phase 3.2A can write BH1750 records from mock input or a future explicit user-selected COM port; Phase 3.2B can write deterministic raw-IMU and transport-status records from software fixtures only; Phase 3.2D MPU6050 bring-up JSONL is for isolated future manual evidence and remains outside the persistent recording bridge until a later phase requests it.
-- No WiFi, live STM32 firmware, serial port, GPIO, I2C, mapping, SLAM, odometry, navigation, or obstacle avoidance is implemented.
+- Phase 2.4 data is synthetic; Phase 2.5 can write PC-direct C1 records only when fixture bytes or an explicit user-verified serial port are provided; Phase 3.1 can write STM32 telemetry records only from deterministic files or injected streams; Phase 3.2A can write BH1750 records from mock input or a future explicit user-selected COM port; Phase 3.2B can write deterministic raw-IMU and transport-status records from software fixtures only; Phase 3.2D MPU6050 bring-up JSONL is for isolated future manual evidence; Phase 4A adds deterministic software-only wheel/odometry records.
+- No WiFi, live Phase 4 encoder firmware, motor control, physical wheel odometry, mapping, SLAM, navigation, or obstacle avoidance is implemented.
 - No mounting transforms are recorded or applied.
 - No sensor calibration is implied.

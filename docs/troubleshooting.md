@@ -255,3 +255,35 @@ Live values are present:
 - Do not claim calibrated acceleration, gyro bias, axis orientation, yaw, pitch, roll, odometry, navigation, or sensor fusion without later calibrated tests.
 
 The Phase 3.2D automated verifier does not flash, open a COM port, access USB, GPIO, I2C, or sensors. MPU6050 ACK, WHO_AM_I, configuration readback, live IMU telemetry, calibration, axis orientation, shared-I2C concurrency, and full-hardware operation remain UNVERIFIED until recorded physical evidence exists.
+
+## Phase 4A Mecanum Kinematics and Odometry
+
+CLI reports a missing geometry, resolution, or direction argument:
+
+- Supply `wheel_radius_m`, `half_length_m`, `half_width_m`, wheel-side `counts_per_wheel_revolution`, and all four direction multipliers explicitly.
+- Do not copy synthetic example values into a physical configuration.
+
+CLI reports that a value must be finite or positive:
+
+- Reject zero, negative, NaN, and Infinity geometry, resolution, or time intervals.
+- Confirm units: metres, seconds, wheel-side counts per revolution, and radians internally.
+
+Motion direction is mirrored or rotated incorrectly:
+
+- Confirm the mathematical convention: `+x` forward, `+y` left, positive yaw counterclockwise, and wheel order front-left, front-right, rear-left, rear-right.
+- Keep raw counts unchanged and adjust only an explicit `+1`/`-1` direction multiplier after later physical sign evidence exists.
+- Do not treat Phase 4A synthetic signs as verified motor or encoder polarity.
+
+Counter delta jumps near rollover:
+
+- Supply a counter width only when the hardware width is known and evidenced.
+- Without an explicit width, the helper intentionally performs ordinary subtraction and does not guess wrap behavior.
+
+Output file already exists:
+
+- Choose a new path or pass `--overwrite` deliberately. Generated JSONL belongs under `.verification/` or another ignored data directory.
+
+Pose differs slightly from the requested synthetic scenario:
+
+- The simulator quantizes cumulative encoder counts before reconstructing wheel velocity and body twist. Deterministic quantization is expected.
+- This is not evidence of physical wheel slip, calibration, or odometry accuracy.

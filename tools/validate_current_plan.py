@@ -21,6 +21,7 @@ AUTHORITATIVE_FILES = (
     "docs/openrf1_mpu6050_bringup.md",
     "docs/openrf1_hcsr04_bringup.md",
     "docs/openrf1_ground_sensors_bringup.md",
+    "docs/phase4a_mecanum_kinematics_odometry_foundation.md",
     "docs/test_plan.md",
 )
 
@@ -99,6 +100,12 @@ REQUIRED_SNIPPETS = (
     RequiredSnippet("docs/openrf1_ground_sensors_bringup.md", "Do not connect Hall S directly to PB0", "Hall direct connection prohibition documented"),
     RequiredSnippet("docs/openrf1_ground_sensors_bringup.md", "semantic polarity remains unverified", "Ground semantic polarity status documented"),
     RequiredSnippet("docs/test_plan.md", "phase3.2f", "Phase 3.2F verifier documented"),
+    RequiredSnippet("README.md", "Phase 4A", "Phase 4A software status documented"),
+    RequiredSnippet("README.md", "simulate-mecanum-odometry", "Phase 4A simulator CLI documented"),
+    RequiredSnippet("AGENTS.md", "Phase 4A software work is complete", "Phase 4A software boundary documented"),
+    RequiredSnippet("docs/phase4a_mecanum_kinematics_odometry_foundation.md", "counts_per_wheel_revolution", "Phase 4A explicit encoder resolution documented"),
+    RequiredSnippet("docs/phase4a_mecanum_kinematics_odometry_foundation.md", "UNVERIFIED physical facts", "Phase 4A physical boundary documented"),
+    RequiredSnippet("docs/test_plan.md", "phase4a", "Phase 4A verifier documented"),
 )
 
 

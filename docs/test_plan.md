@@ -19,6 +19,7 @@ Supported phases:
 - `phase3.2d`
 - `phase3.2e`
 - `phase3.2f`
+- `phase4a`
 
 Development verification:
 
@@ -31,6 +32,7 @@ Development verification:
 .\tools\verify_phase.cmd phase3.2d -AllowDirty
 .\tools\verify_phase.cmd phase3.2e -AllowDirty
 .\tools\verify_phase.cmd phase3.2f -AllowDirty
+.\tools\verify_phase.cmd phase4a -AllowDirty
 ```
 
 Normal verification after commit and push:
@@ -44,6 +46,7 @@ Normal verification after commit and push:
 .\tools\verify_phase.cmd phase3.2d
 .\tools\verify_phase.cmd phase3.2e
 .\tools\verify_phase.cmd phase3.2f
+.\tools\verify_phase.cmd phase4a
 ```
 
 The verifier uses repository-local pytest basetemp under `.verification/pytest_tmp/`, checks Git state, selects Python, confirms pytest import, runs targeted tests, regressions, the complete PC suite, and configured smoke workflows.
@@ -287,14 +290,19 @@ Phase 3.2B:
 - Safety tests: edge/drop response, ultrasonic timeout behavior, local stop path.
 - Presentation evidence: sensor logs, threshold tables, environmental-change demonstrations.
 
-Phase 4:
+Phase 4A:
 
-- Automated software tests: kinematics, encoder math, IMU parsing, odometry update logic.
-- Bench hardware tests: encoder counts, MPU6050 readings, mecanum geometry.
+- Automated software tests: canonical and combined mecanum kinematics, round trips, explicit wheel-side encoder math/signs/wrap, exact and near-zero SE(2) integration, deterministic simulation, telemetry/recording compatibility, CLI failures, overwrite protection, privacy, generated-artifact hygiene, and no hardware access.
+- Bench, stationary, moving-rover, and safety hardware tests: not part of Phase 4A.
+- Presentation evidence: deterministic JSONL and verifier output only; no physical trajectory or accuracy claim.
+
+Later Phase 4 hardware/control work:
+
+- Bench hardware tests: encoder counts, MPU6050 readings, measured mecanum geometry, and safe per-wheel sign checks.
 - Stationary physical tests: wheel direction and low-speed movement on blocks.
-- Moving-rover tests: straight, lateral, yaw, repeatability runs.
+- Moving-rover tests: straight, lateral, yaw, repeatability, and calibrated accuracy runs.
 - Safety tests: timeout stop and bounded command behavior.
-- Presentation evidence: trajectory and error plots.
+- Presentation evidence: physical trajectory and error plots only after recorded evidence exists.
 
 Phase 5:
 
@@ -509,3 +517,24 @@ The Phase 3.2F verifier covers:
 - regression tests for Phase 3.2A, Phase 3.2B, Phase 3.2C, Phase 3.2D, and Phase 3.2E software/evidence contracts
 
 Phase 3.2F automated tests do not open real COM ports, USB devices, GPIO, timer peripherals, flashing tools, or sensors. Future manual testing should follow `docs/openrf1_ground_sensors_bringup.md` and must keep private local details out of tracked files.
+
+## Phase 4A Mecanum Kinematics and Odometry Tests
+
+Run:
+
+```powershell
+.\tools\verify_phase.cmd phase4a -AllowDirty
+```
+
+The Phase 4A verifier covers:
+
+- standard X-layout inverse and forward canonical motions and round trips;
+- explicit finite positive geometry and wheel-side counts-per-revolution validation;
+- four independent `+1`/`-1` direction multipliers and explicit-only counter wrap;
+- stationary, forward, left-strafe, counterclockwise-rotation, and combined-motion odometry;
+- exact constant-twist SE(2), stable near-zero yaw, nonzero initial heading, and yaw normalization;
+- deterministic UTF-8 JSONL simulation, strict version-1 telemetry, recording bridge, inspection, CLI errors, and overwrite protection;
+- Phase 2.x/3.x regression tests and the complete PC suite;
+- privacy and generated-artifact tracking scans.
+
+Phase 4A automated tests do not open COM ports, USB devices, GPIO, timers, encoders, motors, I2C, Keil, FlyMcu, flashing tools, network sockets, or sensors. Actual geometry, counts per wheel revolution, gear ratio, counter width, direction signs, roller orientation, acquisition timing, wheel slip, motor behavior, MPU6050 fusion, and physical odometry accuracy remain UNVERIFIED.

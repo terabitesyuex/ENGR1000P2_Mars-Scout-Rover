@@ -8,14 +8,18 @@ from pathlib import Path
 from .recorder import MultiSensorRecorder
 from .recording_models import (
     BarometerSample,
+    BodyTwistSample,
     GroundEdgeSample,
     HallLandmarkSample,
     IlluminanceSample,
     ImuSample,
     LidarTransportStatsSample,
     LinkStatusSample,
+    OdometryPoseSample,
     SubsystemStatusSample,
     UltrasonicSample,
+    WheelAngularVelocitySample,
+    WheelEncoderDeltaSample,
     default_sensor_inventory,
 )
 from .openrf1_phase32b import (
@@ -171,6 +175,58 @@ def stm32_message_to_recording_sample(message: Stm32TelemetryMessage) -> tuple[s
         )
         return ("lidar_transport_stats", sample)
 
+    if message.message_type == "wheel_encoder_delta":
+        sample = WheelEncoderDeltaSample(
+            timestamp_us=timestamp_us,
+            interval_ms=int(payload["interval_ms"]),
+            front_left_raw_count_delta=int(payload["front_left_raw_count_delta"]),
+            front_right_raw_count_delta=int(payload["front_right_raw_count_delta"]),
+            rear_left_raw_count_delta=int(payload["rear_left_raw_count_delta"]),
+            rear_right_raw_count_delta=int(payload["rear_right_raw_count_delta"]),
+            front_left_signed_count_delta=int(payload["front_left_signed_count_delta"]),
+            front_right_signed_count_delta=int(payload["front_right_signed_count_delta"]),
+            rear_left_signed_count_delta=int(payload["rear_left_signed_count_delta"]),
+            rear_right_signed_count_delta=int(payload["rear_right_signed_count_delta"]),
+            status=message.status,
+            source_sequence=source_sequence,
+        )
+        return ("wheel_encoder_delta", sample)
+
+    if message.message_type == "wheel_angular_velocity":
+        sample = WheelAngularVelocitySample(
+            timestamp_us=timestamp_us,
+            front_left_rad_s=float(payload["front_left_rad_s"]),
+            front_right_rad_s=float(payload["front_right_rad_s"]),
+            rear_left_rad_s=float(payload["rear_left_rad_s"]),
+            rear_right_rad_s=float(payload["rear_right_rad_s"]),
+            status=message.status,
+            source_sequence=source_sequence,
+        )
+        return ("wheel_angular_velocity", sample)
+
+    if message.message_type == "body_twist":
+        sample = BodyTwistSample(
+            timestamp_us=timestamp_us,
+            vx_m_s=float(payload["vx_m_s"]),
+            vy_m_s=float(payload["vy_m_s"]),
+            yaw_rate_rad_s=float(payload["yaw_rate_rad_s"]),
+            status=message.status,
+            source_sequence=source_sequence,
+        )
+        return ("body_twist", sample)
+
+    if message.message_type == "odometry_pose":
+        sample = OdometryPoseSample(
+            timestamp_us=timestamp_us,
+            x_m=float(payload["x_m"]),
+            y_m=float(payload["y_m"]),
+            yaw_rad=float(payload["yaw_rad"]),
+            integration_method=str(payload["integration_method"]),
+            status=message.status,
+            source_sequence=source_sequence,
+        )
+        return ("odometry_pose", sample)
+
     raise ValueError(f"unsupported message_type: {message.message_type}")
 
 
@@ -198,6 +254,14 @@ def bridge_stm32_message_to_recording(
         return recorder.write_link_status_sample(sample)  # type: ignore[arg-type]
     if record_type == "lidar_transport_stats":
         return recorder.write_lidar_transport_stats_sample(sample)  # type: ignore[arg-type]
+    if record_type == "wheel_encoder_delta":
+        return recorder.write_wheel_encoder_delta_sample(sample)  # type: ignore[arg-type]
+    if record_type == "wheel_angular_velocity":
+        return recorder.write_wheel_angular_velocity_sample(sample)  # type: ignore[arg-type]
+    if record_type == "body_twist":
+        return recorder.write_body_twist_sample(sample)  # type: ignore[arg-type]
+    if record_type == "odometry_pose":
+        return recorder.write_odometry_pose_sample(sample)  # type: ignore[arg-type]
     raise ValueError(f"unsupported record_type: {record_type}")
 
 

@@ -9,6 +9,7 @@ from typing import Any
 
 from .stm32_sensor_models import (
     BAROMETER_SENSOR_IDS,
+    BODY_TWIST_SENSOR_IDS,
     GROUND_EDGE_SENSOR_IDS,
     HALL_SENSOR_IDS,
     IMU_RAW_SENSOR_IDS,
@@ -22,6 +23,9 @@ from .stm32_sensor_models import (
     SUBSYSTEM_STATUS_SENSOR_IDS,
     TELEMETRY_STATUSES,
     ULTRASONIC_SENSOR_IDS,
+    ODOMETRY_POSE_SENSOR_IDS,
+    WHEEL_ANGULAR_VELOCITY_SENSOR_IDS,
+    WHEEL_ENCODER_DELTA_SENSOR_IDS,
     Stm32TelemetryMessage,
 )
 
@@ -165,6 +169,14 @@ def _validate_payload(message: Stm32TelemetryMessage, line_number: int | None) -
         _validate_link_status(message, line_number)
     elif message.message_type == "lidar_transport_stats":
         _validate_lidar_transport_stats(message, line_number)
+    elif message.message_type == "wheel_encoder_delta":
+        _validate_wheel_encoder_delta(message, line_number)
+    elif message.message_type == "wheel_angular_velocity":
+        _validate_wheel_angular_velocity(message, line_number)
+    elif message.message_type == "body_twist":
+        _validate_body_twist(message, line_number)
+    elif message.message_type == "odometry_pose":
+        _validate_odometry_pose(message, line_number)
     else:
         raise Stm32TelemetryFormatError("unknown message_type", line_number=line_number)
 
@@ -364,6 +376,82 @@ def _validate_lidar_transport_stats(message: Stm32TelemetryMessage, line_number:
         _validate_non_negative_int(payload.get(key), f"payload.{key}", line_number)
 
 
+def _validate_wheel_encoder_delta(
+    message: Stm32TelemetryMessage,
+    line_number: int | None,
+) -> None:
+    _require_sensor_id(message.sensor_id, WHEEL_ENCODER_DELTA_SENSOR_IDS, line_number)
+    payload = dict(message.payload)
+    delta_fields = {
+        "front_left_raw_count_delta",
+        "front_right_raw_count_delta",
+        "rear_left_raw_count_delta",
+        "rear_right_raw_count_delta",
+        "front_left_signed_count_delta",
+        "front_right_signed_count_delta",
+        "rear_left_signed_count_delta",
+        "rear_right_signed_count_delta",
+    }
+    _require_allowed_fields(payload, {"interval_ms", *delta_fields}, line_number)
+    _validate_positive_int(payload.get("interval_ms"), "payload.interval_ms", line_number)
+    for key in delta_fields:
+        _validate_signed_int(payload.get(key), f"payload.{key}", line_number)
+
+
+def _validate_wheel_angular_velocity(
+    message: Stm32TelemetryMessage,
+    line_number: int | None,
+) -> None:
+    _require_sensor_id(message.sensor_id, WHEEL_ANGULAR_VELOCITY_SENSOR_IDS, line_number)
+    _require_software_derived_status(message, line_number)
+    payload = dict(message.payload)
+    allowed = {
+        "front_left_rad_s",
+        "front_right_rad_s",
+        "rear_left_rad_s",
+        "rear_right_rad_s",
+    }
+    _require_allowed_fields(payload, allowed, line_number)
+    for key in allowed:
+        _validate_finite(payload.get(key), f"payload.{key}", line_number)
+
+
+def _validate_body_twist(message: Stm32TelemetryMessage, line_number: int | None) -> None:
+    _require_sensor_id(message.sensor_id, BODY_TWIST_SENSOR_IDS, line_number)
+    _require_software_derived_status(message, line_number)
+    payload = dict(message.payload)
+    allowed = {"vx_m_s", "vy_m_s", "yaw_rate_rad_s"}
+    _require_allowed_fields(payload, allowed, line_number)
+    for key in allowed:
+        _validate_finite(payload.get(key), f"payload.{key}", line_number)
+
+
+def _validate_odometry_pose(message: Stm32TelemetryMessage, line_number: int | None) -> None:
+    _require_sensor_id(message.sensor_id, ODOMETRY_POSE_SENSOR_IDS, line_number)
+    _require_software_derived_status(message, line_number)
+    payload = dict(message.payload)
+    allowed = {"x_m", "y_m", "yaw_rad", "integration_method"}
+    _require_allowed_fields(payload, allowed, line_number)
+    for key in ("x_m", "y_m", "yaw_rad"):
+        _validate_finite(payload.get(key), f"payload.{key}", line_number)
+    if payload.get("integration_method") != "se2_constant_twist_exponential":
+        raise Stm32TelemetryFormatError(
+            "payload.integration_method must identify the Phase 4A SE(2) integrator",
+            line_number=line_number,
+        )
+
+
+def _require_software_derived_status(
+    message: Stm32TelemetryMessage,
+    line_number: int | None,
+) -> None:
+    if message.status != "software_derived":
+        raise Stm32TelemetryFormatError(
+            "derived Phase 4A telemetry requires status software_derived",
+            line_number=line_number,
+        )
+
+
 def _require_allowed_fields(
     payload: dict[str, Any],
     allowed: set[str],
@@ -405,6 +493,11 @@ def _require_object(payload: dict[str, Any], key: str, line_number: int | None) 
 def _validate_non_negative_int(value: object, name: str, line_number: int | None) -> None:
     if isinstance(value, bool) or not isinstance(value, int) or value < 0:
         raise Stm32TelemetryFormatError(f"{name} must be a non-negative integer", line_number=line_number)
+
+
+def _validate_positive_int(value: object, name: str, line_number: int | None) -> None:
+    if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+        raise Stm32TelemetryFormatError(f"{name} must be a positive integer", line_number=line_number)
 
 
 def _validate_signed_int(value: object, name: str, line_number: int | None) -> None:

@@ -2,6 +2,17 @@
 
 All notable subsystem changes are recorded here. Track protocol, GPIO, power, data-format, firmware, and calibration changes explicitly.
 
+## 2026-07-19 - Phase 4A Mecanum Kinematics and Odometry Foundation
+
+- Added immutable, validated models and pure functions for standard X-layout mecanum inverse/forward kinematics, explicit encoder direction correction, wheel-side count conversion, opt-in counter-wrap handling, and exact constant-twist SE(2) pose integration.
+- Added deterministic software-only stationary, forward, left-strafe, counterclockwise-rotation, and combined-curved-motion scenarios plus the `simulate-mecanum-odometry` CLI with explicit geometry, encoder resolution, four direction signs, UTF-8 JSONL output, and overwrite protection.
+- Extended `mars_scout_stm32_sensor_telemetry` version 1 additively with encoder-delta, wheel-velocity, body-twist, and odometry-pose message types; added `software_derived` status without changing existing message semantics.
+- Extended `mars_scout_multisensor_recording` version 1 additively with matching records and recording-bridge support while preserving existing Phase 2.x and Phase 3.x fixtures.
+- Added focused kinematics, encoder, integration, simulator, telemetry, recording, CLI, documentation-boundary, privacy, artifact, and no-hardware-access tests plus `phase4a` verifier support.
+- Made verifier smoke commands load `pc/src` from the verifier's resolved worktree, so isolated worktrees cannot silently execute an editable install from another checkout.
+- Added the Phase 4A contract document and updated current-plan, protocol, recording, architecture, troubleshooting, and test documentation.
+- Kept actual geometry, encoder resolution, gear ratio, counter width, GPIO/timers/interrupts, motor/encoder signs, roller orientation, acquisition timing, wheel slip, motor control, MPU6050 fusion, calibration, and physical odometry accuracy UNVERIFIED.
+
 ## 2026-07-18 - Phase 3.2F Ground-Sensor Bring-Up Foundation
 
 - Added isolated OpenRF1 ground-sensor firmware under `firmware/openrf1/ground_sensors_bringup/`.

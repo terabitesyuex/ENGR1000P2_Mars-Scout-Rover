@@ -89,6 +89,7 @@ OpenRF1 Phase 3.2C BMP280 evidence validator
 OpenRF1 Phase 3.2D MPU6050 bring-up software tests
 OpenRF1 Phase 3.2E HC-SR04 bring-up software tests
 OpenRF1 Phase 3.2F ground-sensor bring-up software tests
+Phase 4A pure mecanum kinematics / encoder conversion / SE(2) odometry simulator
     -> ScanFrame data model
     -> STM32 telemetry parser / recording bridge
     -> scan builder / coordinate transforms
@@ -99,6 +100,8 @@ OpenRF1 Phase 3.2F ground-sensor bring-up software tests
 ```
 
 The Phase 2.4 JSONL recording format is a PC-side reproducibility format. Phase 2.5 writes PC-direct C1 captures into that same format. Phase 3.1 writes validated STM32 low-rate sensor telemetry into that same format. Phase 3.2A writes mocked or manually captured BH1750 serial telemetry into that same format. Phase 3.2B writes deterministic raw-IMU and transport-status fixture records into that same format. JSONL recordings are not the future on-wire ESP32 protocol.
+
+Phase 4A adds pure host-side kinematics and odometry records to the same version-1 telemetry and recording containers. It has no hardware adapter and does not read encoders, motors, serial ports, GPIO, timers, or MPU6050 data. Explicit configuration separates later hardware acquisition from the mathematical layer.
 
 ## Two-C1 Policy
 
@@ -127,5 +130,7 @@ Phase 3.2C implements an isolated BMP280-only OpenRF1 bring-up firmware target u
 Phase 3.2D implements an isolated MPU6050-only OpenRF1 software bring-up target under `firmware/openrf1/mpu6050_bringup/` and `OpenRF1_MPU6050_Bringup.uvprojx`. It reuses the software-I2C and MPU6050 driver boundary, emits USART1 JSONL for future manual capture, and keeps BH1750, BMP280, and FullHardware targets separate. Physical MPU6050 ACK, WHO_AM_I, configuration readback, live IMU telemetry, calibration, axis orientation, shared-I2C concurrency, and full-hardware operation remain UNVERIFIED.
 
 Phase 3.2F implements an isolated ground-sensor-only OpenRF1 software bring-up target under `firmware/openrf1/ground_sensors_bringup/` and `OpenRF1_GroundSensors_Bringup.uvprojx`. It samples PC4, PC5, and PB0 as floating inputs every 5 ms, applies independent 4-sample debounce, and emits 50 ms JSONL raw/debounced numeric levels only. Signal 1 / X1 / PC4, signal 2 / X2 / PC5, signal 3 / X3 / PB0, and the tracking connector pin order are AUTHORITATIVE_VENDOR_DOCUMENTED. The schematic says PC14 for X4 while the old example maps X4 to PB1, so signal 4 remains unused. Physical wiring, voltage levels, active polarity, surface behavior, magnetic behavior, serial periodicity, and full-hardware operation remain UNVERIFIED.
+
+Phase 4A implements the standard X-layout mecanum equations, explicit raw-to-mathematical encoder signs, wheel-side count conversion, body-twist estimation, and exact constant-twist SE(2) integration on the host. It is a SOFTWARE_VERIFIED software-only foundation. Actual wheel geometry, resolution, gear ratio, counter width, signs, roller orientation, encoder acquisition, motor control, MPU6050 fusion, wheel slip, and physical accuracy remain UNVERIFIED.
 
 Emergency stopping remains a local STM32 safety responsibility in the plan. PC mapping occurs later and is short-range accumulated mapping, not a required reusable global SLAM map. ROS is not required.

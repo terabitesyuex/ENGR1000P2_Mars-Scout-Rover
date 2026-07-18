@@ -20,7 +20,7 @@ This repository is the ENGR1000P2 Mars Scout Rover software and documentation ba
 
 ## Current Scope
 
-- Completed phases: Phase 0, Phase 1, Phase 2.1, Phase 2.2, automated verification foundation, Phase 2.3, Phase 2.4, Phase 2.5, Phase 3.1, Phase 3.2A, the Phase 3.2B software foundation, Phase 3.2C isolated BMP280 bring-up evidence, the Phase 3.2D isolated MPU6050 software foundation, the Phase 3.2E isolated HC-SR04 software foundation, and the Phase 3.2F isolated ground-sensor software foundation.
+- Completed phases: Phase 0, Phase 1, Phase 2.1, Phase 2.2, automated verification foundation, Phase 2.3, Phase 2.4, Phase 2.5, Phase 3.1, Phase 3.2A, the Phase 3.2B software foundation, Phase 3.2C isolated BMP280 bring-up evidence, the Phase 3.2D isolated MPU6050 software foundation, the Phase 3.2E isolated HC-SR04 software foundation, the Phase 3.2F isolated ground-sensor software foundation, and the Phase 4A software-only mecanum kinematics and odometry foundation.
 - Current state: Phase 2.5 software foundation is complete; physical C1 validation remains a manual UNVERIFIED activity.
 - Phase 3.1 software work is complete: versioned STM32 low-rate sensor telemetry, deterministic PC simulator, strict parser, and recording bridge are implemented.
 - Phase 3.2A software work is complete: OpenRF1 STM32F103RCT6 + GY-302/BH1750 firmware foundation, mocked PC serial capture, documentation, and verifier support are implemented. Recorded manual evidence verifies the BH1750-only flash, CH340/USART1 telemetry, configured `0x23` BH1750 communication, 500 ms telemetry period, and physical light response; absolute lux calibration remains UNVERIFIED.
@@ -29,7 +29,8 @@ This repository is the ENGR1000P2 Mars Scout Rover software and documentation ba
 - Phase 3.2D software work is complete: isolated OpenRF1 MPU6050-only firmware source, host-testable conversion/telemetry helpers, Keil target, documentation, tests, and verifier support are implemented. MPU6050 ACK, WHO_AM_I, configuration readback, live IMU telemetry, calibration, axis orientation, shared-I2C concurrency, and full-hardware operation remain UNVERIFIED until physical evidence is recorded.
 - Phase 3.2E software work is complete: isolated OpenRF1 HC-SR04-only firmware source, host-testable timing/telemetry helpers, Keil target, documentation, tests, and verifier support are implemented. CN6 pin order, PA5 TRIG, PA4 ECHO, TIM6, and the external 10 kOhm / 15 kOhm ECHO divider requirement are AUTHORITATIVE_VENDOR_DOCUMENTED. Physical wiring, connector orientation, installed resistor values, trigger pulse, echo pulse, real distance data, timeout behavior, timer accuracy, temperature compensation, and absolute distance accuracy remain UNVERIFIED until physical evidence is recorded.
 - Phase 3.2F software work is complete: isolated OpenRF1 ground-sensor-only firmware source, host-testable debounce/telemetry helpers, Keil target, documentation, tests, and verifier support are implemented. Tracking connector signal 1 / X1 / PC4, signal 2 / X2 / PC5, signal 3 / X3 / PB0, connector pin order, vendor floating-input mode, schematic X4 = PC14, and old example X4 = PB1 conflict are AUTHORITATIVE_VENDOR_DOCUMENTED. TCRT 3.3 V supply, Hall 5 V supply, Hall S external 10 kOhm / 15 kOhm divider, Hall S direct-to-PB0 prohibition, and signal 4 exclusion are DESIGN_LOCKED. Physical wiring, connector orientation, rail voltages, output voltages, active polarity, surface behavior, magnetic behavior, real debounce suitability, actual 50 ms serial periodicity, and full-hardware operation remain UNVERIFIED.
-- Do not begin Phase 3.2B physical integration, additional physical sensor bring-up, motor/encoder work, ESP32/WiFi implementation, or hardware bring-up without an explicit request and the documented hardware-safety prerequisites.
+- Phase 4A software work is complete: typed standard X-layout mecanum kinematics, explicit wheel-side encoder conversion and signs, forward body-twist estimation, exact constant-twist SE(2) integration, deterministic scenarios, version-1 telemetry/recording additions, documentation, tests, and verifier support are implemented. Actual geometry, encoder resolution, gear ratio, counter width, signs, roller orientation, acquisition timing, wheel slip, motor behavior, and physical odometry accuracy remain UNVERIFIED.
+- Do not begin Phase 3.2B physical integration, additional physical sensor bring-up, motor/encoder hardware work, ESP32/WiFi implementation, or other hardware bring-up without an explicit request and the documented hardware-safety prerequisites.
 
 ## Confirmed Inventory
 
@@ -67,6 +68,9 @@ Do not treat BH1750 communication failures as zero-lux readings; valid darkness 
 - Cartesian distances: metres.
 - `+x`: rover forward.
 - `+y`: rover left.
+- Phase 4A internal angles and yaw are radians; linear velocity is metres per second and angular velocity is radians per second.
+- Phase 4A wheel order is `front_left`, `front_right`, `rear_left`, `rear_right`; mathematical positive rotation is independent of physical wiring and encoder polarity.
+- Require explicit finite positive wheel geometry and wheel-side counts per revolution plus four explicit `+1`/`-1` direction multipliers; do not default physical values or signs.
 - Native C1 clockwise angles must be converted before `ScanFrame` creation; do not apply native-C1 conversion after a value is already a `ScanPoint`.
 - Do not invent mounting offsets, final orientations, GPIOs, UART assignments, I2C addresses, active polarities, voltage interfaces, or connector order.
 
@@ -81,7 +85,8 @@ Do not treat BH1750 communication failures as zero-lux readings; valid darkness 
 - Phase 3.2D: OpenRF1 MPU6050-only bring-up firmware foundation and tests; physical ACK, WHO_AM_I, configuration readback, live IMU telemetry, calibration, and axis orientation remain UNVERIFIED.
 - Phase 3.2E: OpenRF1 HC-SR04-only bring-up firmware foundation and tests; physical wiring, pulses, real distance data, timeout behavior, and accuracy remain UNVERIFIED.
 - Phase 3.2F: OpenRF1 ground-sensor-only bring-up firmware foundation and tests; physical wiring, voltage levels, active polarity, surface behavior, magnetic behavior, serial periodicity, and full-hardware operation remain UNVERIFIED.
-- Phase 4: wheel encoders, MPU6050, mecanum kinematics, closed-loop motion, and odometry.
+- Phase 4A: software-only standard X-layout mecanum kinematics, explicit encoder conversion, deterministic body-twist estimation, and SE(2) odometry foundation; physical values and accuracy remain UNVERIFIED.
+- Later Phase 4 work: encoder hardware acquisition, measured geometry/signs, MPU6050 integration, motor control, closed-loop motion, calibration, and physical odometry validation.
 - Phase 5: STM32-ESP32-PC communication, WiFi transport, one-C1 baseline integration, then optional dual-C1 feasibility evaluation.
 - Phase 6: real-time PC visualization, rover trajectory, and short-range encoder/IMU-assisted accumulated 2D mapping.
 - Phase 7: local autonomous obstacle stop/turn behavior.
@@ -102,6 +107,7 @@ Run targeted tests, regression tests, the complete PC suite, and the phase verif
 .\tools\verify_phase.cmd phase3.2d -AllowDirty
 .\tools\verify_phase.cmd phase3.2e -AllowDirty
 .\tools\verify_phase.cmd phase3.2f -AllowDirty
+.\tools\verify_phase.cmd phase4a -AllowDirty
 ```
 
 Normal verification after commit and push:
@@ -115,6 +121,7 @@ Normal verification after commit and push:
 .\tools\verify_phase.cmd phase3.2d
 .\tools\verify_phase.cmd phase3.2e
 .\tools\verify_phase.cmd phase3.2f
+.\tools\verify_phase.cmd phase4a
 ```
 
 Generated recordings, logs, and figures belong under `.verification/` or ignored data directories and must not be committed.

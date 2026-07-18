@@ -208,7 +208,22 @@ function Invoke-PythonCommand {
     )
     $label = [string]$CommandConfig.label
     $arguments = @($CommandConfig.args | ForEach-Object { [string]$_ })
-    $result = Invoke-CommandCapture -FilePath $PythonCommand -Arguments $arguments
+    $previousPythonPath = [Environment]::GetEnvironmentVariable("PYTHONPATH", "Process")
+    $sourceRoot = Join-Path $RepoRoot "pc\src"
+    try {
+        if ([string]::IsNullOrEmpty($previousPythonPath)) {
+            $env:PYTHONPATH = $sourceRoot
+        } else {
+            $env:PYTHONPATH = $sourceRoot + [IO.Path]::PathSeparator + $previousPythonPath
+        }
+        $result = Invoke-CommandCapture -FilePath $PythonCommand -Arguments $arguments
+    } finally {
+        if ($null -eq $previousPythonPath) {
+            Remove-Item Env:PYTHONPATH -ErrorAction SilentlyContinue
+        } else {
+            $env:PYTHONPATH = $previousPythonPath
+        }
+    }
     if ($result.ExitCode -ne 0) {
         Write-Compact $label "FAIL" ("exit {0}" -f $result.ExitCode)
         Show-FailureOutput -Title "$label output:" -Output $result.Output

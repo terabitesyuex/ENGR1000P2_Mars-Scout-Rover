@@ -31,8 +31,9 @@ Supported statuses:
 - `stale`
 - `hardware_fault`
 - `simulated`
+- `software_derived`
 
-Not every sensor is expected to use every status.
+Not every sensor is expected to use every status. Phase 4A uses `simulated` for synthetic raw encoder deltas and `software_derived` for values calculated from those deltas. Neither status is physical evidence.
 
 ## Message Types
 
@@ -179,6 +180,36 @@ Payload:
 
 These are byte-transport counters only. They do not claim RPLIDAR packet parsing, mapping, or a successful physical C1 connection.
 
+### `wheel_encoder_delta`
+
+Sensor ID: `wheel_encoders`.
+
+Payload:
+
+- `interval_ms`, a strictly positive integer;
+- `front_left_raw_count_delta`, `front_right_raw_count_delta`, `rear_left_raw_count_delta`, `rear_right_raw_count_delta`;
+- matching `*_signed_count_delta` fields after explicit direction multipliers.
+
+Phase 4A emits this message with `status: simulated`. Raw and mathematical signs remain separate because physical encoder polarity is UNVERIFIED. Encoder resolution, counter width, GPIO, timers, and timestamps are not inferred by the protocol.
+
+### `wheel_angular_velocity`
+
+Sensor ID: `mecanum_wheels`.
+
+Payload contains finite `front_left_rad_s`, `front_right_rad_s`, `rear_left_rad_s`, and `rear_right_rad_s`. Phase 4A uses `status: software_derived`.
+
+### `body_twist`
+
+Sensor ID: `rover_body`.
+
+Payload contains finite `vx_m_s`, `vy_m_s`, and `yaw_rate_rad_s`. The convention is `+x` forward, `+y` left, and positive counterclockwise yaw. Phase 4A uses `status: software_derived`.
+
+### `odometry_pose`
+
+Sensor ID: `rover_odometry`.
+
+Payload contains finite `x_m`, `y_m`, `yaw_rad`, and `integration_method: se2_constant_twist_exponential`. Phase 4A uses `status: software_derived`. This is wheel-odometry mathematics, not MPU6050 fusion or physical accuracy evidence.
+
 ## Recording Bridge
 
 The PC bridge converts validated messages into `mars_scout_multisensor_recording` version `1`.
@@ -192,5 +223,9 @@ The PC bridge converts validated messages into `mars_scout_multisensor_recording
 - `subsystem_status` -> `subsystem_status`
 - `link_status` -> `link_status`
 - `lidar_transport_stats` -> `lidar_transport_stats`
+- `wheel_encoder_delta` -> `wheel_encoder_delta`
+- `wheel_angular_velocity` -> `wheel_angular_velocity`
+- `body_twist` -> `body_twist`
+- `odometry_pose` -> `odometry_pose`
 
 The bridge preserves sensor IDs, timestamps, status, raw values, and source telemetry sequence where supported. It does not create LiDAR scans.

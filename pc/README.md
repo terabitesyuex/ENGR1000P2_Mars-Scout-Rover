@@ -141,6 +141,18 @@ python -m rplidar_c1_tools.cli inspect-recording .verification\phase3.2b\phase32
 
 The fixture includes `imu_raw`, `subsystem_status`, `link_status`, and `lidar_transport_stats`. These records are software diagnostics, not physical sensor evidence.
 
+## Phase 4A Mecanum Odometry Simulation
+
+All geometry, wheel-side encoder resolution, and four direction signs are required. These example values are synthetic fixtures, not rover measurements:
+
+```powershell
+python -m rplidar_c1_tools.cli simulate-mecanum-odometry --wheel-radius-m 0.05 --half-length-m 0.18 --half-width-m 0.16 --counts-per-wheel-revolution 2048 --front-left-direction 1 --front-right-direction 1 --rear-left-direction 1 --rear-right-direction 1 --scenario combined_curved_motion --steps 5 --interval-ms 100 --output .verification\phase4a\mecanum_odometry.jsonl --overwrite
+python -m rplidar_c1_tools.cli inspect-stm32-telemetry --input .verification\phase4a\mecanum_odometry.jsonl --output .verification\phase4a\telemetry_inspection.txt
+python -m rplidar_c1_tools.cli record-stm32-telemetry --input .verification\phase4a\mecanum_odometry.jsonl --output .verification\phase4a\mecanum_recording.jsonl --overwrite
+```
+
+This workflow opens no hardware and does not prove physical odometry accuracy.
+
 ## Data Location
 
 Generated development artifacts belong under `.verification/`, which is ignored by Git. Do not commit generated recordings or figures unless a future task explicitly asks for a curated fixture.
@@ -152,6 +164,7 @@ pc\.venv\Scripts\python.exe -m pytest pc\tests\test_recording.py pc\tests\test_r
 pc\.venv\Scripts\python.exe -m pytest pc\tests\test_stm32_sensor_models.py pc\tests\test_stm32_sensor_protocol.py pc\tests\test_stm32_sensor_simulator.py pc\tests\test_stm32_recording_bridge.py pc\tests\test_stm32_sensor_cli.py pc\tests\test_phase3_current_plan.py -v
 pc\.venv\Scripts\python.exe -m pytest pc\tests\test_openrf1_bh1750.py pc\tests\test_openrf1_firmware_foundation.py pc\tests\test_stm32_serial_capture.py -v
 pc\.venv\Scripts\python.exe -m pytest pc\tests -v
+pc\.venv\Scripts\python.exe -m pytest pc\tests\test_mecanum_kinematics_odometry.py pc\tests\test_mecanum_odometry_simulator.py pc\tests\test_mecanum_odometry_cli.py -v
 ```
 
 Phase verifier:
@@ -160,4 +173,5 @@ Phase verifier:
 .\tools\verify_phase.cmd phase2.5 -AllowDirty
 .\tools\verify_phase.cmd phase3.1 -AllowDirty
 .\tools\verify_phase.cmd phase3.2a -AllowDirty
+.\tools\verify_phase.cmd phase4a -AllowDirty
 ```

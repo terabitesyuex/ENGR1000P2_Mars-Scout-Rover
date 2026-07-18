@@ -6,6 +6,11 @@ import argparse
 from pathlib import Path
 import sys
 
+from .mecanum_odometry import EncoderConfiguration, MecanumGeometry
+from .mecanum_odometry_simulator import (
+    MECANUM_ODOMETRY_SCENARIOS,
+    generate_mecanum_odometry_telemetry_lines,
+)
 from .c1_pc_direct import (
     C1CaptureConfig,
     C1DriverError,
@@ -170,6 +175,55 @@ def main() -> int:
     simulate_stm32.add_argument("--output", type=Path, required=True)
     simulate_stm32.add_argument("--overwrite", action="store_true")
 
+    simulate_mecanum = subparsers.add_parser(
+        "simulate-mecanum-odometry",
+        help="Generate deterministic Phase 4A mecanum odometry telemetry JSONL.",
+        description=(
+            "Generate hardware-free Phase 4A telemetry. Geometry, wheel-side encoder "
+            "resolution, and every raw encoder direction sign must be explicit."
+        ),
+    )
+    simulate_mecanum.add_argument("--wheel-radius-m", type=float, required=True)
+    simulate_mecanum.add_argument("--half-length-m", type=float, required=True)
+    simulate_mecanum.add_argument("--half-width-m", type=float, required=True)
+    simulate_mecanum.add_argument(
+        "--counts-per-wheel-revolution",
+        type=float,
+        required=True,
+        help="Wheel-side counts per full wheel revolution; no gear ratio is inferred.",
+    )
+    simulate_mecanum.add_argument(
+        "--front-left-direction",
+        type=_direction_multiplier,
+        required=True,
+    )
+    simulate_mecanum.add_argument(
+        "--front-right-direction",
+        type=_direction_multiplier,
+        required=True,
+    )
+    simulate_mecanum.add_argument(
+        "--rear-left-direction",
+        type=_direction_multiplier,
+        required=True,
+    )
+    simulate_mecanum.add_argument(
+        "--rear-right-direction",
+        type=_direction_multiplier,
+        required=True,
+    )
+    simulate_mecanum.add_argument("--counter-width-bits", type=_positive_int)
+    simulate_mecanum.add_argument(
+        "--scenario",
+        choices=MECANUM_ODOMETRY_SCENARIOS,
+        required=True,
+    )
+    simulate_mecanum.add_argument("--steps", type=_positive_int, required=True)
+    simulate_mecanum.add_argument("--interval-ms", type=_positive_int, required=True)
+    simulate_mecanum.add_argument("--start-timestamp-ms", type=_non_negative_int, default=0)
+    simulate_mecanum.add_argument("--output", type=Path, required=True)
+    simulate_mecanum.add_argument("--overwrite", action="store_true")
+
     inspect_stm32 = subparsers.add_parser(
         "inspect-stm32-telemetry",
         help="Validate and summarize STM32 sensor telemetry JSONL.",
@@ -306,6 +360,30 @@ def main() -> int:
                 scenario=args.scenario,
                 start_timestamp_ms=args.start_timestamp_ms,
                 interval_ms=args.interval_ms,
+                overwrite=args.overwrite,
+            )
+            print(path)
+            return 0
+        if args.command == "simulate-mecanum-odometry":
+            path = simulate_mecanum_odometry(
+                output_path=args.output,
+                geometry=MecanumGeometry(
+                    wheel_radius_m=args.wheel_radius_m,
+                    half_length_m=args.half_length_m,
+                    half_width_m=args.half_width_m,
+                ),
+                encoder_configuration=EncoderConfiguration(
+                    counts_per_wheel_revolution=args.counts_per_wheel_revolution,
+                    front_left_direction=args.front_left_direction,
+                    front_right_direction=args.front_right_direction,
+                    rear_left_direction=args.rear_left_direction,
+                    rear_right_direction=args.rear_right_direction,
+                    counter_width_bits=args.counter_width_bits,
+                ),
+                scenario=args.scenario,
+                step_count=args.steps,
+                interval_ms=args.interval_ms,
+                start_timestamp_ms=args.start_timestamp_ms,
                 overwrite=args.overwrite,
             )
             print(path)
@@ -576,6 +654,33 @@ def simulate_stm32_sensor_telemetry(
     return output_path
 
 
+def simulate_mecanum_odometry(
+    *,
+    output_path: Path,
+    geometry: MecanumGeometry,
+    encoder_configuration: EncoderConfiguration,
+    scenario: str,
+    step_count: int,
+    interval_ms: int,
+    start_timestamp_ms: int,
+    overwrite: bool,
+) -> Path:
+    """Write deterministic software-only Phase 4A telemetry fixture lines."""
+    if output_path.exists() and not overwrite:
+        raise ValueError(f"telemetry output already exists: {output_path}")
+    lines = generate_mecanum_odometry_telemetry_lines(
+        geometry=geometry,
+        encoder_configuration=encoder_configuration,
+        scenario=scenario,
+        step_count=step_count,
+        interval_ms=interval_ms,
+        start_timestamp_ms=start_timestamp_ms,
+    )
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
+    return output_path
+
+
 def inspect_stm32_telemetry_file(input_path: Path) -> str:
     """Return a compact validation summary for STM32 telemetry JSONL."""
     counts: dict[str, int] = {}
@@ -788,6 +893,13 @@ def _non_negative_int(value: str) -> int:
     parsed = int(value)
     if parsed < 0:
         raise argparse.ArgumentTypeError("value must be a non-negative integer")
+    return parsed
+
+
+def _direction_multiplier(value: str) -> int:
+    parsed = int(value)
+    if parsed not in (-1, 1):
+        raise argparse.ArgumentTypeError("value must be +1 or -1")
     return parsed
 
 

@@ -12,7 +12,8 @@
     "phase3.2c",
     "phase3.2d",
     "phase3.2e",
-    "phase3.2f"
+    "phase3.2f",
+    "phase4a"
   ],
   "phases": {
     "phase1": {
@@ -868,6 +869,137 @@
             ".verification/phase3.2f/manual_hardware_status.txt"
           ],
           "warning": "Phase 3.2F is SOFTWARE_READY only. X1/PC4, X2/PC5, X3/PB0, the six-pin tracking connector order, and the X4 PC14/PB1 source conflict are vendor-documented; physical wiring, voltage measurements, active polarity, surface behavior, magnetic behavior, and serial periodicity remain UNVERIFIED."
+        }
+      ]
+    },
+    "phase4a": {
+      "display_name": "Phase 4A",
+      "required_files": [
+        "docs/phase4a_mecanum_kinematics_odometry_foundation.md",
+        "pc/src/rplidar_c1_tools/mecanum_odometry.py",
+        "pc/src/rplidar_c1_tools/mecanum_odometry_simulator.py",
+        "pc/tests/test_mecanum_kinematics_odometry.py",
+        "pc/tests/test_mecanum_odometry_simulator.py",
+        "pc/tests/test_mecanum_odometry_cli.py",
+        "pc/tests/test_phase4a_foundation.py",
+        "tools/audit_phase4a.py"
+      ],
+      "targeted": [
+        "pc/tests/test_mecanum_kinematics_odometry.py",
+        "pc/tests/test_mecanum_odometry_simulator.py",
+        "pc/tests/test_mecanum_odometry_cli.py",
+        "pc/tests/test_phase4a_foundation.py"
+      ],
+      "regression": [
+        "pc/tests/test_stm32_sensor_models.py",
+        "pc/tests/test_stm32_sensor_protocol.py",
+        "pc/tests/test_stm32_recording_bridge.py",
+        "pc/tests/test_stm32_sensor_cli.py",
+        "pc/tests/test_recording.py",
+        "pc/tests/test_replay.py",
+        "pc/tests/test_phase3_current_plan.py",
+        "pc/tests/test_current_plan.py",
+        "pc/tests/test_hardware_lock_validation.py"
+      ],
+      "full": [
+        "pc/tests"
+      ],
+      "python_commands": [
+        {
+          "label": "Phase 4A deterministic mecanum odometry",
+          "args": [
+            "-m",
+            "rplidar_c1_tools.cli",
+            "simulate-mecanum-odometry",
+            "--wheel-radius-m",
+            "0.05",
+            "--half-length-m",
+            "0.18",
+            "--half-width-m",
+            "0.16",
+            "--counts-per-wheel-revolution",
+            "2048",
+            "--front-left-direction",
+            "1",
+            "--front-right-direction",
+            "1",
+            "--rear-left-direction",
+            "1",
+            "--rear-right-direction",
+            "1",
+            "--scenario",
+            "combined_curved_motion",
+            "--steps",
+            "5",
+            "--interval-ms",
+            "100",
+            "--output",
+            ".verification/phase4a/mecanum_odometry.jsonl",
+            "--overwrite"
+          ],
+          "expected_files": [
+            ".verification/phase4a/mecanum_odometry.jsonl"
+          ]
+        },
+        {
+          "label": "Phase 4A inspect telemetry",
+          "args": [
+            "-m",
+            "rplidar_c1_tools.cli",
+            "inspect-stm32-telemetry",
+            "--input",
+            ".verification/phase4a/mecanum_odometry.jsonl",
+            "--output",
+            ".verification/phase4a/telemetry_inspection.txt"
+          ],
+          "expected_files": [
+            ".verification/phase4a/telemetry_inspection.txt"
+          ]
+        },
+        {
+          "label": "Phase 4A convert recording",
+          "args": [
+            "-m",
+            "rplidar_c1_tools.cli",
+            "record-stm32-telemetry",
+            "--input",
+            ".verification/phase4a/mecanum_odometry.jsonl",
+            "--output",
+            ".verification/phase4a/mecanum_recording.jsonl",
+            "--overwrite"
+          ],
+          "expected_files": [
+            ".verification/phase4a/mecanum_recording.jsonl"
+          ]
+        },
+        {
+          "label": "Phase 4A inspect recording",
+          "args": [
+            "-m",
+            "rplidar_c1_tools.cli",
+            "inspect-recording",
+            ".verification/phase4a/mecanum_recording.jsonl",
+            "--output",
+            ".verification/phase4a/recording_inspection.txt"
+          ],
+          "expected_files": [
+            ".verification/phase4a/recording_inspection.txt"
+          ]
+        },
+        {
+          "label": "Phase 4A software and hygiene audit",
+          "args": [
+            "tools/audit_phase4a.py",
+            "--audit-output",
+            ".verification/phase4a/software_audit.txt",
+            "--status-output",
+            ".verification/phase4a/hardware_status.txt"
+          ],
+          "expected_files": [
+            ".verification/phase4a/software_audit.txt",
+            ".verification/phase4a/hardware_status.txt"
+          ],
+          "warning": "Phase 4A verifies software mathematics only; all rover geometry, encoder, motor, roller-orientation, and physical-accuracy facts remain UNVERIFIED."
         }
       ]
     }
