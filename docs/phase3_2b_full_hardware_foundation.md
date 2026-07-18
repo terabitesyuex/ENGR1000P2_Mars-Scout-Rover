@@ -72,7 +72,7 @@ firmware/openrf1/full_hardware/
 | Shared I2C signals | PB1/SCL and PC3/SDA shared across BH1750, MPU6050, and BMP280; module VCC rails are not tied together | CONFIRMED pins reused | BH1750 verified by recorded manual evidence; BMP280/MPU6050 ACKs UNVERIFIED |
 | ESP32-C3 TX/RX | ESP32 GPIO21 TX -> OpenRF1 RX3, GPIO20 RX <- TX3, ESP32 5 V input during non-USB operation | USART3 link contract exists | ESP32 module pins CONFIRMED_MODULE_EVIDENCE; OpenRF1 RX3/TX3 pins and real link UNVERIFIED |
 | RPLIDAR C1 | C1 TX -> OpenRF1 RX2, C1 RX <- TX2 | USART2 byte transport exists | UNVERIFIED |
-| HC-SR04 | Initial test powers one module from OpenRF1 3.3 V output; Trig/Echo use selected PWM-channel signal pins only | nonblocking state machine exists | MCU pins and Echo VOH safety UNVERIFIED |
+| HC-SR04 | Phase 3.2E supersedes the initial 3.3 V proposal for the isolated CN6 baseline: CN6 pin 1: VCC_5V, pin 2: GND, pin 3: PA5_TRIG, pin 4: PA4_ECHO | nonblocking state machine exists; isolated Phase 3.2E target adds PA5/PA4/TIM6 software | AUTHORITATIVE_VENDOR_DOCUMENTED for CN6/PA5/PA4/TIM6; physical wiring and Echo voltage UNVERIFIED |
 | TCRT5000 | VCC -> OpenRF1 3.3 V, GND common, OUT -> line input signals 1 and 2 | raw/debounced state model exists | CONFIRMED_MODULE_EVIDENCE for module 3.3-5 V operation; MCU pins and polarity UNVERIFIED |
 | Hall | `+` -> OpenRF1 5 V, `-` -> GND, `S` -> line input signal 3 only after output voltage is measured | raw/debounced state model exists | CONFIRMED_MODULE_EVIDENCE for supply range; output topology, safe input path, and polarity UNVERIFIED |
 
@@ -93,10 +93,10 @@ Do not tie all I2C module VCC pins together. Correct proposed power is BH1750 VC
 | Domain | Modules | Status |
 | --- | --- | --- |
 | 5 V | GY-302/BH1750 module, GY-521/MPU6050 module, ESP32-C3 5 V input during non-USB operation, RPLIDAR C1, Hall module | BH1750 manually verified; other devices require per-module bring-up |
-| 3.3 V | BMP280-3.3, two TCRT5000 modules, initial HC-SR04 bring-up proposal, STM32/ESP32 UART logic, I2C signal pull-up rail | CONFIRMED_MODULE_EVIDENCE where listed; measurements still required |
+| 3.3 V | BMP280-3.3, two TCRT5000 modules, STM32/ESP32 UART logic, I2C signal pull-up rail | CONFIRMED_MODULE_EVIDENCE where listed; measurements still required |
 | Common ground | all modules | MANUAL_ACTION_REQUIRED before each physical test |
 
-The OpenRF1 board exposes a 3.3 V sensor/output rail, so no separate regulator is currently required for the BMP280/TCRT5000/initial-HC-SR04 proposal. Total current budget, regulator temperature, noise, brownout behavior, motor interference, and full-system concurrency remain MANUAL_ACTION_REQUIRED.
+The OpenRF1 board exposes a 3.3 V sensor/output rail, so no separate regulator is currently required for the BMP280/TCRT5000 proposal. Phase 3.2E uses the vendor-documented CN6 VCC_5V HC-SR04 path and requires the external 10 kOhm / 15 kOhm ECHO divider before PA4. Total current budget, regulator temperature, noise, brownout behavior, motor interference, and full-system concurrency remain MANUAL_ACTION_REQUIRED.
 
 ## UART Allocation
 
@@ -164,9 +164,9 @@ Still UNVERIFIED:
 
 - OpenRF1 USART2 user-UART MCU pins and DMA/interrupt channel details.
 - OpenRF1 USART3 Bluetooth-UART MCU pins and DMA/interrupt channel details.
-- PWM channel 0 through 5 MCU GPIO/timer mappings.
+- PWM channel 0 through 5 MCU GPIO/timer mappings beyond the Phase 3.2E CN6 PA5/PA4 isolated baseline.
 - line input signal 1 through 3 MCU GPIO mappings.
-- HC-SR04 echo electrical protection path.
+- Physical HC-SR04 ECHO voltage before/after the required external Phase 3.2E divider.
 - TCRT5000 and Hall active polarity.
 
 ## Electrical Safety Notes
@@ -174,7 +174,7 @@ Still UNVERIFIED:
 - The GY-302/BH1750 module has CONFIRMED_MODULE_EVIDENCE for onboard 3.3 V regulation, logic-level conversion, module-level 3-5 V supply compatibility, and I2C pull-ups on the regulated logic rail. For this exact module, GY-302 VCC -> OpenRF1 5 V is accepted and no external regulator or I2C level shifter is required. ADDR -> GND remains required for configured address `0x23`.
 - The GY-521/MPU6050 module has CONFIRMED_MODULE_EVIDENCE for 3.3 V or 5 V VCC, onboard 3.3 V regulation, SCL/SDA pull-ups to onboard 3.3 V, and AD0 pull-down. Use explicit AD0 -> GND for deterministic `0x68`; INT, XDA, and XCL remain disconnected in the polling foundation.
 - The BMP280-3.3 module is a 3.3 V-only style board. BMP280 VCC must connect to OpenRF1 3.3 V and must not connect to the I2C connector 5 V pin. CSB -> 3.3 V selects I2C mode and SDO -> GND selects `0x76`. No external level shifter is needed when this module and the I2C pull-ups operate at 3.3 V.
-- HC-SR04 Echo level protection is conditional on module supply and measured Echo VOH; direct connection is not approved until measured or the exact MCU pin tolerance is established. Start with one wide-voltage HC-SR04 powered from OpenRF1 3.3 V output, do not use the PWM servo-interface rail for that first test, and measure Echo high voltage before direct STM32 connection. If Echo exceeds safe STM32 input voltage, or if the module is powered from 5 V, add a divider or level shifter. Do not claim 450 cm range at 3.3 V until physically tested.
+- Phase 3.2E locks the OpenRF1 CN6 HC-SR04 path from vendor material: CN6 pin 1: VCC_5V, pin 2: GND, pin 3: PA5_TRIG, pin 4: PA4_ECHO, with TIM6 for isolated timing. Do not connect HC-SR04 ECHO directly to CN6 pin 4. Install the external 10 kOhm / 15 kOhm divider before PA4 receives the signal. Physical connector orientation, resistor installation, ECHO voltage, trigger pulse, echo pulse, and real distance data remain UNVERIFIED.
 - TCRT5000 modules should be powered from 3.3 V for first integration so OUT cannot become a 5 V high from module supply. If later powered from 5 V, output voltage or MCU-pin 5 V tolerance must first be verified.
 - The Hall module should use 5 V based on CONFIRMED_MODULE_EVIDENCE for its supply range. Hall `S` must not be declared safe for direct STM32 connection until its voltage is measured in both magnetic states. Use a divider for an approximately 5 V high state, use a 3.3 V pull-up if the board exposes open collector without onboard 5 V pull-up, or approve direct input only after recorded evidence shows the signal is within 3.3 V logic range.
 - ESP32-C3 UART logic is 3.3 V, so no STM32-to-ESP32 UART level shifter is required for the proposed link. External 5 V power and USB power must not be connected simultaneously; disconnect the STM32/OpenRF1 5 V feed before plugging the ESP32 into USB. A removable jumper or switch in the ESP32 5 V wire is recommended as an integration aid.
@@ -215,7 +215,7 @@ The MPU6050 bring-up project must emit `Objects_MPU6050_Bringup/OpenRF1_MPU6050_
 4. Validate all three I2C devices together without tying their VCC rails together.
 5. Validate TCRT5000 raw inputs at 3.3 V.
 6. Measure Hall `S` voltage in both magnetic states before connecting it to an STM32 input.
-7. Validate one HC-SR04 from 3.3 V and measure Echo VOH before approving direct input or adding protection.
+7. Validate one HC-SR04 on the Phase 3.2E CN6 PA5/PA4 path only after installing and measuring the required external ECHO divider.
 8. Validate all three HC-SR04 modules with staggered triggering.
 9. Validate USART2 electrical idle and loopback where safe.
 10. Validate one C1 unit on USART2.

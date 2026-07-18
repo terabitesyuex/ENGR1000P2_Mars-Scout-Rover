@@ -154,3 +154,41 @@ def test_phase32d_current_plan_documents_mpu6050_software_boundary():
 
     assert missing == []
 
+
+def test_phase32e_current_plan_documents_hcsr04_software_boundary():
+    required = {
+        "README.md": [
+            "Phase 3.2E",
+            "OpenRF1_HCSR04_Bringup.uvprojx",
+            "Do not connect HC-SR04 ECHO directly to CN6 pin 4",
+        ],
+        "HARDWARE_LOCK.md": [
+            "Phase 3.2E HC-SR04 Bring-Up Boundary Status",
+            "TRIG: PA5",
+            "ECHO: PA4",
+            "TIM6",
+            "10 kOhm",
+            "15 kOhm",
+        ],
+        "docs/openrf1_hcsr04_bringup.md": [
+            "AUTHORITATIVE_VENDOR_DOCUMENTED",
+            "CN6",
+            "PA5_TRIG",
+            "PA4_ECHO",
+            "PHYSICAL_VERIFICATION_REQUIRED",
+        ],
+        "docs/test_plan.md": [
+            "phase3.2e",
+            "Phase 3.2E automated tests do not open real COM ports",
+        ],
+    }
+
+    missing: list[str] = []
+    for relative, snippets in required.items():
+        text = (REPO_ROOT / relative).read_text(encoding="utf-8")
+        for snippet in snippets:
+            if snippet not in text:
+                missing.append(f"{relative}: {snippet}")
+
+    assert missing == []
+

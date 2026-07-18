@@ -30,10 +30,10 @@ Evidence table fields:
 
 - Verify VCC requirement.
 - Verify TRIG input compatibility.
-- Measure or verify ECHO high voltage.
-- Determine whether a divider or level shifter is required.
-- Echo level protection is conditional on module supply and measured Echo VOH; direct connection is not approved until measured or the exact MCU pin tolerance is established.
-- For first test, power one wide-voltage HC-SR04 from the OpenRF1 3.3 V output and do not use the PWM servo-interface rail.
+- Measure ECHO high voltage before and after the required divider.
+- Confirm the external 10 kOhm / 15 kOhm divider is installed before PA4 receives ECHO.
+- Do not connect HC-SR04 ECHO directly to CN6 pin 4.
+- For Phase 3.2E, use the vendor-documented CN6 path only after installing the required external 10 kOhm / 15 kOhm ECHO divider. Do not connect HC-SR04 ECHO directly to CN6 pin 4.
 - Test one unit before three.
 - Test timeout behavior.
 - Test minimum and maximum useful distance.
@@ -140,7 +140,7 @@ Do not mark these items complete automatically.
 4. Validate all three I2C devices together without tying their VCC rails together.
 5. Validate TCRT5000 raw inputs at 3.3 V.
 6. Measure Hall `S` voltage in both magnetic states before STM32 input connection.
-7. Validate one HC-SR04 from 3.3 V and measure Echo VOH before approving direct input or adding protection.
+7. Validate one HC-SR04 on the Phase 3.2E CN6 PA5/PA4 path only after installing and measuring the required external ECHO divider.
 8. Validate all three HC-SR04 modules with staggered triggering.
 9. Validate USART2 electrical idle and loopback where safe.
 10. Validate one C1 unit on USART2.

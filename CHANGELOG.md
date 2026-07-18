@@ -2,6 +2,17 @@
 
 All notable subsystem changes are recorded here. Track protocol, GPIO, power, data-format, firmware, and calibration changes explicitly.
 
+## 2026-07-18 - Phase 3.2E HC-SR04 Bring-Up Foundation
+
+- Added isolated OpenRF1 HC-SR04 firmware under `firmware/openrf1/hcsr04_bringup/`.
+- Added dedicated Keil target `OpenRF1_HCSR04_Bringup.uvprojx` with isolated output `Objects_HCSR04_Bringup/OpenRF1_HCSR04_Bringup.hex`.
+- Locked the Phase 3.2E HC-SR04 vendor-documented design facts: CN6 B4B-PH-K-S(LF)(SN), pin 1: VCC_5V, pin 2: GND, pin 3: PA5_TRIG, pin 4: PA4_ECHO; TRIG: PA5; ECHO: PA4; timer: TIM6.
+- Recorded the external ECHO protection requirement: HC-SR04 ECHO -> 10 kOhm series resistor -> protected PA4 / CN6-pin-4 node; protected PA4 node -> 15 kOhm resistor -> GND; direct ECHO-to-CN6-pin-4 connection is prohibited.
+- Implemented bounded wait-for-low, rising-edge timeout, falling-edge timeout, timer-wrap-safe pulse-width measurement, 100 ms scheduled attempts, nominal integer distance conversion, and strict JSONL identity/success/error telemetry.
+- Added host-side HC-SR04 contract helpers, focused tests, Phase 3.2E audit support, and phase verifier manifest support.
+- Updated README, PROJECT_SPEC, HARDWARE_LOCK, wiring, bring-up, and test-plan documentation.
+- Kept physical wiring, connector orientation, resistor installation, ECHO voltage, trigger pulse, echo pulse, real distance data, timeout behavior, timer accuracy, temperature compensation, and absolute distance accuracy UNVERIFIED.
+
 ## 2026-07-14 - Phase 0 Skeleton
 
 - Created repository skeleton for RPLIDAR C1 subsystem.

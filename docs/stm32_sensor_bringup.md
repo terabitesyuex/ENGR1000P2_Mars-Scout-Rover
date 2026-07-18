@@ -84,6 +84,14 @@ The software target uses planned address `0x68` with AD0 grounded, expects WHO_A
 
 MPU6050 ACK, WHO_AM_I, configuration readback, live acceleration/angular-rate/temperature telemetry, absolute accuracy, gyro bias, accelerometer offsets, yaw drift, axis orientation, full multi-device shared-I2C concurrency, and complete full-hardware operation remain UNVERIFIED.
 
+## Phase 3.2E OpenRF1 HC-SR04 Update
+
+Phase 3.2E adds the isolated HC-SR04-only target `OpenRF1_HCSR04_Bringup.uvprojx` and source under `firmware/openrf1/hcsr04_bringup/`. It is for one HC-SR04 on the OpenRF1 CN6 ultrasonic connector only, with USART1 JSONL debug telemetry at 115200 8N1. It does not run BH1750, BMP280, MPU6050, TCRT5000, Hall, RPLIDAR, ESP32, motors, or encoders.
+
+AUTHORITATIVE_VENDOR_DOCUMENTED values from the OpenRF1 vendor control-board package, ultrasonic sensor example, and OpenRF1 schematic revision dated 2024-07-01: CN6 B4B-PH-K-S(LF)(SN), pin 1: VCC_5V, pin 2: GND, pin 3: PA5_TRIG, pin 4: PA4_ECHO; TRIG: PA5; ECHO: PA4; TIM6 with prescaler 71 and period 30000 for a nominal 1 us count.
+
+Do not connect HC-SR04 ECHO directly to CN6 pin 4. The external 10 kOhm / 15 kOhm divider is required before ECHO reaches PA4. Actual connector orientation, cable orientation, installed resistor values, ECHO voltage before/after division, physical trigger pulse, physical echo pulse, real distance data, physical timer accuracy, and physical timeout behavior remain UNVERIFIED.
+
 ## Future Runtime Constraints
 
 - Do not use long blocking delays in embedded runtime paths.

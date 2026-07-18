@@ -52,8 +52,8 @@ These wire functions preserve the verified C1 harness profile. They do not prove
 
 ## STM32 Sensor Wiring Status
 
-- HC-SR04 logic-level interface on the physical STM32 board is UNVERIFIED.
-- HC-SR04 Echo level protection is conditional on module supply and measured Echo VOH; direct connection is not approved until measured or the exact MCU pin tolerance is established.
+- HC-SR04 Phase 3.2E CN6 pin order, PA5 TRIG, PA4 ECHO, TIM6, and external 10 kOhm / 15 kOhm ECHO divider requirement are AUTHORITATIVE_VENDOR_DOCUMENTED.
+- Do not connect HC-SR04 ECHO directly to CN6 pin 4.
 - TCRT5000 active polarity is UNVERIFIED.
 - Hall active polarity is UNVERIFIED.
 - Phase 3.2A BH1750 target board is OpenRF1 with STM32F103RCT6.
@@ -153,15 +153,28 @@ This is the isolated Phase 3.2D software-prepared bench target, not the full Pha
 
 Phase 3.2D repository automation verifies only source structure and pure software behavior. MPU6050 ACK, WHO_AM_I `0x68`, configuration readback, live acceleration/angular-rate/temperature telemetry, calibration, axis orientation, shared-I2C concurrency, and full-hardware operation remain UNVERIFIED.
 
-### HC-SR04
+## Phase 3.2E HC-SR04-Only Bring-Up Wiring
 
-Proposed logical allocation:
+This is the isolated Phase 3.2E software-prepared bench target, not proof of physical operation. Connect only HC-SR04 after the required checks are complete.
 
-- `ultrasonic_1` front: Trig -> PWM channel 0, Echo -> PWM channel 1.
-- `ultrasonic_2` left: Trig -> PWM channel 2, Echo -> PWM channel 3.
-- `ultrasonic_3` right: Trig -> PWM channel 4, Echo -> PWM channel 5.
+| HC-SR04 signal | OpenRF1 connection | Status |
+| --- | --- | --- |
+| VCC | CN6 pin 1: VCC_5V | AUTHORITATIVE_VENDOR_DOCUMENTED; physical power wiring UNVERIFIED |
+| GND | CN6 pin 2: GND | AUTHORITATIVE_VENDOR_DOCUMENTED; physical common ground UNVERIFIED |
+| TRIG | CN6 pin 3: PA5_TRIG / STM32 PA5 | AUTHORITATIVE_VENDOR_DOCUMENTED |
+| ECHO | External divider output to CN6 pin 4: PA4_ECHO / STM32 PA4 | AUTHORITATIVE_VENDOR_DOCUMENTED protection requirement; physical divider installation UNVERIFIED |
 
-Preferred first test: power one wide-voltage HC-SR04 from the OpenRF1 3.3 V output, do not use the PWM servo-interface + rail, and connect only Trig/Echo to the selected PWM-channel signal pins. Measure Echo high voltage before direct STM32 connection. If Echo high is at or below the 3.3 V rail, no divider is required for that measured setup. If Echo exceeds safe STM32 input voltage, or if the module is powered from 5 V, add a divider or level shifter. Never infer safety only from the STM32 family name. Do not claim the full 450 cm range at 3.3 V until physically tested.
+Do not connect HC-SR04 ECHO directly to CN6 pin 4. Use the external divider: HC-SR04 ECHO -> 10 kOhm series resistor -> protected PA4 / CN6-pin-4 node; protected PA4 node -> 15 kOhm resistor -> GND. Use 5 percent tolerance or better. TRIG remains directly connected from PA5 to the module TRIG input according to the vendor design.
+
+The vendor example configures PA5 as push-pull output, PA4 as floating input, and TIM6 with prescaler 71 and period 30000 for nominal 1 us timing. Actual board connector orientation, cable orientation, resistor values, ECHO voltages, trigger pulse, echo pulse, and real distance data remain UNVERIFIED.
+
+Disconnect all power before changing wiring. Check printed module labels rather than assuming left-to-right order. Measurements are nominal and uncalibrated.
+
+### HC-SR04 Multi-Sensor Future Allocation
+
+Earlier Phase 3.2B logical allocation for all three HC-SR04 modules remains UNVERIFIED beyond the Phase 3.2E CN6 isolated baseline. Do not assign final front/left/right mounting or trigger multiple modules until physical integration evidence exists.
+
+For any future non-CN6 HC-SR04 path, Echo level protection is conditional on module supply and measured Echo VOH, plus the exact STM32 input path. Direct connection is not approved without recorded voltage-safety evidence.
 
 ### TCRT5000 And Hall
 

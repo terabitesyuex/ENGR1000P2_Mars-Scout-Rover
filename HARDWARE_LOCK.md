@@ -106,7 +106,7 @@ Phase 3.2B proposed full-hardware connection plan, supplied for software prepara
 - RPLIDAR C1 proposed link: C1 TX -> OpenRF1 RX2, C1 RX <- OpenRF1 TX2, VCC -> OpenRF1 user UART 5 V, GND -> user UART GND.
 - Shared I2C signal proposal: BH1750, MPU6050, and BMP280 share PB1/SCL and PC3/SDA, but their VCC rails are not tied together.
 - Proposed I2C power and straps: BH1750 VCC -> 5 V and ADDR -> GND for `0x23`; MPU6050 VCC -> 5 V and AD0 -> GND for `0x68`; BMP280 VCC -> 3.3 V, CSB -> 3.3 V, and SDO -> GND for `0x76`.
-- HC-SR04 logical proposal: front trig/echo -> PWM channels 0/1, left -> 2/3, right -> 4/5. Initial bring-up powers one module from OpenRF1 3.3 V and measures Echo VOH before approving direct STM32 input.
+- HC-SR04 Phase 3.2E isolated baseline: OpenRF1 vendor control-board package, ultrasonic sensor example, and OpenRF1 schematic revision dated 2024-07-01 lock CN6 B4B-PH-K-S(LF)(SN) pin 1: VCC_5V, pin 2: GND, pin 3: PA5_TRIG, pin 4: PA4_ECHO as AUTHORITATIVE_VENDOR_DOCUMENTED. TRIG: PA5. ECHO: PA4. TIM6 provides the isolated timer resource. Do not connect HC-SR04 ECHO directly to CN6 pin 4.
 - TCRT5000/Hall logical proposal: `tcrt5000_1` -> line input signal 1 and `tcrt5000_2` -> signal 2 at 3.3 V module power; `hall_1` -> signal 3 only after Hall `S` voltage is measured, with Hall module power at 5 V.
 
 This entire Phase 3.2B connection plan is UNVERIFIED physical evidence. It does not confirm connector orientation, exact MCU pins, timer channels, DMA channels, voltage safety, level shifting, I2C ACKs, UART operation, sensor polarity, RPLIDAR operation, ESP32 operation, or real sensor data.
@@ -125,7 +125,7 @@ Phase 3.2B module-specific electrical evidence:
 - GY-521/MPU6050 module: CONFIRMED_MODULE_EVIDENCE for 3.3 V or 5 V VCC, onboard 3.3 V regulator, SCL/SDA pull-ups to onboard 3.3 V, AD0 onboard pull-down, floating AD0 default `0x68`, optional INT, and unused XDA/XCL. Use explicit AD0 -> GND for deterministic address `0x68`; no external I2C level shifter is required for this exact module.
 - BMP280-3.3 module: CONFIRMED_MODULE_EVIDENCE for approximately 1.71 V to 3.6 V operation and no evidence of onboard 5 V regulation or bidirectional level conversion. BMP280 VCC must connect to OpenRF1 3.3 V and must not connect to the I2C connector 5 V pin.
 - ESP32-C3 SuperMini: CONFIRMED_MODULE_EVIDENCE for external power through the 5 V pin, approximately 3.3 V to 6 V external input, 3.3 V UART logic, GPIO21 TX, and GPIO20 RX. No STM32-to-ESP32 UART level shifter is required, but external 5 V and USB power must not be connected simultaneously.
-- Wide-voltage HC-SR04 modules: CONFIRMED_MODULE_EVIDENCE for approximately 2.8 V to 5.5 V operation, approximately 3 mA current, and nominal 2 cm to 450 cm range. Echo VOH is not authoritatively specified, so direct STM32 connection is not approved until measured or exact MCU pin tolerance is established.
+- Wide-voltage HC-SR04 modules: CONFIRMED_MODULE_EVIDENCE for approximately 2.8 V to 5.5 V operation, approximately 3 mA current, and nominal 2 cm to 450 cm range. Echo VOH is not authoritatively specified. For the OpenRF1 CN6 path, the schematic supplies VCC_5V and connects PA4_ECHO directly to PA4 with no onboard level shifter; direct ECHO-to-CN6-pin-4 wiring is prohibited for controlled bring-up. The external protection scheme is AUTHORITATIVE_VENDOR_DOCUMENTED by project design lock: HC-SR04 ECHO -> 10 kOhm series resistor -> protected PA4 / CN6-pin-4 node; protected PA4 node -> 15 kOhm resistor -> GND; use 5 percent tolerance or better.
 - TCRT5000 modules: CONFIRMED_MODULE_EVIDENCE for 3.3 V to 5 V operation, digital switching output, and module logic conditioning. Use 3.3 V for first integration.
 - Hall module: CONFIRMED_MODULE_EVIDENCE for approximately 4.5 V to 24 V supply, so use 5 V. Output topology remains insufficiently proven; measure `S` voltage in both magnetic states before STM32 connection.
 
@@ -213,10 +213,19 @@ PC planned responsibilities:
 - exact STM32-ESP32 connector: UNVERIFIED.
 - exact USART2 user-UART MCU pins: UNVERIFIED.
 - exact USART3 Bluetooth-UART MCU pins: UNVERIFIED.
-- exact PWM channel 0 through 5 MCU pins/timers: UNVERIFIED.
+- exact PWM channel 0 through 5 MCU pins/timers for any multi-HC-SR04 full-system allocation beyond CN6: UNVERIFIED.
 - exact line input signal 1 through 3 MCU pins: UNVERIFIED.
-- exact HC-SR04 Echo protection requirement on the physical board: UNVERIFIED until module supply and Echo VOH are measured.
-- HC-SR04 ECHO voltage compatibility with STM32 inputs: UNVERIFIED.
+- HC-SR04 CN6 pin order, PA5 TRIG, PA4 ECHO, TIM6, and external 10 kOhm / 15 kOhm ECHO divider requirement: AUTHORITATIVE_VENDOR_DOCUMENTED.
+- HC-SR04 ECHO voltage compatibility at PA4 after the external divider: UNVERIFIED until the installed divider and voltages are physically measured.
+- actual board connector orientation: UNVERIFIED.
+- actual cable orientation: UNVERIFIED.
+- installed HC-SR04 ECHO divider resistor values: UNVERIFIED.
+- real HC-SR04 ECHO voltage before division: UNVERIFIED.
+- real HC-SR04 ECHO voltage after division: UNVERIFIED.
+- physical trigger pulse: UNVERIFIED.
+- physical echo pulse: UNVERIFIED.
+- real distance data: UNVERIFIED.
+- physical HC-SR04 timer accuracy and timeout behavior: UNVERIFIED.
 - BH1750 absolute illuminance calibration: UNVERIFIED.
 - BMP280 address in isolated Phase 3.2C capture: PHYSICAL_EVIDENCE_VERIFIED at `0x76`; full shared-I2C BMP280 operation remains UNVERIFIED.
 - actual MPU6050 I2C address: UNVERIFIED; Phase 3.2D software uses the planned `0x68` address with AD0 grounded, but no physical ACK or WHO_AM_I evidence exists yet.
@@ -306,6 +315,26 @@ PC planned responsibilities:
 - No real COM port, USB device, GPIO, I2C bus, flash action, or real sensor is accessed by repository automation.
 - MPU6050 ACK, physical address, WHO_AM_I, configuration readback, live acceleration/angular-rate/temperature telemetry, absolute accuracy, gyro bias, accelerometer offsets, yaw drift, axis orientation, full multi-device shared-I2C concurrency, and complete full-hardware operation remain UNVERIFIED.
 
+## Phase 3.2E HC-SR04 Bring-Up Boundary Status
+
+- Phase 3.2E adds an isolated OpenRF1 HC-SR04-only firmware boundary under `firmware/openrf1/hcsr04_bringup/`.
+- The Phase 3.2E Keil project is `firmware/openrf1/keil/OpenRF1_HCSR04_Bringup.uvprojx`.
+- The Phase 3.2E output directory is `Objects_HCSR04_Bringup/` and must not overwrite previous Phase 3.2A/3.2B/3.2C/3.2D outputs.
+- OpenRF1 vendor control-board package, ultrasonic sensor example, and OpenRF1 schematic revision dated 2024-07-01 lock CN6 B4B-PH-K-S(LF)(SN) pin 1: VCC_5V, pin 2: GND, pin 3: PA5_TRIG, pin 4: PA4_ECHO as AUTHORITATIVE_VENDOR_DOCUMENTED.
+- TRIG: PA5, GPIOA push-pull output. ECHO: PA4, GPIOA floating input in the vendor example. Timer: TIM6, prescaler 71, period 30000, nominal 1 us count at the established 72 MHz timer clock.
+- Do not connect HC-SR04 ECHO directly to CN6 pin 4. The external protection requirement is HC-SR04 ECHO -> 10 kOhm series resistor -> protected PA4 / CN6-pin-4 node; protected PA4 node -> 15 kOhm resistor -> GND; use 5 percent tolerance or better.
+- Automated Phase 3.2E tests use pure logic, static source checks, build/artifact audits, and previous evidence hash checks only.
+- No real COM port, USB device, GPIO, timer peripheral, flash action, or real sensor is accessed by repository automation.
+- actual board connector orientation: UNVERIFIED.
+- actual cable orientation: UNVERIFIED.
+- installed resistor values: UNVERIFIED.
+- real ECHO voltage before division: UNVERIFIED.
+- real ECHO voltage after division: UNVERIFIED.
+- physical trigger pulse: UNVERIFIED.
+- physical echo pulse: UNVERIFIED.
+- real distance data: UNVERIFIED.
+- physical timer accuracy, physical timeout behavior, absolute distance accuracy, and complete full-hardware operation remain UNVERIFIED.
+
 ## Safety Rules
 
 - Do not connect the LiDAR red wire to ESP32 3.3 V.
@@ -316,8 +345,8 @@ PC planned responsibilities:
 - Power off before changing GY-302 wiring.
 - Do not confuse the OpenRF1 I2C header with the adjacent SWD connector.
 - Do not report zero lux as an error sentinel; distinguish valid darkness from invalid telemetry.
-- Do not connect HC-SR04 Echo directly until module supply and measured Echo VOH prove it is within the safe STM32 input range, or until suitable protection is installed.
-- Do not use the PWM servo-interface + rail for the first HC-SR04 test; start with one module powered from the OpenRF1 3.3 V output and measure Echo high voltage.
+- Do not connect HC-SR04 ECHO directly to CN6 pin 4.
+- For Phase 3.2E, install the external 10 kOhm / 15 kOhm ECHO divider before PA4 receives the signal; do not claim it has been installed or tested until physical evidence is recorded.
 - Disconnect the STM32/OpenRF1 5 V feed before plugging the ESP32-C3 SuperMini into USB; external 5 V and USB power must not be connected simultaneously.
 - Do not power the BMP280-3.3 module from the I2C connector 5 V pin.
 - For the BMP280-only bring-up, connect CSB to 3.3 V for I2C mode and SDO to GND for the planned `0x76` address before power-up.

@@ -16,7 +16,7 @@ No physical calibration is completed by Phase 3.1 automation. This file records 
 
 ## HC-SR04
 
-- Verify HC-SR04 Echo high voltage before connecting to STM32 inputs. Echo level protection is conditional on module supply and measured Echo VOH.
+- For Phase 3.2E, do not connect HC-SR04 ECHO directly to CN6 pin 4. Install and verify the external 10 kOhm / 15 kOhm divider before PA4 receives the signal, then record Echo voltage before and after division.
 - Measure distance error for each of `ultrasonic_1`, `ultrasonic_2`, and `ultrasonic_3`.
 - Measure timeout behavior.
 - Measure cross-talk rate.

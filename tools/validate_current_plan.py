@@ -19,6 +19,7 @@ AUTHORITATIVE_FILES = (
     "docs/phase3_2b_full_hardware_foundation.md",
     "docs/openrf1_phase32b_protocol.md",
     "docs/openrf1_mpu6050_bringup.md",
+    "docs/openrf1_hcsr04_bringup.md",
     "docs/test_plan.md",
 )
 
@@ -81,6 +82,13 @@ REQUIRED_SNIPPETS = (
     RequiredSnippet("HARDWARE_LOCK.md", "MPU6050 ACK, physical address, WHO_AM_I", "MPU6050 unverified status documented"),
     RequiredSnippet("docs/openrf1_mpu6050_bringup.md", "PHYSICAL_VERIFICATION_REQUIRED", "MPU6050 physical verification status documented"),
     RequiredSnippet("docs/test_plan.md", "phase3.2d", "Phase 3.2D verifier documented"),
+    RequiredSnippet("README.md", "Phase 3.2E", "Phase 3.2E status documented"),
+    RequiredSnippet("README.md", "OpenRF1_HCSR04_Bringup.uvprojx", "Phase 3.2E Keil target documented"),
+    RequiredSnippet("HARDWARE_LOCK.md", "Phase 3.2E HC-SR04 Bring-Up Boundary Status", "Phase 3.2E hardware boundary documented"),
+    RequiredSnippet("HARDWARE_LOCK.md", "TRIG: PA5", "HC-SR04 TRIG pin documented"),
+    RequiredSnippet("HARDWARE_LOCK.md", "ECHO: PA4", "HC-SR04 ECHO pin documented"),
+    RequiredSnippet("docs/openrf1_hcsr04_bringup.md", "Do not connect HC-SR04 ECHO directly to CN6 pin 4", "HC-SR04 direct ECHO prohibition documented"),
+    RequiredSnippet("docs/test_plan.md", "phase3.2e", "Phase 3.2E verifier documented"),
 )
 
 

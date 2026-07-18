@@ -21,8 +21,9 @@ Major enhancements are encoder/IMU-assisted pose estimation, short-range accumul
 - Phase 3.2B: OpenRF1 multisensor and communications software foundation, isolated full-hardware Keil project, PC contracts, simulators, parser/recording support, and software verification support added. Physical wiring and live sensor/link behavior remain UNVERIFIED.
 - Phase 3.2C: isolated OpenRF1 BMP280-only bring-up firmware, Keil target, host-side BMP280 register/telemetry tests, verifier support, and recorded BMP280 physical evidence complete. Absolute temperature and pressure accuracy remain UNVERIFIED.
 - Phase 3.2D: isolated OpenRF1 MPU6050-only bring-up firmware foundation, Keil target, host-side MPU6050 register/telemetry tests, and verifier support complete. Physical ACK, WHO_AM_I, live IMU telemetry, calibration, and axis orientation remain UNVERIFIED.
+- Phase 3.2E: isolated OpenRF1 HC-SR04-only bring-up firmware foundation, PA5/PA4/CN6/TIM6 vendor-documented design lock, required external ECHO divider, Keil target, host-side HC-SR04 tests, and verifier support complete. Physical wiring, trigger/echo pulses, real distance data, timeout behavior, and distance accuracy remain UNVERIFIED.
 
-Phase 3.2D does not implement motors, encoders, ESP32 WiFi firmware, mapping, SLAM, navigation, obstacle avoidance, physical C1 validation, sensor fusion, odometry, or full multisensor hardware integration. Automated tests do not access real COM ports, USB devices, GPIO, I2C, flashing tools, WiFi, or sensors.
+Phase 3.2E does not implement motors, encoders, ESP32 WiFi firmware, mapping, SLAM, navigation, obstacle avoidance, physical C1 validation, sensor fusion, odometry, or full multisensor hardware integration. Automated tests do not access real COM ports, USB devices, GPIO, timer peripherals, I2C, flashing tools, WiFi, or sensors.
 
 ## Confirmed Hardware Inventory
 
@@ -145,6 +146,14 @@ The dedicated firmware expects only `mpu6050_1` on software I2C PB1/SCL and PC3/
 
 No Phase 3.2D physical evidence is committed. MPU6050 ACK, WHO_AM_I, register readback, live acceleration/angular-rate/temperature telemetry, axis orientation, calibration, shared-I2C concurrency, and complete full-hardware operation remain UNVERIFIED.
 
+## Phase 3.2E OpenRF1 HC-SR04 Bring-Up
+
+Phase 3.2E adds an HC-SR04-only firmware target under `firmware/openrf1/hcsr04_bringup/` with Keil project `firmware/openrf1/keil/OpenRF1_HCSR04_Bringup.uvprojx`. Its output is isolated under `Objects_HCSR04_Bringup/` as `OpenRF1_HCSR04_Bringup.hex`.
+
+AUTHORITATIVE_VENDOR_DOCUMENTED facts from the OpenRF1 vendor control-board package, ultrasonic sensor example, and OpenRF1 schematic revision dated 2024-07-01: CN6 B4B-PH-K-S(LF)(SN), pin 1: VCC_5V, pin 2: GND, pin 3: PA5_TRIG, pin 4: PA4_ECHO; TRIG: PA5; ECHO: PA4; TIM6 with prescaler 71 and period 30000 for nominal 1 us timing.
+
+Do not connect HC-SR04 ECHO directly to CN6 pin 4. The software phase locks the external protection design as HC-SR04 ECHO -> 10 kOhm series resistor -> protected PA4 / CN6-pin-4 node; protected PA4 node -> 15 kOhm resistor -> GND. Physical resistor installation, connector orientation, ECHO voltages, trigger pulse, echo pulse, real distance data, timeout behavior, and absolute distance accuracy remain UNVERIFIED.
+
 ## Preserved Verified C1 Facts
 
 - Exact model in earlier verified files: SLAMTEC RPLIDAR C1M1-R2.
@@ -236,7 +245,7 @@ Captured files use the existing `mars_scout_multisensor_recording` JSONL schema.
 
 ## Phase Verification
 
-Supported phases include `phase1`, `phase2.1`, `phase2.2`, `phase2.3`, `phase2.4`, `phase2.5`, `phase3.1`, `phase3.2a`, `phase3.2b`, `phase3.2c`, and `phase3.2d`.
+Supported phases include `phase1`, `phase2.1`, `phase2.2`, `phase2.3`, `phase2.4`, `phase2.5`, `phase3.1`, `phase3.2a`, `phase3.2b`, `phase3.2c`, `phase3.2d`, and `phase3.2e`.
 
 Development verification:
 
@@ -247,6 +256,7 @@ Development verification:
 .\tools\verify_phase.cmd phase3.2b -AllowDirty
 .\tools\verify_phase.cmd phase3.2c -AllowDirty
 .\tools\verify_phase.cmd phase3.2d -AllowDirty
+.\tools\verify_phase.cmd phase3.2e -AllowDirty
 ```
 
 Normal verification after commit and push:
@@ -258,6 +268,7 @@ Normal verification after commit and push:
 .\tools\verify_phase.cmd phase3.2b
 .\tools\verify_phase.cmd phase3.2c
 .\tools\verify_phase.cmd phase3.2d
+.\tools\verify_phase.cmd phase3.2e
 ```
 
 The verifier checks Git state, Python selection, pytest import, targeted tests, regressions, the complete PC suite, and configured smoke workflows. Hardware and safety facts still require physical verification.
@@ -271,6 +282,7 @@ The verifier checks Git state, Python selection, pytest import, targeted tests, 
 - Phase 3.2B: OpenRF1 multisensor and communications software foundation; physical integration remains future manual validation.
 - Phase 3.2C: OpenRF1 BMP280-only physical bring-up firmware and recorded isolated BMP280 evidence; absolute accuracy and full shared-bus operation remain unverified.
 - Phase 3.2D: OpenRF1 MPU6050-only software bring-up firmware; physical ACK, WHO_AM_I, live IMU telemetry, calibration, and axis orientation remain unverified.
+- Phase 3.2E: OpenRF1 HC-SR04-only software bring-up firmware; physical wiring, pulses, real distance data, timeout behavior, and accuracy remain unverified.
 - Phase 4: wheel encoders, MPU6050, mecanum kinematics, closed-loop motion, and odometry.
 - Phase 5: STM32-ESP32-computer communication, WiFi transport, one-C1 baseline integration, then optional dual-C1 feasibility evaluation.
 - Phase 6: real-time PC visualization, rover trajectory, and short-range encoder/IMU-assisted accumulated 2D mapping.

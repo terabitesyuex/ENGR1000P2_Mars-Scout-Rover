@@ -10,7 +10,8 @@
     "phase3.2a",
     "phase3.2b",
     "phase3.2c",
-    "phase3.2d"
+    "phase3.2d",
+    "phase3.2e"
   ],
   "phases": {
     "phase1": {
@@ -645,7 +646,7 @@
             ".verification/phase3.2b/software_audit.txt",
             ".verification/phase3.2b/manual_hardware_status.txt"
           ],
-          "warning": "Software foundation and Keil builds are VERIFIED when this audit passes; recorded Phase 3.2A BH1750 evidence is MANUAL_EVIDENCE_VERIFIED; all other real multisensor, UART2/UART3, ultrasonic, TCRT5000, Hall, RPLIDAR, ESP32, power-integrity, concurrent-operation, and full-system sensor results remain UNVERIFIED."
+          "warning": "Phase 3.2B software foundation checks are verified when this audit passes; local Keil build artifacts are reported separately. Recorded Phase 3.2A BH1750 evidence is MANUAL_EVIDENCE_VERIFIED; all other real multisensor, UART2/UART3, ultrasonic, TCRT5000, Hall, RPLIDAR, ESP32, power-integrity, concurrent-operation, and full-system sensor results remain UNVERIFIED."
         }
       ]
     },
@@ -755,6 +756,61 @@
             ".verification/phase3.2d/manual_hardware_status.txt"
           ],
           "warning": "Phase 3.2D is SOFTWARE_READY only. MPU6050 ACK, WHO_AM_I, configuration readback, live IMU telemetry, calibration, axis orientation, shared-I2C concurrency, and full-hardware operation remain UNVERIFIED."
+        }
+      ]
+    },
+    "phase3.2e": {
+      "display_name": "Phase 3.2E",
+      "required_files": [
+        "docs/openrf1_hcsr04_bringup.md",
+        "firmware/openrf1/hcsr04_bringup/board_config.h",
+        "firmware/openrf1/hcsr04_bringup/hcsr04.c",
+        "firmware/openrf1/hcsr04_bringup/hcsr04.h",
+        "firmware/openrf1/hcsr04_bringup/main_hcsr04_bringup.c",
+        "firmware/openrf1/hcsr04_bringup/platform_hcsr04_bringup.c",
+        "firmware/openrf1/hcsr04_bringup/platform_hcsr04_bringup.h",
+        "firmware/openrf1/hcsr04_bringup/telemetry_hcsr04_bringup.c",
+        "firmware/openrf1/hcsr04_bringup/telemetry_hcsr04_bringup.h",
+        "firmware/openrf1/keil/OpenRF1_HCSR04_Bringup.uvprojx",
+        "firmware/openrf1/keil/RTE/_OpenRF1_HCSR04_Bringup/RTE_Components.h",
+        "pc/src/rplidar_c1_tools/openrf1_hcsr04_bringup.py",
+        "pc/tests/test_openrf1_hcsr04_bringup.py",
+        "tools/audit_phase32e.py"
+      ],
+      "targeted": [
+        "pc/tests/test_openrf1_hcsr04_bringup.py"
+      ],
+      "regression": [
+        "pc/tests/test_openrf1_mpu6050_bringup.py",
+        "pc/tests/test_openrf1_bmp280_bringup.py",
+        "pc/tests/test_phase32c_physical_evidence.py",
+        "pc/tests/test_phase32b_foundation.py",
+        "pc/tests/test_openrf1_phase32b_firmware_foundation.py",
+        "pc/tests/test_openrf1_bh1750.py",
+        "pc/tests/test_phase32a_physical_evidence.py",
+        "pc/tests/test_openrf1_firmware_foundation.py",
+        "pc/tests/test_stm32_sensor_protocol.py",
+        "pc/tests/test_stm32_recording_bridge.py",
+        "pc/tests/test_phase3_current_plan.py"
+      ],
+      "full": [
+        "pc/tests"
+      ],
+      "python_commands": [
+        {
+          "label": "Phase 3.2E HC-SR04 bring-up audit",
+          "args": [
+            "tools/audit_phase32e.py",
+            "--audit-output",
+            ".verification/phase3.2e/software_audit.txt",
+            "--manual-output",
+            ".verification/phase3.2e/manual_hardware_status.txt"
+          ],
+          "expected_files": [
+            ".verification/phase3.2e/software_audit.txt",
+            ".verification/phase3.2e/manual_hardware_status.txt"
+          ],
+          "warning": "Phase 3.2E is SOFTWARE_READY only. PA5 TRIG, PA4 ECHO, CN6, TIM6, and the external 10 kOhm / 15 kOhm divider are vendor-documented; physical wiring, pulses, distance data, and timeout behavior remain UNVERIFIED."
         }
       ]
     }

@@ -185,7 +185,7 @@ Current Phase 3.2B automated work also has no real COM-port access, STM32 flashi
 
 - Do not tie all I2C module VCC pins together: BH1750 and MPU6050 use 5 V module VCC, while BMP280 uses 3.3 V.
 - HC-SR04 timeout remains invalid data, not distance zero.
-- HC-SR04 Echo level protection is conditional on module supply and measured Echo VOH; direct connection is not approved until measured or exact MCU pin tolerance is established.
+- HC-SR04 Phase 3.2E ECHO must not connect directly to CN6 pin 4. Use the required external 10 kOhm / 15 kOhm divider and verify the protected PA4-node voltage before claiming physical safety.
 - TCRT5000 and Hall raw state must be preserved until polarity is physically verified.
 - TCRT5000 modules use 3.3 V for first integration; Hall uses 5 V and requires Hall `S` voltage measurement before STM32 input connection.
 - Disconnect the STM32/OpenRF1 5 V feed before plugging the ESP32-C3 SuperMini into USB.

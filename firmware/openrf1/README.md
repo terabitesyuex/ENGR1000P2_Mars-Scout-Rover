@@ -61,6 +61,14 @@ Phase 3.2D adds a separate MPU6050-only bring-up target:
 
 The MPU6050 target is for one GY-521/MPU6050 module on PB1/SCL and PC3/SDA with VCC on 5 V and AD0 tied to GND for the planned address `0x68`. It does not run the BH1750, BMP280, or full-hardware application. Physical MPU6050 ACK, WHO_AM_I, configuration readback, live IMU telemetry, calibration, axis orientation, and full shared-bus operation remain UNVERIFIED.
 
-The Phase 3.2B source prepares bounded software foundations for the shared I2C signal bus, BMP280, MPU6050, HC-SR04, TCRT5000, Hall, RPLIDAR C1 byte transport, and STM32-to-ESP32 link. Module-specific evidence revises the proposed power domains, but USART2/USART3 pins, PWM channel pins, line-input pins, BMP280/MPU6050 ACKs, HC-SR04 Echo VOH, Hall output voltage, physical polarity, RPLIDAR operation, ESP32 operation, power integrity, and real full-system sensor data remain UNVERIFIED.
+Phase 3.2E adds a separate HC-SR04-only bring-up target:
+
+- HC-SR04 bring-up source: `firmware/openrf1/hcsr04_bringup/`.
+- HC-SR04 bring-up project: `firmware/openrf1/keil/OpenRF1_HCSR04_Bringup.uvprojx`.
+- HC-SR04 bring-up output: `firmware/openrf1/keil/Objects_HCSR04_Bringup/OpenRF1_HCSR04_Bringup.hex`.
+
+The HC-SR04 target is for one module on OpenRF1 CN6 only. Vendor-documented design locks CN6 pin 1: VCC_5V, pin 2: GND, pin 3: PA5_TRIG, pin 4: PA4_ECHO; TRIG: PA5; ECHO: PA4; timer: TIM6. Do not connect ECHO directly to CN6 pin 4; the external 10 kOhm / 15 kOhm divider is required before PA4 receives the signal. Physical wiring, pulses, real distance data, timeout behavior, and accuracy remain UNVERIFIED.
+
+The Phase 3.2B source prepares bounded software foundations for the shared I2C signal bus, BMP280, MPU6050, HC-SR04, TCRT5000, Hall, RPLIDAR C1 byte transport, and STM32-to-ESP32 link. Module-specific evidence revises the proposed power domains, but USART2/USART3 pins, line-input pins, BMP280/MPU6050 ACKs, physical HC-SR04 Echo voltage, Hall output voltage, physical polarity, RPLIDAR operation, ESP32 operation, power integrity, and real full-system sensor data remain UNVERIFIED.
 
 Build only; do not flash until the manual safety checklist is complete.

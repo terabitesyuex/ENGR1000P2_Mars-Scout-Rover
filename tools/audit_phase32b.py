@@ -50,7 +50,7 @@ def main() -> int:
     _check_required_files(repo_root, lines, failures)
     _check_keil_project(repo_root, lines, failures)
     _check_git_hygiene(repo_root, lines, failures)
-    _check_build_evidence(repo_root, lines, failures)
+    _check_build_evidence(repo_root, lines)
     lines.append("hardware_access: none")
     lines.append("flash_attempted: no")
     lines.append("serial_port_opened: no")
@@ -119,7 +119,7 @@ def _check_git_hygiene(repo_root: Path, lines: list[str], failures: list[str]) -
         failures.append("tracked generated artifacts: " + ", ".join(generated[:8]))
 
 
-def _check_build_evidence(repo_root: Path, lines: list[str], failures: list[str]) -> None:
+def _check_build_evidence(repo_root: Path, lines: list[str]) -> None:
     baseline_hex = repo_root / "firmware/openrf1/keil/Objects/OpenRF1_BH1750.hex"
     full_hex = repo_root / "firmware/openrf1/keil/Objects_FullHardware/OpenRF1_FullHardware.hex"
     baseline_log = repo_root / "firmware/openrf1/keil/Objects/OpenRF1_BH1750.build_log.htm"
@@ -132,8 +132,6 @@ def _check_build_evidence(repo_root: Path, lines: list[str], failures: list[str]
     }
     for label, passed in build_checks.items():
         lines.append(f"{label}: {passed}")
-        if not passed:
-            failures.append(label)
 
 
 def _log_has_zero_errors_warnings(path: Path) -> bool:

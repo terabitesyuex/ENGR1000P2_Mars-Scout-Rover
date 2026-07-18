@@ -17,6 +17,7 @@ Supported phases:
 - `phase3.2b`
 - `phase3.2c`
 - `phase3.2d`
+- `phase3.2e`
 
 Development verification:
 
@@ -27,6 +28,7 @@ Development verification:
 .\tools\verify_phase.cmd phase3.2b -AllowDirty
 .\tools\verify_phase.cmd phase3.2c -AllowDirty
 .\tools\verify_phase.cmd phase3.2d -AllowDirty
+.\tools\verify_phase.cmd phase3.2e -AllowDirty
 ```
 
 Normal verification after commit and push:
@@ -38,6 +40,7 @@ Normal verification after commit and push:
 .\tools\verify_phase.cmd phase3.2b
 .\tools\verify_phase.cmd phase3.2c
 .\tools\verify_phase.cmd phase3.2d
+.\tools\verify_phase.cmd phase3.2e
 ```
 
 The verifier uses repository-local pytest basetemp under `.verification/pytest_tmp/`, checks Git state, selects Python, confirms pytest import, runs targeted tests, regressions, the complete PC suite, and configured smoke workflows.
@@ -206,6 +209,33 @@ Smoke workflow:
 - Report MPU6050 local Keil build evidence when a local build has been run.
 
 Phase 3.2D automated tests do not open real COM ports, USB devices, GPIO, I2C, flash tools, network sockets, motors, or real sensors. MPU6050 ACK, WHO_AM_I, configuration readback, live IMU telemetry, calibration, axis orientation, shared-I2C concurrency, and complete full-hardware operation remain UNVERIFIED.
+
+## Phase 3.2E Automated Software Tests
+
+Targeted:
+
+- `pc/tests/test_openrf1_hcsr04_bringup.py`
+
+Regression:
+
+- Phase 3.2D MPU6050 bring-up tests.
+- Phase 3.2C BMP280 bring-up/evidence tests.
+- Phase 3.2B firmware foundation tests.
+- Phase 3.2A BH1750 firmware/evidence tests.
+- STM32 protocol and recording bridge tests.
+- Phase 3 current-plan anchors.
+
+Smoke workflow:
+
+- Audit required HC-SR04 bring-up files.
+- Confirm CN6 pin order, PA5 TRIG, PA4 ECHO, TIM6, and the external 10 kOhm / 15 kOhm divider requirement.
+- Confirm bounded trigger/echo timeout contracts, timer-wrap subtraction, nominal integer distance conversion, and JSONL identity/success/error records.
+- Confirm the isolated Keil target and output directory.
+- Confirm previous Phase 3.2A and Phase 3.2C raw evidence file hashes are unchanged.
+- Confirm generated Keil artifacts are not tracked.
+- Report HC-SR04 local Keil build evidence when a local build has been run.
+
+Phase 3.2E automated tests do not open real COM ports, USB devices, GPIO, timer peripherals, I2C, flash tools, network sockets, motors, or real sensors. Physical wiring, trigger/echo pulses, real distance data, timeout behavior, timer accuracy, and absolute distance accuracy remain UNVERIFIED.
 
 ## Revised Phase Sequence
 
@@ -429,3 +459,24 @@ The Phase 3.2D verifier covers:
 - local build evidence reporting for the MPU6050 bring-up target when a local build has been run
 
 Future manual testing should follow `docs/openrf1_mpu6050_bringup.md` and must keep private local details out of tracked files.
+
+## Phase 3.2E HC-SR04 Bring-Up Tests
+
+Run:
+
+```powershell
+.\tools\verify_phase.cmd phase3.2e -AllowDirty
+```
+
+The Phase 3.2E verifier covers:
+
+- HC-SR04 CN6 pin order, PA5 TRIG, PA4 ECHO, TIM6, and external divider documentation
+- static source checks for the HC-SR04-only firmware boundary
+- bounded wait-for-low, rising-edge timeout, falling-edge timeout, no infinite wait, and no stale distance after error contracts
+- timer-wrap-safe pulse-width subtraction and integer distance conversion vectors
+- JSONL startup identity, success, and error schema contracts
+- Keil target isolation under `Objects_HCSR04_Bringup/`
+- previous raw Phase 3.2A and Phase 3.2C evidence hash preservation
+- regression tests for Phase 3.2A, Phase 3.2B, Phase 3.2C, and Phase 3.2D software/evidence contracts
+
+Future manual testing should follow `docs/openrf1_hcsr04_bringup.md` and must keep private local details out of tracked files.

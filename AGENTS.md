@@ -20,13 +20,14 @@ This repository is the ENGR1000P2 Mars Scout Rover software and documentation ba
 
 ## Current Scope
 
-- Completed phases: Phase 0, Phase 1, Phase 2.1, Phase 2.2, automated verification foundation, Phase 2.3, Phase 2.4, Phase 2.5, Phase 3.1, Phase 3.2A, the Phase 3.2B software foundation, Phase 3.2C isolated BMP280 bring-up evidence, and the Phase 3.2D isolated MPU6050 software foundation.
+- Completed phases: Phase 0, Phase 1, Phase 2.1, Phase 2.2, automated verification foundation, Phase 2.3, Phase 2.4, Phase 2.5, Phase 3.1, Phase 3.2A, the Phase 3.2B software foundation, Phase 3.2C isolated BMP280 bring-up evidence, the Phase 3.2D isolated MPU6050 software foundation, and the Phase 3.2E isolated HC-SR04 software foundation.
 - Current state: Phase 2.5 software foundation is complete; physical C1 validation remains a manual UNVERIFIED activity.
 - Phase 3.1 software work is complete: versioned STM32 low-rate sensor telemetry, deterministic PC simulator, strict parser, and recording bridge are implemented.
 - Phase 3.2A software work is complete: OpenRF1 STM32F103RCT6 + GY-302/BH1750 firmware foundation, mocked PC serial capture, documentation, and verifier support are implemented. Recorded manual evidence verifies the BH1750-only flash, CH340/USART1 telemetry, configured `0x23` BH1750 communication, 500 ms telemetry period, and physical light response; absolute lux calibration remains UNVERIFIED.
 - Phase 3.2B software work is complete: isolated OpenRF1 full-hardware firmware foundation, PC contracts, deterministic fixtures, documentation, and verifier support are implemented. Phase 3.2B physical sensor integration has not started.
 - Phase 3.2C isolated BMP280 evidence is present: committed evidence verifies FlyMcu flashing of the isolated BMP280 firmware, USART1/CH340 JSONL telemetry, I2C ACK/address `0x76`, chip ID `0x58`, configuration readback, compensated live temperature/pressure telemetry, exact 500 ms periodicity, and a stable 30-second capture. Absolute temperature/pressure accuracy, long-duration operation, shared-I2C concurrency, and full-hardware operation remain UNVERIFIED.
 - Phase 3.2D software work is complete: isolated OpenRF1 MPU6050-only firmware source, host-testable conversion/telemetry helpers, Keil target, documentation, tests, and verifier support are implemented. MPU6050 ACK, WHO_AM_I, configuration readback, live IMU telemetry, calibration, axis orientation, shared-I2C concurrency, and full-hardware operation remain UNVERIFIED until physical evidence is recorded.
+- Phase 3.2E software work is complete: isolated OpenRF1 HC-SR04-only firmware source, host-testable timing/telemetry helpers, Keil target, documentation, tests, and verifier support are implemented. CN6 pin order, PA5 TRIG, PA4 ECHO, TIM6, and the external 10 kOhm / 15 kOhm ECHO divider requirement are AUTHORITATIVE_VENDOR_DOCUMENTED. Physical wiring, connector orientation, installed resistor values, trigger pulse, echo pulse, real distance data, timeout behavior, timer accuracy, temperature compensation, and absolute distance accuracy remain UNVERIFIED until physical evidence is recorded.
 - Do not begin Phase 3.2B physical integration, additional physical sensor bring-up, motor/encoder work, ESP32/WiFi implementation, or hardware bring-up without an explicit request and the documented hardware-safety prerequisites.
 
 ## Confirmed Inventory
@@ -77,6 +78,7 @@ Do not treat BH1750 communication failures as zero-lux readings; valid darkness 
 - Phase 3.2B: OpenRF1 multisensor and communications software foundation for proposed wiring; physical validation remains manual and UNVERIFIED.
 - Phase 3.2C: OpenRF1 BMP280-only bring-up firmware, Keil target, and isolated BMP280 physical evidence; absolute accuracy, long-duration operation, shared-I2C concurrency, and full-hardware operation remain UNVERIFIED.
 - Phase 3.2D: OpenRF1 MPU6050-only bring-up firmware foundation and tests; physical ACK, WHO_AM_I, configuration readback, live IMU telemetry, calibration, and axis orientation remain UNVERIFIED.
+- Phase 3.2E: OpenRF1 HC-SR04-only bring-up firmware foundation and tests; physical wiring, pulses, real distance data, timeout behavior, and accuracy remain UNVERIFIED.
 - Phase 4: wheel encoders, MPU6050, mecanum kinematics, closed-loop motion, and odometry.
 - Phase 5: STM32-ESP32-PC communication, WiFi transport, one-C1 baseline integration, then optional dual-C1 feasibility evaluation.
 - Phase 6: real-time PC visualization, rover trajectory, and short-range encoder/IMU-assisted accumulated 2D mapping.
@@ -96,6 +98,7 @@ Run targeted tests, regression tests, the complete PC suite, and the phase verif
 .\tools\verify_phase.cmd phase3.2b -AllowDirty
 .\tools\verify_phase.cmd phase3.2c -AllowDirty
 .\tools\verify_phase.cmd phase3.2d -AllowDirty
+.\tools\verify_phase.cmd phase3.2e -AllowDirty
 ```
 
 Normal verification after commit and push:
@@ -107,6 +110,7 @@ Normal verification after commit and push:
 .\tools\verify_phase.cmd phase3.2b
 .\tools\verify_phase.cmd phase3.2c
 .\tools\verify_phase.cmd phase3.2d
+.\tools\verify_phase.cmd phase3.2e
 ```
 
 Generated recordings, logs, and figures belong under `.verification/` or ignored data directories and must not be committed.
