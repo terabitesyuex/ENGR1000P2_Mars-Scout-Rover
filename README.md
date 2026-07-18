@@ -22,8 +22,9 @@ Major enhancements are encoder/IMU-assisted pose estimation, short-range accumul
 - Phase 3.2C: isolated OpenRF1 BMP280-only bring-up firmware, Keil target, host-side BMP280 register/telemetry tests, verifier support, and recorded BMP280 physical evidence complete. Absolute temperature and pressure accuracy remain UNVERIFIED.
 - Phase 3.2D: isolated OpenRF1 MPU6050-only bring-up firmware foundation, Keil target, host-side MPU6050 register/telemetry tests, and verifier support complete. Physical ACK, WHO_AM_I, live IMU telemetry, calibration, and axis orientation remain UNVERIFIED.
 - Phase 3.2E: isolated OpenRF1 HC-SR04-only bring-up firmware foundation, PA5/PA4/CN6/TIM6 vendor-documented design lock, required external ECHO divider, Keil target, host-side HC-SR04 tests, and verifier support complete. Physical wiring, trigger/echo pulses, real distance data, timeout behavior, and distance accuracy remain UNVERIFIED.
+- Phase 3.2F: isolated OpenRF1 ground-sensor firmware foundation, X1/PC4 left TCRT5000 mapping, X2/PC5 right TCRT5000 mapping, X3/protected PB0 Hall mapping, X4 conflict documentation, independent debounce, Keil target, host-side tests, and verifier support complete. Physical wiring, voltage levels, active polarity, surface response, magnetic behavior, and serial periodicity remain UNVERIFIED.
 
-Phase 3.2E does not implement motors, encoders, ESP32 WiFi firmware, mapping, SLAM, navigation, obstacle avoidance, physical C1 validation, sensor fusion, odometry, or full multisensor hardware integration. Automated tests do not access real COM ports, USB devices, GPIO, timer peripherals, I2C, flashing tools, WiFi, or sensors.
+Phase 3.2F does not implement motors, encoders, ESP32 WiFi firmware, mapping, SLAM, navigation, obstacle avoidance, physical C1 validation, sensor fusion, odometry, or full multisensor hardware integration. Automated tests do not access real COM ports, USB devices, GPIO, timer peripherals, I2C, flashing tools, WiFi, or sensors.
 
 ## Confirmed Hardware Inventory
 
@@ -154,6 +155,14 @@ AUTHORITATIVE_VENDOR_DOCUMENTED facts from the OpenRF1 vendor control-board pack
 
 Do not connect HC-SR04 ECHO directly to CN6 pin 4. The software phase locks the external protection design as HC-SR04 ECHO -> 10 kOhm series resistor -> protected PA4 / CN6-pin-4 node; protected PA4 node -> 15 kOhm resistor -> GND. Physical resistor installation, connector orientation, ECHO voltages, trigger pulse, echo pulse, real distance data, timeout behavior, and absolute distance accuracy remain UNVERIFIED.
 
+## Phase 3.2F OpenRF1 Ground-Sensor Bring-Up
+
+Phase 3.2F adds a ground-sensor-only firmware target under `firmware/openrf1/ground_sensors_bringup/` with Keil project `firmware/openrf1/keil/OpenRF1_GroundSensors_Bringup.uvprojx`. Its output is isolated under `Objects_GroundSensors_Bringup/` as `OpenRF1_GroundSensors_Bringup.hex`.
+
+AUTHORITATIVE_VENDOR_DOCUMENTED facts from the OpenRF1 vendor control-board package, OpenRF1 four-channel tracking example, and OpenRF1 schematic revision dated 2024-07-01: connector pin 1: GND, pin 2: X4 / schematic PC14, pin 3: X3 / PB0, pin 4: X2 / PC5, pin 5: X1 / PC4, pin 6: VCC_5V; signal 1 / X1 / PC4, signal 2 / X2 / PC5, and signal 3 / X3 / PB0. The old example maps X4 to PB1, so signal 4 / X4 is unused and excluded from Phase 3.2F.
+
+The design-locked wiring contract powers both TCRT5000 modules from STM32 3.3 V, powers the Hall module from 5 V, and routes Hall S through the external 10 kOhm / 15 kOhm divider before PB0. Do not connect Hall S directly to PB0. Do not share one VCC rail across all three modules. Runtime telemetry reports numeric `raw_level` and `debounced_level` only; semantic polarity remains unverified.
+
 ## Preserved Verified C1 Facts
 
 - Exact model in earlier verified files: SLAMTEC RPLIDAR C1M1-R2.
@@ -245,7 +254,7 @@ Captured files use the existing `mars_scout_multisensor_recording` JSONL schema.
 
 ## Phase Verification
 
-Supported phases include `phase1`, `phase2.1`, `phase2.2`, `phase2.3`, `phase2.4`, `phase2.5`, `phase3.1`, `phase3.2a`, `phase3.2b`, `phase3.2c`, `phase3.2d`, and `phase3.2e`.
+Supported phases include `phase1`, `phase2.1`, `phase2.2`, `phase2.3`, `phase2.4`, `phase2.5`, `phase3.1`, `phase3.2a`, `phase3.2b`, `phase3.2c`, `phase3.2d`, `phase3.2e`, and `phase3.2f`.
 
 Development verification:
 
@@ -257,6 +266,7 @@ Development verification:
 .\tools\verify_phase.cmd phase3.2c -AllowDirty
 .\tools\verify_phase.cmd phase3.2d -AllowDirty
 .\tools\verify_phase.cmd phase3.2e -AllowDirty
+.\tools\verify_phase.cmd phase3.2f -AllowDirty
 ```
 
 Normal verification after commit and push:
@@ -269,6 +279,7 @@ Normal verification after commit and push:
 .\tools\verify_phase.cmd phase3.2c
 .\tools\verify_phase.cmd phase3.2d
 .\tools\verify_phase.cmd phase3.2e
+.\tools\verify_phase.cmd phase3.2f
 ```
 
 The verifier checks Git state, Python selection, pytest import, targeted tests, regressions, the complete PC suite, and configured smoke workflows. Hardware and safety facts still require physical verification.
@@ -283,6 +294,7 @@ The verifier checks Git state, Python selection, pytest import, targeted tests, 
 - Phase 3.2C: OpenRF1 BMP280-only physical bring-up firmware and recorded isolated BMP280 evidence; absolute accuracy and full shared-bus operation remain unverified.
 - Phase 3.2D: OpenRF1 MPU6050-only software bring-up firmware; physical ACK, WHO_AM_I, live IMU telemetry, calibration, and axis orientation remain unverified.
 - Phase 3.2E: OpenRF1 HC-SR04-only software bring-up firmware; physical wiring, pulses, real distance data, timeout behavior, and accuracy remain unverified.
+- Phase 3.2F: OpenRF1 ground-sensor-only software bring-up firmware; physical wiring, voltage levels, active polarity, surface behavior, magnetic behavior, and serial periodicity remain unverified.
 - Phase 4: wheel encoders, MPU6050, mecanum kinematics, closed-loop motion, and odometry.
 - Phase 5: STM32-ESP32-computer communication, WiFi transport, one-C1 baseline integration, then optional dual-C1 feasibility evaluation.
 - Phase 6: real-time PC visualization, rover trajectory, and short-range encoder/IMU-assisted accumulated 2D mapping.

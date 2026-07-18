@@ -73,10 +73,10 @@ firmware/openrf1/full_hardware/
 | ESP32-C3 TX/RX | ESP32 GPIO21 TX -> OpenRF1 RX3, GPIO20 RX <- TX3, ESP32 5 V input during non-USB operation | USART3 link contract exists | ESP32 module pins CONFIRMED_MODULE_EVIDENCE; OpenRF1 RX3/TX3 pins and real link UNVERIFIED |
 | RPLIDAR C1 | C1 TX -> OpenRF1 RX2, C1 RX <- TX2 | USART2 byte transport exists | UNVERIFIED |
 | HC-SR04 | Phase 3.2E supersedes the initial 3.3 V proposal for the isolated CN6 baseline: CN6 pin 1: VCC_5V, pin 2: GND, pin 3: PA5_TRIG, pin 4: PA4_ECHO | nonblocking state machine exists; isolated Phase 3.2E target adds PA5/PA4/TIM6 software | AUTHORITATIVE_VENDOR_DOCUMENTED for CN6/PA5/PA4/TIM6; physical wiring and Echo voltage UNVERIFIED |
-| TCRT5000 | VCC -> OpenRF1 3.3 V, GND common, OUT -> line input signals 1 and 2 | raw/debounced state model exists | CONFIRMED_MODULE_EVIDENCE for module 3.3-5 V operation; MCU pins and polarity UNVERIFIED |
-| Hall | `+` -> OpenRF1 5 V, `-` -> GND, `S` -> line input signal 3 only after output voltage is measured | raw/debounced state model exists | CONFIRMED_MODULE_EVIDENCE for supply range; output topology, safe input path, and polarity UNVERIFIED |
+| TCRT5000 | VCC -> OpenRF1 3.3 V, GND common, OUT -> signal 1 / X1 / PC4 and signal 2 / X2 / PC5 | Phase 3.2F adds isolated 5 ms sampling, 20 ms debounce, and 50 ms JSONL telemetry | AUTHORITATIVE_VENDOR_DOCUMENTED for X1/PC4, X2/PC5, and connector pin order; installed wiring, output voltage, and polarity UNVERIFIED |
+| Hall | `+` -> OpenRF1 5 V, `-` -> GND, `S` -> external 10 kOhm / 15 kOhm divider -> signal 3 / X3 / PB0 | Phase 3.2F adds isolated raw/debounced Hall level telemetry without semantic polarity | AUTHORITATIVE_VENDOR_DOCUMENTED for X3/PB0 and connector pin order; installed divider, divided voltage, output topology, and polarity UNVERIFIED |
 
-Do not infer MCU pins from connector order or channel numbers. Authoritative schematic/manual evidence is required before moving unresolved mappings into `board_config.h`.
+Earlier Phase 3.2B planning did not infer unresolved line-input MCU pins from channel numbers. Phase 3.2F adds the isolated vendor-documented mapping for signal 1 / X1 / PC4, signal 2 / X2 / PC5, and signal 3 / X3 / PB0; physical wiring and polarity remain UNVERIFIED.
 
 ## I2C Addresses And Straps
 
@@ -165,7 +165,7 @@ Still UNVERIFIED:
 - OpenRF1 USART2 user-UART MCU pins and DMA/interrupt channel details.
 - OpenRF1 USART3 Bluetooth-UART MCU pins and DMA/interrupt channel details.
 - PWM channel 0 through 5 MCU GPIO/timer mappings beyond the Phase 3.2E CN6 PA5/PA4 isolated baseline.
-- line input signal 1 through 3 MCU GPIO mappings.
+- physical line-input connector orientation, cable orientation, installed wiring, TCRT output voltages, Hall divider values, Hall divided voltage, and active polarity.
 - Physical HC-SR04 ECHO voltage before/after the required external Phase 3.2E divider.
 - TCRT5000 and Hall active polarity.
 
@@ -176,7 +176,7 @@ Still UNVERIFIED:
 - The BMP280-3.3 module is a 3.3 V-only style board. BMP280 VCC must connect to OpenRF1 3.3 V and must not connect to the I2C connector 5 V pin. CSB -> 3.3 V selects I2C mode and SDO -> GND selects `0x76`. No external level shifter is needed when this module and the I2C pull-ups operate at 3.3 V.
 - Phase 3.2E locks the OpenRF1 CN6 HC-SR04 path from vendor material: CN6 pin 1: VCC_5V, pin 2: GND, pin 3: PA5_TRIG, pin 4: PA4_ECHO, with TIM6 for isolated timing. Do not connect HC-SR04 ECHO directly to CN6 pin 4. Install the external 10 kOhm / 15 kOhm divider before PA4 receives the signal. Physical connector orientation, resistor installation, ECHO voltage, trigger pulse, echo pulse, and real distance data remain UNVERIFIED.
 - TCRT5000 modules should be powered from 3.3 V for first integration so OUT cannot become a 5 V high from module supply. If later powered from 5 V, output voltage or MCU-pin 5 V tolerance must first be verified.
-- The Hall module should use 5 V based on CONFIRMED_MODULE_EVIDENCE for its supply range. Hall `S` must not be declared safe for direct STM32 connection until its voltage is measured in both magnetic states. Use a divider for an approximately 5 V high state, use a 3.3 V pull-up if the board exposes open collector without onboard 5 V pull-up, or approve direct input only after recorded evidence shows the signal is within 3.3 V logic range.
+- Phase 3.2F requires the Hall module to use 5 V with Hall `S` routed through an external 10 kOhm / 15 kOhm divider before PB0. Hall `S` must not be declared safe for direct STM32 connection. Do not connect Hall `S` directly to PB0. Future manual bring-up must measure Hall `S` voltage in both magnetic states and must measure the divided PB0 voltage before connection. Installed resistor values, Hall output voltage, divided PB0 voltage, output topology, and polarity remain UNVERIFIED until recorded evidence exists.
 - ESP32-C3 UART logic is 3.3 V, so no STM32-to-ESP32 UART level shifter is required for the proposed link. External 5 V power and USB power must not be connected simultaneously; disconnect the STM32/OpenRF1 5 V feed before plugging the ESP32 into USB. A removable jumper or switch in the ESP32 5 V wire is recommended as an integration aid.
 - C1 signal identity must be verified from adapter-board labels or continuity testing, not wire color alone.
 - Complete system power must not rely on an undersized USB supply.

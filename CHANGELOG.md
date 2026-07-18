@@ -2,6 +2,19 @@
 
 All notable subsystem changes are recorded here. Track protocol, GPIO, power, data-format, firmware, and calibration changes explicitly.
 
+## 2026-07-18 - Phase 3.2F Ground-Sensor Bring-Up Foundation
+
+- Added isolated OpenRF1 ground-sensor firmware under `firmware/openrf1/ground_sensors_bringup/`.
+- Added dedicated Keil target `OpenRF1_GroundSensors_Bringup.uvprojx` with isolated output `Objects_GroundSensors_Bringup/OpenRF1_GroundSensors_Bringup.hex`.
+- Locked the Phase 3.2F vendor-documented tracking-connector facts: pin 1: GND, pin 2: X4 / schematic PC14, pin 3: X3 / PB0, pin 4: X2 / PC5, pin 5: X1 / PC4, pin 6: VCC_5V; signal 1 / X1 / PC4, signal 2 / X2 / PC5, and signal 3 / X3 / PB0.
+- Documented the X4 conflict: schematic says PC14 while the old tracking example maps X4 to PB1; signal 4 remains unused and PB1 is not initialized.
+- Implemented 5 ms grouped GPIO sampling, independent 4-sample debounce with an effective 20 ms stable interval, startup initialization from observed raw levels, and 50 ms strict JSONL telemetry with numeric raw/debounced levels only.
+- Recorded the design-locked power and protection contract: TCRT5000 modules from STM32 3.3 V, Hall module from 5 V, Hall S through an external 10 kOhm / 15 kOhm divider, and direct Hall S to PB0 prohibited.
+- Added host-side ground-sensor contract helpers, focused tests, Phase 3.2F audit support, and phase verifier manifest support.
+- Added a focused no-UTF-8-BOM check for `OpenRF1_GroundSensors_Bringup.uvprojx`.
+- Updated README, PROJECT_SPEC, HARDWARE_LOCK, wiring, bring-up, current-state, and test-plan documentation.
+- Kept physical connector orientation, wiring, rail voltages, TCRT output topology, active polarity, surface response, magnetic behavior, real debounce suitability, serial periodicity, and full-hardware operation UNVERIFIED.
+
 ## 2026-07-18 - Phase 3.2E HC-SR04 Bring-Up Foundation
 
 - Added isolated OpenRF1 HC-SR04 firmware under `firmware/openrf1/hcsr04_bringup/`.

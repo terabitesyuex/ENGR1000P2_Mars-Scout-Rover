@@ -69,6 +69,14 @@ Phase 3.2E adds a separate HC-SR04-only bring-up target:
 
 The HC-SR04 target is for one module on OpenRF1 CN6 only. Vendor-documented design locks CN6 pin 1: VCC_5V, pin 2: GND, pin 3: PA5_TRIG, pin 4: PA4_ECHO; TRIG: PA5; ECHO: PA4; timer: TIM6. Do not connect ECHO directly to CN6 pin 4; the external 10 kOhm / 15 kOhm divider is required before PA4 receives the signal. Physical wiring, pulses, real distance data, timeout behavior, and accuracy remain UNVERIFIED.
 
+Phase 3.2F adds a separate ground-sensor-only bring-up target:
+
+- Ground-sensor bring-up source: `firmware/openrf1/ground_sensors_bringup/`.
+- Ground-sensor bring-up project: `firmware/openrf1/keil/OpenRF1_GroundSensors_Bringup.uvprojx`.
+- Ground-sensor bring-up output: `firmware/openrf1/keil/Objects_GroundSensors_Bringup/OpenRF1_GroundSensors_Bringup.hex`.
+
+The Phase 3.2F target is for two TCRT5000 digital modules and one HW-477/A3144 Hall module on the OpenRF1 four-channel tracking connector only. Vendor-documented design locks signal 1 / X1 / PC4, signal 2 / X2 / PC5, signal 3 / X3 / PB0, and the six-pin connector order. The schematic says PC14 for X4 while the old example maps X4 to PB1, so signal 4 remains unused. The target samples PC4, PC5, and PB0 as floating input every 5 ms, applies independent 4-sample debounce, and emits 50 ms JSONL raw/debounced numeric levels only. Use TCRT5000 VCC -> 3.3 V, Hall + -> 5 V, and Hall S -> external 10 kOhm / 15 kOhm divider -> protected PB0. Do not connect Hall S directly to PB0. Physical wiring, voltages, active polarity, surface response, magnetic behavior, serial periodicity, and full-hardware operation remain UNVERIFIED.
+
 The Phase 3.2B source prepares bounded software foundations for the shared I2C signal bus, BMP280, MPU6050, HC-SR04, TCRT5000, Hall, RPLIDAR C1 byte transport, and STM32-to-ESP32 link. Module-specific evidence revises the proposed power domains, but USART2/USART3 pins, line-input pins, BMP280/MPU6050 ACKs, physical HC-SR04 Echo voltage, Hall output voltage, physical polarity, RPLIDAR operation, ESP32 operation, power integrity, and real full-system sensor data remain UNVERIFIED.
 
 Build only; do not flash until the manual safety checklist is complete.

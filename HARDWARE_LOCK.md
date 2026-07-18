@@ -55,15 +55,18 @@ Neutral planned sensor IDs:
 
 ## USER-CONFIRMED PLANNED CONNECTIONS
 
-Ground and landmark connector plan, supplied by the user for future STM32 bring-up:
+Ground and landmark connector plan, supplied by the user and checked against OpenRF1 vendor material for Phase 3.2F:
 
 - Two TCRT5000 modules and one Hall sensor are planned to use the STM32 PH2.0-6P four-channel line-tracking connector.
-- TCRT5000 left OUT -> signal channel 1.
-- TCRT5000 right OUT -> signal channel 2.
-- Hall sensor S -> signal channel 3.
+- Signal channel 1 / X1 -> PC4, signal channel 2 / X2 -> PC5, and signal channel 3 / X3 -> PB0 are AUTHORITATIVE_VENDOR_DOCUMENTED for the isolated Phase 3.2F software target.
+- Tracking connector pin order is AUTHORITATIVE_VENDOR_DOCUMENTED: pin 1 GND, pin 2 X4 / schematic PC14, pin 3 X3 / PB0, pin 4 X2 / PC5, pin 5 X1 / PC4, pin 6 VCC_5V.
+- TCRT5000 left OUT -> signal channel 1 / X1 / PC4.
+- TCRT5000 right OUT -> signal channel 2 / X2 / PC5.
+- Hall sensor S -> external 10 kOhm / 15 kOhm divider -> signal channel 3 / X3 / PB0.
+- X4 remains unused in Phase 3.2F because the schematic names PC14 while the old tracking example names PB1, and PB1 is already the repository's verified software-I2C SCL line.
 - The old shared-VCC plan is superseded by module-specific evidence: TCRT5000 modules should use 3.3 V and the Hall module should use 5 V. Common ground remains required.
 
-This is a USER-CONFIRMED PLANNED CONNECTION only. It is not electrically tested hardware evidence. Connector orientation, exact pin order, supply rails, Hall output topology, logic voltage, pull configuration, active polarity, and installed behavior remain UNVERIFIED.
+This is not electrically tested hardware evidence. Physical connector orientation, cable orientation, installed wiring, supply rails, Hall module-level output voltage, logic voltage at PB0 after the divider, active polarity, and installed behavior remain UNVERIFIED until manual evidence is recorded.
 
 OpenRF1 BH1750 connection plan, supplied by the user for Phase 3.2A:
 
@@ -214,7 +217,8 @@ PC planned responsibilities:
 - exact USART2 user-UART MCU pins: UNVERIFIED.
 - exact USART3 Bluetooth-UART MCU pins: UNVERIFIED.
 - exact PWM channel 0 through 5 MCU pins/timers for any multi-HC-SR04 full-system allocation beyond CN6: UNVERIFIED.
-- exact line input signal 1 through 3 MCU pins: UNVERIFIED.
+- tracking connector signal 1 / X1 -> PC4, signal 2 / X2 -> PC5, signal 3 / X3 -> PB0, and connector pin order: AUTHORITATIVE_VENDOR_DOCUMENTED.
+- installed line-input wiring, cable orientation, TCRT output voltages, Hall divider values, Hall divided voltage, and active polarity: UNVERIFIED.
 - HC-SR04 CN6 pin order, PA5 TRIG, PA4 ECHO, TIM6, and external 10 kOhm / 15 kOhm ECHO divider requirement: AUTHORITATIVE_VENDOR_DOCUMENTED.
 - HC-SR04 ECHO voltage compatibility at PA4 after the external divider: UNVERIFIED until the installed divider and voltages are physically measured.
 - actual board connector orientation: UNVERIFIED.
@@ -335,6 +339,42 @@ PC planned responsibilities:
 - real distance data: UNVERIFIED.
 - physical timer accuracy, physical timeout behavior, absolute distance accuracy, and complete full-hardware operation remain UNVERIFIED.
 
+## Phase 3.2F Ground-Sensor Bring-Up Boundary Status
+
+- Phase 3.2F adds an isolated OpenRF1 ground-sensor-only firmware boundary under `firmware/openrf1/ground_sensors_bringup/`.
+- The Phase 3.2F Keil project is `firmware/openrf1/keil/OpenRF1_GroundSensors_Bringup.uvprojx`.
+- The Phase 3.2F output directory is `Objects_GroundSensors_Bringup/` and must not overwrite previous Phase 3.2A/3.2B/3.2C/3.2D/3.2E outputs.
+- OpenRF1 vendor control-board package, OpenRF1 four-channel tracking example, and OpenRF1 schematic revision dated 2024-07-01 lock signal 1 / X1 / PC4, signal 2 / X2 / PC5, and signal 3 / X3 / PB0 as AUTHORITATIVE_VENDOR_DOCUMENTED.
+- Tracking connector pin order is AUTHORITATIVE_VENDOR_DOCUMENTED: pin 1: GND, pin 2: X4 / schematic PC14, pin 3: X3 / PB0, pin 4: X2 / PC5, pin 5: X1 / PC4, pin 6: VCC_5V.
+- The vendor tracking example configures PC4, PC5, and PB0 as floating input.
+- The schematic says PC14 for X4; the old example maps X4 to PB1. PB1 is already used as the software-I2C SCL line in this repository, so signal 4 / X4 is unused and excluded from Phase 3.2F.
+- DESIGN_LOCKED: left TCRT5000 OUT -> signal 1 / X1 / PC4, VCC -> STM32 3.3 V, GND -> common GND.
+- DESIGN_LOCKED: right TCRT5000 OUT -> signal 2 / X2 / PC5, VCC -> STM32 3.3 V, GND -> common GND.
+- DESIGN_LOCKED: Hall + -> 5 V, Hall - -> common GND, Hall S -> external 10 kOhm / 15 kOhm divider -> signal 3 / X3 / PB0.
+- Do not connect Hall S directly to PB0.
+- Do not power the TCRT modules from the connector's 5 V pin during controlled bring-up.
+- Do not share one VCC rail across all three modules.
+- Automated Phase 3.2F tests use pure logic, static source checks, build/artifact audits, and previous evidence hash checks only.
+- No real COM port, USB device, GPIO, timer peripheral, flash action, or real sensor is accessed by repository automation.
+- physical connector orientation: UNVERIFIED.
+- cable orientation: UNVERIFIED.
+- actual 3.3 V rail: UNVERIFIED.
+- actual 5 V rail: UNVERIFIED.
+- actual TCRT output voltage: UNVERIFIED.
+- TCRT output topology: UNVERIFIED.
+- left TCRT active polarity: UNVERIFIED.
+- right TCRT active polarity: UNVERIFIED.
+- Hall module-level output voltage: UNVERIFIED.
+- Hall active polarity: UNVERIFIED.
+- Hall triggering magnetic pole: UNVERIFIED.
+- white-surface response: UNVERIFIED.
+- black-surface response: UNVERIFIED.
+- edge/open-space response: UNVERIFIED.
+- magnetic activation: UNVERIFIED.
+- magnetic release: UNVERIFIED.
+- optical threshold, Hall trigger distance, real debounce suitability, actual 50 ms serial periodicity, long-duration stability, moving-rover drop prevention, and complete full-hardware operation remain UNVERIFIED.
+- raw GPIO values are not semantic detection states, and semantic polarity remains unverified.
+
 ## Safety Rules
 
 - Do not connect the LiDAR red wire to ESP32 3.3 V.
@@ -347,6 +387,8 @@ PC planned responsibilities:
 - Do not report zero lux as an error sentinel; distinguish valid darkness from invalid telemetry.
 - Do not connect HC-SR04 ECHO directly to CN6 pin 4.
 - For Phase 3.2E, install the external 10 kOhm / 15 kOhm ECHO divider before PA4 receives the signal; do not claim it has been installed or tested until physical evidence is recorded.
+- For Phase 3.2F, do not connect Hall S directly to PB0; install and verify the external 10 kOhm / 15 kOhm divider before PB0 receives Hall S.
+- For Phase 3.2F, do not power the TCRT modules from the tracking connector's 5 V pin during controlled bring-up, and do not share one VCC rail across the TCRT and Hall modules.
 - Disconnect the STM32/OpenRF1 5 V feed before plugging the ESP32-C3 SuperMini into USB; external 5 V and USB power must not be connected simultaneously.
 - Do not power the BMP280-3.3 module from the I2C connector 5 V pin.
 - For the BMP280-only bring-up, connect CSB to 3.3 V for I2C mode and SDO to GND for the planned `0x76` address before power-up.

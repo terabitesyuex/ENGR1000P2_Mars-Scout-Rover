@@ -18,6 +18,7 @@ Supported phases:
 - `phase3.2c`
 - `phase3.2d`
 - `phase3.2e`
+- `phase3.2f`
 
 Development verification:
 
@@ -29,6 +30,7 @@ Development verification:
 .\tools\verify_phase.cmd phase3.2c -AllowDirty
 .\tools\verify_phase.cmd phase3.2d -AllowDirty
 .\tools\verify_phase.cmd phase3.2e -AllowDirty
+.\tools\verify_phase.cmd phase3.2f -AllowDirty
 ```
 
 Normal verification after commit and push:
@@ -41,6 +43,7 @@ Normal verification after commit and push:
 .\tools\verify_phase.cmd phase3.2c
 .\tools\verify_phase.cmd phase3.2d
 .\tools\verify_phase.cmd phase3.2e
+.\tools\verify_phase.cmd phase3.2f
 ```
 
 The verifier uses repository-local pytest basetemp under `.verification/pytest_tmp/`, checks Git state, selects Python, confirms pytest import, runs targeted tests, regressions, the complete PC suite, and configured smoke workflows.
@@ -480,3 +483,29 @@ The Phase 3.2E verifier covers:
 - regression tests for Phase 3.2A, Phase 3.2B, Phase 3.2C, and Phase 3.2D software/evidence contracts
 
 Future manual testing should follow `docs/openrf1_hcsr04_bringup.md` and must keep private local details out of tracked files.
+
+## Phase 3.2F Ground-Sensor Bring-Up Tests
+
+Run:
+
+```powershell
+.\tools\verify_phase.cmd phase3.2f -AllowDirty
+```
+
+The Phase 3.2F verifier covers:
+
+- signal 1 / X1 / PC4, signal 2 / X2 / PC5, and signal 3 / X3 / PB0 mapping contracts
+- signal 4 / X4 unused status and the PC14/PB1 source conflict
+- PC4, PC5, and PB0 floating input firmware representation
+- 5 ms sampling, 4-sample debounce, effective 20 ms stability, and 50 ms telemetry period
+- startup initialization from observed raw levels
+- stable input, low-to-high, high-to-low, bouncing input, and independent-channel debounce vectors
+- strict JSONL identity and periodic records with numeric raw/debounced levels only
+- no semantic detection claims and no fake disconnected-sensor detection
+- TCRT 3.3 V supply documentation, Hall 5 V supply documentation, Hall external 10 kOhm / 15 kOhm divider documentation, and direct Hall S -> PB0 prohibition
+- Keil target isolation under `Objects_GroundSensors_Bringup/`
+- no UTF-8 BOM in `OpenRF1_GroundSensors_Bringup.uvprojx`
+- previous raw Phase 3.2A and Phase 3.2C evidence hash preservation
+- regression tests for Phase 3.2A, Phase 3.2B, Phase 3.2C, Phase 3.2D, and Phase 3.2E software/evidence contracts
+
+Phase 3.2F automated tests do not open real COM ports, USB devices, GPIO, timer peripherals, flashing tools, or sensors. Future manual testing should follow `docs/openrf1_ground_sensors_bringup.md` and must keep private local details out of tracked files.

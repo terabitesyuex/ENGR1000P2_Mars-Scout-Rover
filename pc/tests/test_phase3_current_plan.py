@@ -192,3 +192,41 @@ def test_phase32e_current_plan_documents_hcsr04_software_boundary():
 
     assert missing == []
 
+
+def test_phase32f_current_plan_documents_ground_sensor_software_boundary():
+    required = {
+        "README.md": [
+            "Phase 3.2F",
+            "OpenRF1_GroundSensors_Bringup.uvprojx",
+            "Do not connect Hall S directly to PB0",
+        ],
+        "HARDWARE_LOCK.md": [
+            "Phase 3.2F Ground-Sensor Bring-Up Boundary Status",
+            "signal 1 / X1 / PC4",
+            "signal 2 / X2 / PC5",
+            "signal 3 / X3 / PB0",
+            "10 kOhm",
+            "15 kOhm",
+        ],
+        "docs/openrf1_ground_sensors_bringup.md": [
+            "AUTHORITATIVE_VENDOR_DOCUMENTED",
+            "OpenRF1 four-channel tracking example",
+            "schematic says PC14",
+            "old example maps X4 to PB1",
+            "PHYSICAL_VERIFICATION_REQUIRED",
+        ],
+        "docs/test_plan.md": [
+            "phase3.2f",
+            "Phase 3.2F automated tests do not open real COM ports",
+        ],
+    }
+
+    missing: list[str] = []
+    for relative, snippets in required.items():
+        text = (REPO_ROOT / relative).read_text(encoding="utf-8")
+        for snippet in snippets:
+            if snippet not in text:
+                missing.append(f"{relative}: {snippet}")
+
+    assert missing == []
+

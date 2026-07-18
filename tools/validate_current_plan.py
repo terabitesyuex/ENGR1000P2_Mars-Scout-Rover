@@ -20,6 +20,7 @@ AUTHORITATIVE_FILES = (
     "docs/openrf1_phase32b_protocol.md",
     "docs/openrf1_mpu6050_bringup.md",
     "docs/openrf1_hcsr04_bringup.md",
+    "docs/openrf1_ground_sensors_bringup.md",
     "docs/test_plan.md",
 )
 
@@ -89,6 +90,15 @@ REQUIRED_SNIPPETS = (
     RequiredSnippet("HARDWARE_LOCK.md", "ECHO: PA4", "HC-SR04 ECHO pin documented"),
     RequiredSnippet("docs/openrf1_hcsr04_bringup.md", "Do not connect HC-SR04 ECHO directly to CN6 pin 4", "HC-SR04 direct ECHO prohibition documented"),
     RequiredSnippet("docs/test_plan.md", "phase3.2e", "Phase 3.2E verifier documented"),
+    RequiredSnippet("README.md", "Phase 3.2F", "Phase 3.2F status documented"),
+    RequiredSnippet("README.md", "OpenRF1_GroundSensors_Bringup.uvprojx", "Phase 3.2F Keil target documented"),
+    RequiredSnippet("HARDWARE_LOCK.md", "Phase 3.2F Ground-Sensor Bring-Up Boundary Status", "Phase 3.2F hardware boundary documented"),
+    RequiredSnippet("HARDWARE_LOCK.md", "signal 1 / X1 / PC4", "Ground signal 1 pin documented"),
+    RequiredSnippet("HARDWARE_LOCK.md", "signal 2 / X2 / PC5", "Ground signal 2 pin documented"),
+    RequiredSnippet("HARDWARE_LOCK.md", "signal 3 / X3 / PB0", "Ground signal 3 pin documented"),
+    RequiredSnippet("docs/openrf1_ground_sensors_bringup.md", "Do not connect Hall S directly to PB0", "Hall direct connection prohibition documented"),
+    RequiredSnippet("docs/openrf1_ground_sensors_bringup.md", "semantic polarity remains unverified", "Ground semantic polarity status documented"),
+    RequiredSnippet("docs/test_plan.md", "phase3.2f", "Phase 3.2F verifier documented"),
 )
 
 

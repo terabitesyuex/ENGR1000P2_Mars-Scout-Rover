@@ -92,6 +92,14 @@ AUTHORITATIVE_VENDOR_DOCUMENTED values from the OpenRF1 vendor control-board pac
 
 Do not connect HC-SR04 ECHO directly to CN6 pin 4. The external 10 kOhm / 15 kOhm divider is required before ECHO reaches PA4. Actual connector orientation, cable orientation, installed resistor values, ECHO voltage before/after division, physical trigger pulse, physical echo pulse, real distance data, physical timer accuracy, and physical timeout behavior remain UNVERIFIED.
 
+## Phase 3.2F OpenRF1 Ground-Sensor Update
+
+Phase 3.2F adds the isolated ground-sensor-only target `OpenRF1_GroundSensors_Bringup.uvprojx` and source under `firmware/openrf1/ground_sensors_bringup/`. It is for two TCRT5000 digital modules and one HW-477/A3144 Hall module on PC4, PC5, and PB0 only, with USART1 JSONL debug telemetry at 115200 8N1. It does not run BH1750, BMP280, MPU6050, HC-SR04, RPLIDAR, ESP32, motors, or encoders.
+
+AUTHORITATIVE_VENDOR_DOCUMENTED values from the OpenRF1 vendor control-board package, OpenRF1 four-channel tracking example, and OpenRF1 schematic revision dated 2024-07-01: signal 1 / X1 / PC4, signal 2 / X2 / PC5, signal 3 / X3 / PB0, and tracking connector pin 1: GND, pin 2: X4 / schematic PC14, pin 3: X3 / PB0, pin 4: X2 / PC5, pin 5: X1 / PC4, pin 6: VCC_5V.
+
+The schematic says PC14 for X4 while the old example maps X4 to PB1, so signal 4 / X4 is unused. Do not connect Hall S directly to PB0; the external 10 kOhm / 15 kOhm divider is required before Hall S reaches PB0. Do not power the TCRT modules from the connector's 5 V pin, and do not share one VCC rail across the TCRT and Hall modules. Actual connector orientation, cable orientation, rail voltages, output voltages, active polarity, surface behavior, magnetic behavior, real debounce suitability, and actual 50 ms serial periodicity remain UNVERIFIED.
+
 ## Future Runtime Constraints
 
 - Do not use long blocking delays in embedded runtime paths.

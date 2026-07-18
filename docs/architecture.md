@@ -1,6 +1,6 @@
 # Architecture
 
-The rover architecture separates hardware access, transport, data models, algorithms, visualization, recording, and replay. Phase 3.2D adds an isolated OpenRF1 MPU6050-only software bring-up target while preserving the Phase 3.2A BH1750-only path, Phase 3.2C BMP280-only path, Phase 3.2B full-hardware foundation, and the Phase 2.4 recording/replay pipeline.
+The rover architecture separates hardware access, transport, data models, algorithms, visualization, recording, and replay. Phase 3.2F adds an isolated OpenRF1 ground-sensor-only software bring-up target while preserving the Phase 3.2A BH1750-only path, Phase 3.2C BMP280-only path, Phase 3.2D MPU6050-only path, Phase 3.2E HC-SR04-only path, Phase 3.2B full-hardware foundation, and the Phase 2.4 recording/replay pipeline.
 
 ## Sensor Layer
 
@@ -87,6 +87,8 @@ OpenRF1 BH1750 mocked serial capture / future user-selected CH340 COM port
 OpenRF1 Phase 3.2B full-hardware fixtures and STM32-to-ESP32 frame codec
 OpenRF1 Phase 3.2C BMP280 evidence validator
 OpenRF1 Phase 3.2D MPU6050 bring-up software tests
+OpenRF1 Phase 3.2E HC-SR04 bring-up software tests
+OpenRF1 Phase 3.2F ground-sensor bring-up software tests
     -> ScanFrame data model
     -> STM32 telemetry parser / recording bridge
     -> scan builder / coordinate transforms
@@ -123,5 +125,7 @@ Phase 3.2E implements an isolated OpenRF1 HC-SR04 software foundation under `fir
 Phase 3.2C implements an isolated BMP280-only OpenRF1 bring-up firmware target under `firmware/openrf1/bmp280_bringup/` and `OpenRF1_BMP280_Bringup.uvprojx`. It reuses the software-I2C and BMP280 driver boundary, emits USART1 JSONL, keeps BH1750 and FullHardware targets separate, and validates the committed BMP280 physical evidence offline. Absolute temperature/pressure accuracy, long-duration operation, shared-I2C concurrency, and full-hardware operation remain UNVERIFIED.
 
 Phase 3.2D implements an isolated MPU6050-only OpenRF1 software bring-up target under `firmware/openrf1/mpu6050_bringup/` and `OpenRF1_MPU6050_Bringup.uvprojx`. It reuses the software-I2C and MPU6050 driver boundary, emits USART1 JSONL for future manual capture, and keeps BH1750, BMP280, and FullHardware targets separate. Physical MPU6050 ACK, WHO_AM_I, configuration readback, live IMU telemetry, calibration, axis orientation, shared-I2C concurrency, and full-hardware operation remain UNVERIFIED.
+
+Phase 3.2F implements an isolated ground-sensor-only OpenRF1 software bring-up target under `firmware/openrf1/ground_sensors_bringup/` and `OpenRF1_GroundSensors_Bringup.uvprojx`. It samples PC4, PC5, and PB0 as floating inputs every 5 ms, applies independent 4-sample debounce, and emits 50 ms JSONL raw/debounced numeric levels only. Signal 1 / X1 / PC4, signal 2 / X2 / PC5, signal 3 / X3 / PB0, and the tracking connector pin order are AUTHORITATIVE_VENDOR_DOCUMENTED. The schematic says PC14 for X4 while the old example maps X4 to PB1, so signal 4 remains unused. Physical wiring, voltage levels, active polarity, surface behavior, magnetic behavior, serial periodicity, and full-hardware operation remain UNVERIFIED.
 
 Emergency stopping remains a local STM32 safety responsibility in the plan. PC mapping occurs later and is short-range accumulated mapping, not a required reusable global SLAM map. ROS is not required.

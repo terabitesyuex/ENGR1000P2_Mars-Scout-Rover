@@ -54,6 +54,9 @@ These wire functions preserve the verified C1 harness profile. They do not prove
 
 - HC-SR04 Phase 3.2E CN6 pin order, PA5 TRIG, PA4 ECHO, TIM6, and external 10 kOhm / 15 kOhm ECHO divider requirement are AUTHORITATIVE_VENDOR_DOCUMENTED.
 - Do not connect HC-SR04 ECHO directly to CN6 pin 4.
+- Ground-sensor Phase 3.2F tracking connector order is AUTHORITATIVE_VENDOR_DOCUMENTED: pin 1: GND, pin 2: X4 / schematic PC14, pin 3: X3 / PB0, pin 4: X2 / PC5, pin 5: X1 / PC4, pin 6: VCC_5V.
+- Ground-sensor Phase 3.2F active mappings are AUTHORITATIVE_VENDOR_DOCUMENTED: signal 1 / X1 / PC4, signal 2 / X2 / PC5, and signal 3 / X3 / PB0.
+- The old tracking example maps X4 to PB1 while the schematic says PC14; signal 4 / X4 is unused for Phase 3.2F.
 - TCRT5000 active polarity is UNVERIFIED.
 - Hall active polarity is UNVERIFIED.
 - Phase 3.2A BH1750 target board is OpenRF1 with STM32F103RCT6.
@@ -176,35 +179,42 @@ Earlier Phase 3.2B logical allocation for all three HC-SR04 modules remains UNVE
 
 For any future non-CN6 HC-SR04 path, Echo level protection is conditional on module supply and measured Echo VOH, plus the exact STM32 input path. Direct connection is not approved without recorded voltage-safety evidence.
 
-### TCRT5000 And Hall
+## Phase 3.2F Ground-Sensor-Only Bring-Up Wiring
 
-Proposed logical allocation:
+This is the isolated Phase 3.2F software-prepared bench target, not proof of physical operation. Connect only the two TCRT5000 modules and one Hall module after the required checks are complete.
 
-- `tcrt5000_1` VCC -> OpenRF1 3.3 V.
-- `tcrt5000_2` VCC -> OpenRF1 3.3 V.
-- `tcrt5000_1` OUT -> line input signal 1.
-- `tcrt5000_2` OUT -> line input signal 2.
-- Hall `+` -> OpenRF1 5 V.
-- Hall `-` -> OpenRF1 GND.
-- `hall_1` S -> line input signal 3.
+Vendor-documented tracking connector order:
 
-TCRT5000 modules use 3.3 V for first integration to avoid a possible 5 V output-high level. If powered from 5 V later, output voltage or MCU-pin 5 V tolerance must first be verified.
+- pin 1: GND.
+- pin 2: X4 / schematic PC14.
+- pin 3: X3 / PB0.
+- pin 4: X2 / PC5.
+- pin 5: X1 / PC4.
+- pin 6: VCC_5V.
 
-Hall `S` must not be declared safe for direct STM32 connection yet. First measure Hall `S` voltage in both magnetic states. Use a divider if the module produces an approximately 5 V high state, use a 3.3 V pull-up if the output is open collector without onboard 5 V pull-up, or approve direct input only after recorded evidence shows the signal is already within 3.3 V logic range.
+Do not infer connector orientation from wire colours, cable orientation, apparent left-to-right order in a photograph, or connector position alone. Verify printed labels, keying, or schematic references.
 
-Actual STM32 GPIO pins and active polarity remain UNVERIFIED. Preserve raw digital states until physical tests establish polarity.
+| Module signal | OpenRF1 connection | Status |
+| --- | --- | --- |
+| Left TCRT5000 OUT | connector signal 1 / X1 / PC4 | AUTHORITATIVE_VENDOR_DOCUMENTED mapping; physical wiring UNVERIFIED |
+| Left TCRT5000 VCC | STM32 3.3 V | DESIGN_LOCKED controlled bring-up supply; actual rail UNVERIFIED |
+| Left TCRT5000 GND | common GND | PLANNED; PHYSICAL_VERIFICATION_REQUIRED |
+| Right TCRT5000 OUT | connector signal 2 / X2 / PC5 | AUTHORITATIVE_VENDOR_DOCUMENTED mapping; physical wiring UNVERIFIED |
+| Right TCRT5000 VCC | STM32 3.3 V | DESIGN_LOCKED controlled bring-up supply; actual rail UNVERIFIED |
+| Right TCRT5000 GND | common GND | PLANNED; PHYSICAL_VERIFICATION_REQUIRED |
+| Hall + | 5 V | DESIGN_LOCKED module supply; actual rail UNVERIFIED |
+| Hall - | common GND | PLANNED; PHYSICAL_VERIFICATION_REQUIRED |
+| Hall S | external 10 kOhm / 15 kOhm divider -> connector signal 3 / X3 / PB0 | DESIGN_LOCKED protection requirement; physical divider installation UNVERIFIED |
 
-## User-Confirmed Planned Ground/Landmark Connector
+Do not power the TCRT modules from the connector's 5 V pin during controlled bring-up. Do not share one VCC rail across all three modules. Do not connect Hall S directly to PB0.
 
-This plan is USER-CONFIRMED PLANNED CONNECTION, not electrically tested hardware evidence:
+Use the external Hall divider: Hall S -> 10 kOhm series resistor -> protected PB0 node; protected PB0 node -> 15 kOhm resistor -> GND. Use 5 percent tolerance or better. Nominal behavior is 5.0 V -> approximately 3.0 V and 5.5 V -> approximately 3.3 V at PB0.
 
-- Two TCRT5000 modules and one Hall sensor are planned to use the STM32 PH2.0-6P four-channel line-tracking connector.
-- TCRT5000 left OUT -> signal channel 1.
-- TCRT5000 right OUT -> signal channel 2.
-- Hall sensor S -> signal channel 3.
-- The old shared-VCC plan is superseded by module-specific evidence: TCRT5000 modules should use 3.3 V and the Hall module should use 5 V. If the PH2.0-6P connector exposes only one VCC rail, it cannot safely power both module types under the revised proposal without additional measured evidence or separate power routing.
+The old tracking example maps X4 to PB1 while the schematic says PC14. Signal 4 / X4 is unused in Phase 3.2F and must not be initialized, read, or emitted in telemetry.
 
-Connector orientation, exact pin order, supply voltage, logic voltage, Hall output topology, active polarity, and pull configuration remain UNVERIFIED.
+The firmware configures PC4, PC5, and PB0 as floating input, samples every 5 ms, applies 4-sample independent debounce, and emits 50 ms JSONL raw/debounced numeric levels. Raw GPIO values are not semantic detection states, and semantic polarity remains unverified.
+
+Physical connector orientation, cable orientation, TCRT output topology, TCRT active polarity, Hall module-level output voltage, Hall active polarity, surface response, magnetic behavior, real debounce suitability, and full-hardware operation remain UNVERIFIED.
 
 ## Future Verification Checklist
 
