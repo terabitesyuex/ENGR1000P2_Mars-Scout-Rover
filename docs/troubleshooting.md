@@ -219,3 +219,39 @@ Temperature or pressure is null:
 - Null values indicate invalid data, not zero temperature or zero pressure.
 
 The Phase 3.2C automated verifier does not flash, open a COM port, access USB, GPIO, I2C, or sensors. It validates the committed sanitized evidence offline. Isolated BMP280 ACK, chip ID, calibration-register path, configuration readback, live compensated samples, and 500 ms cadence are PHYSICAL_EVIDENCE_VERIFIED for the formal 30-second capture; absolute accuracy, long-duration operation, shared-I2C concurrency, and full-hardware operation remain UNVERIFIED.
+
+## Phase 3.2D OpenRF1 MPU6050
+
+No identity line:
+
+- Confirm the `OpenRF1_MPU6050_Bringup.hex` image was flashed, not the BH1750, BMP280, or FullHardware target.
+- Confirm USART1 PA9/PA10 CH340 capture at 115200 8N1.
+- Do not record the port number in committed evidence.
+
+NACK at `0x68`:
+
+- Power off before changing wiring.
+- Confirm the GY-521/MPU6050 VCC is connected to the intended 5 V module supply, GND is common, SCL is PB1/B1, SDA is PC3/C3, and AD0 is GND.
+- Treat NACK as failed communication; do not fabricate acceleration, angular-rate, or temperature readings.
+
+Bad WHO_AM_I:
+
+- Record the observed WHO_AM_I value and stop.
+- Do not mark the MPU6050 verified unless register `0x75` returns `0x68` from the wired module.
+
+Configuration readback mismatch:
+
+- Record the register, expected value, and observed value.
+- Do not continue to interpret IMU samples as valid bring-up evidence until `PWR_MGMT_1`, `SMPLRT_DIV`, `CONFIG`, `GYRO_CONFIG`, and `ACCEL_CONFIG` read back as expected.
+
+IMU values are null:
+
+- Check the `status`, `initialization_stage`, `operation`, `register`, and `error_code` fields.
+- Null values indicate invalid data, not zero acceleration or zero angular rate.
+
+Live values are present:
+
+- Treat them as raw-register conversion evidence only.
+- Do not claim calibrated acceleration, gyro bias, axis orientation, yaw, pitch, roll, odometry, navigation, or sensor fusion without later calibrated tests.
+
+The Phase 3.2D automated verifier does not flash, open a COM port, access USB, GPIO, I2C, or sensors. MPU6050 ACK, WHO_AM_I, configuration readback, live IMU telemetry, calibration, axis orientation, shared-I2C concurrency, and full-hardware operation remain UNVERIFIED until recorded physical evidence exists.

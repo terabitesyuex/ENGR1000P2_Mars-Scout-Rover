@@ -121,3 +121,36 @@ def test_phase32b_current_plan_documents_software_foundation_boundaries():
 
     assert missing == []
 
+
+def test_phase32d_current_plan_documents_mpu6050_software_boundary():
+    required = {
+        "README.md": [
+            "Phase 3.2D",
+            "OpenRF1_MPU6050_Bringup.uvprojx",
+            "Physical ACK, WHO_AM_I, live IMU telemetry",
+        ],
+        "HARDWARE_LOCK.md": [
+            "Phase 3.2D MPU6050 Bring-Up Boundary Status",
+            "Objects_MPU6050_Bringup",
+            "MPU6050 ACK, physical address, WHO_AM_I",
+        ],
+        "docs/openrf1_mpu6050_bringup.md": [
+            "GY-521/MPU6050 VCC -> OpenRF1 5 V",
+            "WHO_AM_I register",
+            "PHYSICAL_VERIFICATION_REQUIRED",
+        ],
+        "docs/test_plan.md": [
+            "phase3.2d",
+            "Phase 3.2D automated tests do not open real COM ports",
+        ],
+    }
+
+    missing: list[str] = []
+    for relative, snippets in required.items():
+        text = (REPO_ROOT / relative).read_text(encoding="utf-8")
+        for snippet in snippets:
+            if snippet not in text:
+                missing.append(f"{relative}: {snippet}")
+
+    assert missing == []
+

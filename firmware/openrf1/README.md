@@ -53,6 +53,14 @@ Phase 3.2C adds a separate BMP280-only bring-up target:
 
 The BMP280 target is for one module on PB1/SCL and PC3/SDA with VCC on 3.3 V, CSB tied to 3.3 V, and SDO tied to GND for `0x76`. It does not run the BH1750 or full-hardware application. Committed Phase 3.2C evidence verifies isolated BMP280 ACK/address `0x76`, chip ID `0x58`, configuration readback, compensated live temperature/pressure telemetry, and 500 ms periodicity; absolute accuracy and full shared-bus operation remain UNVERIFIED.
 
+Phase 3.2D adds a separate MPU6050-only bring-up target:
+
+- MPU6050 bring-up source: `firmware/openrf1/mpu6050_bringup/`.
+- MPU6050 bring-up project: `firmware/openrf1/keil/OpenRF1_MPU6050_Bringup.uvprojx`.
+- MPU6050 bring-up output: `firmware/openrf1/keil/Objects_MPU6050_Bringup/OpenRF1_MPU6050_Bringup.hex`.
+
+The MPU6050 target is for one GY-521/MPU6050 module on PB1/SCL and PC3/SDA with VCC on 5 V and AD0 tied to GND for the planned address `0x68`. It does not run the BH1750, BMP280, or full-hardware application. Physical MPU6050 ACK, WHO_AM_I, configuration readback, live IMU telemetry, calibration, axis orientation, and full shared-bus operation remain UNVERIFIED.
+
 The Phase 3.2B source prepares bounded software foundations for the shared I2C signal bus, BMP280, MPU6050, HC-SR04, TCRT5000, Hall, RPLIDAR C1 byte transport, and STM32-to-ESP32 link. Module-specific evidence revises the proposed power domains, but USART2/USART3 pins, PWM channel pins, line-input pins, BMP280/MPU6050 ACKs, HC-SR04 Echo VOH, Hall output voltage, physical polarity, RPLIDAR operation, ESP32 operation, power integrity, and real full-system sensor data remain UNVERIFIED.
 
 Build only; do not flash until the manual safety checklist is complete.

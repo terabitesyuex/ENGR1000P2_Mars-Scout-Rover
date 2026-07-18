@@ -18,6 +18,7 @@ AUTHORITATIVE_FILES = (
     "docs/openrf1_bh1750_bringup.md",
     "docs/phase3_2b_full_hardware_foundation.md",
     "docs/openrf1_phase32b_protocol.md",
+    "docs/openrf1_mpu6050_bringup.md",
     "docs/test_plan.md",
 )
 
@@ -74,6 +75,12 @@ REQUIRED_SNIPPETS = (
     RequiredSnippet("HARDWARE_LOCK.md", "Phase 3.2B proposed full-hardware connection plan", "Phase 3.2B proposal status documented"),
     RequiredSnippet("docs/phase3_2b_full_hardware_foundation.md", "real multisensor wiring, power integrity", "Phase 3.2B manual warning documented"),
     RequiredSnippet("docs/openrf1_phase32b_protocol.md", "CRC-16/CCITT-FALSE", "Phase 3.2B binary CRC documented"),
+    RequiredSnippet("README.md", "Phase 3.2D", "Phase 3.2D status documented"),
+    RequiredSnippet("README.md", "OpenRF1_MPU6050_Bringup.uvprojx", "Phase 3.2D Keil target documented"),
+    RequiredSnippet("HARDWARE_LOCK.md", "Phase 3.2D MPU6050 Bring-Up Boundary Status", "Phase 3.2D hardware boundary documented"),
+    RequiredSnippet("HARDWARE_LOCK.md", "MPU6050 ACK, physical address, WHO_AM_I", "MPU6050 unverified status documented"),
+    RequiredSnippet("docs/openrf1_mpu6050_bringup.md", "PHYSICAL_VERIFICATION_REQUIRED", "MPU6050 physical verification status documented"),
+    RequiredSnippet("docs/test_plan.md", "phase3.2d", "Phase 3.2D verifier documented"),
 )
 
 

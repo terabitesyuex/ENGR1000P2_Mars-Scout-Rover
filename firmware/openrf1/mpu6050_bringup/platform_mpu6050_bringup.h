@@ -1,0 +1,8 @@
+#pragma once
+
+#include <stdint.h>
+
+void openrf1_mpu6050_platform_init(void);
+uint32_t openrf1_mpu6050_millis(void);
+void openrf1_mpu6050_delay_ms(uint32_t delay_ms);
+void openrf1_mpu6050_debug_write_bounded(const char *text, uint16_t max_bytes);

@@ -72,6 +72,19 @@ Evidence table fields:
 
 Phase 3.2C recorded evidence verifies one isolated BMP280-only capture at address `0x76` with chip ID `0x58`, configuration readback, compensated live temperature/pressure telemetry, exact 500 ms periodicity, and no I2C errors during the formal 30-second run. This does not verify absolute temperature/pressure accuracy, environmental-reference comparison, long-duration operation, shared-I2C concurrency, or full-hardware operation.
 
+## MPU6050
+
+- Verify GY-521/MPU6050 module supply voltage and polarity before connection.
+- Wire VCC -> OpenRF1 5 V, GND -> GND, SCL -> PB1/B1, SDA -> PC3/C3, and AD0 -> GND only for the isolated Phase 3.2D test.
+- Leave INT, XDA, XCL, and FSYNC disconnected for polling bring-up.
+- Verify ACK at planned address `0x68`.
+- Verify WHO_AM_I register `0x75` reads `0x68`.
+- Verify `PWR_MGMT_1`, `SMPLRT_DIV`, `CONFIG`, `GYRO_CONFIG`, and `ACCEL_CONFIG` read back the expected Phase 3.2D values.
+- Capture live acceleration, angular-rate, and temperature JSONL telemetry.
+- Move the module gently and confirm raw values respond.
+- Do not claim calibrated acceleration, gyro bias, yaw drift, axis orientation, odometry, or navigation.
+- Record commit, date, operator, wiring revision, private serial-port identifier, expected result, observed result, pass/fail, notes, and evidence paths.
+
 ## Phase 3.2A OpenRF1 GY-302/BH1750
 
 Do not mark these items complete automatically.
@@ -123,7 +136,7 @@ Do not mark these items complete automatically.
 
 1. Preserve the committed BH1750-only physical evidence and repeat only if wiring or firmware changes.
 2. Preserve the committed Phase 3.2C isolated BMP280 evidence and repeat only if wiring or firmware changes; shared-bus BMP280 operation with other I2C devices remains a separate validation.
-3. Validate MPU6050 alone at 5 V with AD0 -> GND.
+3. Validate MPU6050 alone at 5 V with AD0 -> GND using the Phase 3.2D target; physical ACK, WHO_AM_I, configuration readback, live IMU telemetry, calibration, and axis orientation are not yet verified.
 4. Validate all three I2C devices together without tying their VCC rails together.
 5. Validate TCRT5000 raw inputs at 3.3 V.
 6. Measure Hall `S` voltage in both magnetic states before STM32 input connection.

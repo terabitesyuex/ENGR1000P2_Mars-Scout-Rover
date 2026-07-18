@@ -67,6 +67,8 @@ No physical calibration is completed by Phase 3.1 automation. This file records 
 
 ## MPU6050
 
+- Phase 3.2D only prepares isolated bring-up software; it does not calibrate the sensor.
+- Verify ACK, WHO_AM_I, configuration readback, and live telemetry before any calibration work.
 - Measure gyro bias.
 - Measure accelerometer offsets.
 - Confirm axis orientation relative to the rover.

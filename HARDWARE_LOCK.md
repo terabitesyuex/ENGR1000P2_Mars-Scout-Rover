@@ -111,6 +111,15 @@ Phase 3.2B proposed full-hardware connection plan, supplied for software prepara
 
 This entire Phase 3.2B connection plan is UNVERIFIED physical evidence. It does not confirm connector orientation, exact MCU pins, timer channels, DMA channels, voltage safety, level shifting, I2C ACKs, UART operation, sensor polarity, RPLIDAR operation, ESP32 operation, or real sensor data.
 
+Phase 3.2D isolated MPU6050 bring-up plan, supplied for software preparation only:
+
+- Dedicated target: `mpu6050_1` only, with no other new sensors connected for the first manual test.
+- Planned module wiring: GY-521/MPU6050 VCC -> OpenRF1 5 V, GND -> OpenRF1 GND, SCL -> PB1 / connector B1, SDA -> PC3 / connector C3, AD0 -> GND for address `0x68`.
+- Planned unused pins: INT, XDA, XCL, and FSYNC disconnected for polling bring-up.
+- Planned register checks: WHO_AM_I register `0x75` expected `0x68`, `PWR_MGMT_1 = 0x01`, `SMPLRT_DIV = 0x09`, `CONFIG = 0x03`, `GYRO_CONFIG = 0x00`, and `ACCEL_CONFIG = 0x00`.
+
+This Phase 3.2D connection plan is UNVERIFIED physical evidence. It does not confirm MPU6050 ACK, WHO_AM_I, register readback, live IMU data, calibration, axis orientation, shared-I2C operation, or full-hardware operation.
+
 Phase 3.2B module-specific electrical evidence:
 
 - GY-521/MPU6050 module: CONFIRMED_MODULE_EVIDENCE for 3.3 V or 5 V VCC, onboard 3.3 V regulator, SCL/SDA pull-ups to onboard 3.3 V, AD0 onboard pull-down, floating AD0 default `0x68`, optional INT, and unused XDA/XCL. Use explicit AD0 -> GND for deterministic address `0x68`; no external I2C level shifter is required for this exact module.
@@ -210,7 +219,7 @@ PC planned responsibilities:
 - HC-SR04 ECHO voltage compatibility with STM32 inputs: UNVERIFIED.
 - BH1750 absolute illuminance calibration: UNVERIFIED.
 - BMP280 address in isolated Phase 3.2C capture: PHYSICAL_EVIDENCE_VERIFIED at `0x76`; full shared-I2C BMP280 operation remains UNVERIFIED.
-- actual MPU6050 I2C address: UNVERIFIED.
+- actual MPU6050 I2C address: UNVERIFIED; Phase 3.2D software uses the planned `0x68` address with AD0 grounded, but no physical ACK or WHO_AM_I evidence exists yet.
 - TCRT5000 and Hall output polarity remains UNVERIFIED.
 - physical TCRT5000 active polarity: UNVERIFIED.
 - physical Hall active polarity: UNVERIFIED.
@@ -229,7 +238,7 @@ PC planned responsibilities:
 - Verify supply voltage, polarity, current margin, ripple, and common ground before controller wiring.
 - Verify ESP32 GPIO and UART assignment before live integration.
 - Verify STM32-ESP32 physical link before relying on rover sensor data.
-- Verify HC-SR04 level interface, TCRT5000 polarity, Hall polarity, I2C addresses, and sensor mounting offsets.
+- Verify HC-SR04 level interface, TCRT5000 polarity, Hall polarity, I2C addresses, MPU6050 WHO_AM_I/configuration/live telemetry, and sensor mounting offsets.
 
 ## Phase 2.5 Software Boundary Status
 
@@ -286,6 +295,17 @@ PC planned responsibilities:
 - No real COM port, USB device, GPIO, I2C bus, flash action, or real sensor is accessed by repository automation.
 - Absolute temperature accuracy, absolute pressure accuracy, environmental-reference comparison, long-duration operation beyond the formal capture, full multi-device shared-I2C concurrency, and complete full-hardware operation remain UNVERIFIED.
 
+## Phase 3.2D MPU6050 Bring-Up Boundary Status
+
+- Phase 3.2D adds an isolated OpenRF1 MPU6050-only firmware boundary under `firmware/openrf1/mpu6050_bringup/`.
+- The Phase 3.2D Keil project is `firmware/openrf1/keil/OpenRF1_MPU6050_Bringup.uvprojx`.
+- The Phase 3.2D output directory is `Objects_MPU6050_Bringup/` and must not overwrite `Objects/OpenRF1_BH1750.hex`, `Objects_BMP280_Bringup/OpenRF1_BMP280_Bringup.hex`, or `Objects_FullHardware/OpenRF1_FullHardware.hex`.
+- Planned MPU6050-only wiring: GY-521/MPU6050 VCC -> OpenRF1 5 V, GND -> OpenRF1 GND, SCL -> PB1 / connector B1, SDA -> PC3 / connector C3, AD0 -> GND, and INT/XDA/XCL/FSYNC disconnected.
+- Planned address `0x68`, expected WHO_AM_I `0x68`, wake/configuration values `PWR_MGMT_1 = 0x01`, `SMPLRT_DIV = 0x09`, `CONFIG = 0x03`, `GYRO_CONFIG = 0x00`, and `ACCEL_CONFIG = 0x00`: SOFTWARE_READY only.
+- Automated Phase 3.2D tests use pure logic, static source checks, build/artifact audits, and previous evidence hash checks only.
+- No real COM port, USB device, GPIO, I2C bus, flash action, or real sensor is accessed by repository automation.
+- MPU6050 ACK, physical address, WHO_AM_I, configuration readback, live acceleration/angular-rate/temperature telemetry, absolute accuracy, gyro bias, accelerometer offsets, yaw drift, axis orientation, full multi-device shared-I2C concurrency, and complete full-hardware operation remain UNVERIFIED.
+
 ## Safety Rules
 
 - Do not connect the LiDAR red wire to ESP32 3.3 V.
@@ -301,6 +321,7 @@ PC planned responsibilities:
 - Disconnect the STM32/OpenRF1 5 V feed before plugging the ESP32-C3 SuperMini into USB; external 5 V and USB power must not be connected simultaneously.
 - Do not power the BMP280-3.3 module from the I2C connector 5 V pin.
 - For the BMP280-only bring-up, connect CSB to 3.3 V for I2C mode and SDO to GND for the planned `0x76` address before power-up.
+- For the MPU6050-only bring-up, use the GY-521/MPU6050 module 5 V VCC plan only for that module type, keep AD0 tied to GND for the planned `0x68` address, and do not claim ACK or WHO_AM_I until captured.
 - Do not treat Hall `S` as STM32-safe until its high/low voltage is measured in both magnetic states.
 - Do not infer C1 signal identity from wire color alone.
 - Do not use USART1 for high-rate lidar payload.

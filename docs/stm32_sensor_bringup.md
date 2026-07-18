@@ -76,6 +76,14 @@ Committed Phase 3.2C evidence verifies the isolated BMP280-only path: firmware f
 
 Absolute temperature accuracy, absolute pressure accuracy, environmental-reference comparison, operation beyond the 30-second capture, full multi-device shared-I2C concurrency, and complete full-hardware operation remain UNVERIFIED.
 
+## Phase 3.2D OpenRF1 MPU6050 Update
+
+Phase 3.2D adds the isolated MPU6050-only target `OpenRF1_MPU6050_Bringup.uvprojx` and source under `firmware/openrf1/mpu6050_bringup/`. It is for one GY-521/MPU6050 module on PB1/SCL and PC3/SDA only, with USART1 JSONL debug telemetry at 115200 8N1. It does not run BH1750, BMP280, HC-SR04, TCRT5000, Hall, RPLIDAR, ESP32, motors, or encoders.
+
+The software target uses planned address `0x68` with AD0 grounded, expects WHO_AM_I `0x68`, writes and reads back `PWR_MGMT_1 = 0x01`, `SMPLRT_DIV = 0x09`, `CONFIG = 0x03`, `GYRO_CONFIG = 0x00`, and `ACCEL_CONFIG = 0x00`, then reads 14-byte IMU bursts from `ACCEL_XOUT_H = 0x3B` at a 100 ms telemetry period.
+
+MPU6050 ACK, WHO_AM_I, configuration readback, live acceleration/angular-rate/temperature telemetry, absolute accuracy, gyro bias, accelerometer offsets, yaw drift, axis orientation, full multi-device shared-I2C concurrency, and complete full-hardware operation remain UNVERIFIED.
+
 ## Future Runtime Constraints
 
 - Do not use long blocking delays in embedded runtime paths.

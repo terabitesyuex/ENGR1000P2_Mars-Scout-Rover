@@ -103,6 +103,19 @@ New JSON telemetry message types for PC inspection and recording fixtures:
 
 These contracts are SOFTWARE_VERIFIED by tests only. They do not prove ESP32 operation, RPLIDAR operation, UART electrical idle, framing integrity on real wires, or WiFi behavior.
 
+## Phase 3.2D OpenRF1 MPU6050 Bring-Up Telemetry
+
+Phase 3.2D adds a separate MPU6050-only USART1 bring-up JSONL stream for future manual capture:
+
+- `message_type`: `sensor_identity` for startup identity/configuration.
+- `message_type`: `imu` for raw and scaled MPU6050 samples.
+- `sensor_id`: `mpu6050_1`.
+- planned address: `0x68` with AD0 grounded.
+- expected WHO_AM_I: `0x68`.
+- sample period: 100 ms.
+
+This bring-up stream is for isolated bench evidence and host-side tests. It does not implement sensor fusion, odometry, Phase 4 motion estimation, ESP32 forwarding, WiFi transport, or a calibrated rover-frame IMU contract. Physical ACK, WHO_AM_I, configuration readback, live telemetry, calibration, and axis orientation remain UNVERIFIED.
+
 ## Transport Expectations
 
 - Include sequence numbers.

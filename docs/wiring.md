@@ -63,7 +63,7 @@ These wire functions preserve the verified C1 harness profile. They do not prove
 - The adjacent SWD connector must not be confused with the I2C header.
 - Recorded Phase 3.2A manual evidence verifies BH1750 communication at configured public 7-bit address `0x23`, 500 ms telemetry, and physical light response; absolute lux calibration remains UNVERIFIED.
 - BMP280 I2C address is PHYSICAL_EVIDENCE_VERIFIED at `0x76` for the isolated Phase 3.2C BMP280-only capture; shared-bus operation remains UNVERIFIED.
-- MPU6050 I2C address is UNVERIFIED.
+- MPU6050 I2C address is planned as `0x68` with AD0 -> GND for Phase 3.2D software bring-up; physical ACK, WHO_AM_I, configuration readback, and live telemetry remain UNVERIFIED.
 - Final sensor mounting offsets are UNVERIFIED.
 
 ## Phase 3.2A GY-302/BH1750 Wiring
@@ -135,6 +135,23 @@ This is the isolated Phase 3.2C bench target, not the full Phase 3.2B shared-bus
 | SDO | GND | PHYSICAL_EVIDENCE_VERIFIED address strap for `0x76` in isolated capture |
 
 Committed Phase 3.2C evidence verifies ACK at `0x76`, chip ID `0x58`, calibration-register path sufficient for compensated output, `ctrl_meas = 0x27` and `config = 0x80` readback, live compensated temperature/pressure telemetry, exact 500 ms periodicity, and a stable 30-second BMP280-only capture. Absolute temperature/pressure accuracy, environmental-reference comparison, long-duration operation, and shared-I2C concurrency remain UNVERIFIED.
+
+## Phase 3.2D MPU6050-Only Bring-Up Wiring
+
+This is the isolated Phase 3.2D software-prepared bench target, not the full Phase 3.2B shared-bus integration. Connect only the GY-521/MPU6050 module during the future manual test:
+
+| GY-521/MPU6050 pin | OpenRF1 connection | Status |
+| --- | --- | --- |
+| VCC | 5 V | CONFIRMED_MODULE_EVIDENCE for GY-521/MPU6050 module capability; PHYSICAL_VERIFICATION_REQUIRED for this setup |
+| GND | GND | PLANNED; PHYSICAL_VERIFICATION_REQUIRED |
+| SCL | PB1 / connector B1 | CONFIRMED OpenRF1 software-I2C signal |
+| SDA | PC3 / connector C3 | CONFIRMED OpenRF1 software-I2C signal |
+| AD0 | GND | PLANNED for address `0x68`; PHYSICAL_VERIFICATION_REQUIRED |
+| INT | disconnected | PLANNED polling bring-up |
+| XDA/XCL | disconnected | PLANNED polling bring-up |
+| FSYNC | disconnected | PLANNED polling bring-up |
+
+Phase 3.2D repository automation verifies only source structure and pure software behavior. MPU6050 ACK, WHO_AM_I `0x68`, configuration readback, live acceleration/angular-rate/temperature telemetry, calibration, axis orientation, shared-I2C concurrency, and full-hardware operation remain UNVERIFIED.
 
 ### HC-SR04
 

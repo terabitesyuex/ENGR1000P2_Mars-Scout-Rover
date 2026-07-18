@@ -1,6 +1,6 @@
 # Architecture
 
-The rover architecture separates hardware access, transport, data models, algorithms, visualization, recording, and replay. Phase 3.2B adds an isolated OpenRF1 multisensor and communications software foundation while preserving the Phase 3.2A BH1750-only path and the Phase 2.4 recording/replay pipeline.
+The rover architecture separates hardware access, transport, data models, algorithms, visualization, recording, and replay. Phase 3.2D adds an isolated OpenRF1 MPU6050-only software bring-up target while preserving the Phase 3.2A BH1750-only path, Phase 3.2C BMP280-only path, Phase 3.2B full-hardware foundation, and the Phase 2.4 recording/replay pipeline.
 
 ## Sensor Layer
 
@@ -85,6 +85,8 @@ PC-direct C1 byte stream with explicit user-provided port or fixture bytes
 STM32 low-rate sensor telemetry simulator / future forwarded telemetry
 OpenRF1 BH1750 mocked serial capture / future user-selected CH340 COM port
 OpenRF1 Phase 3.2B full-hardware fixtures and STM32-to-ESP32 frame codec
+OpenRF1 Phase 3.2C BMP280 evidence validator
+OpenRF1 Phase 3.2D MPU6050 bring-up software tests
     -> ScanFrame data model
     -> STM32 telemetry parser / recording bridge
     -> scan builder / coordinate transforms
@@ -116,6 +118,8 @@ Phase 3.2A remains the BH1750-only firmware path. Recorded manual evidence verif
 
 Phase 3.2B implements an isolated full-hardware firmware foundation under `firmware/openrf1/full_hardware/`, a separate Keil project/output, raw sensor/status telemetry contracts, deterministic PC fixtures, and the STM32-side binary frame contract for the future ESP32 link. It does not implement ESP32 WiFi firmware, motor/encoder control, physical multisensor validation, mapping, SLAM, navigation, obstacle avoidance, or autonomous motion. USART2/USART3 pins, PWM pins, line-input pins, BMP280/MPU6050 ACKs, HC-SR04 Echo VOH, Hall output voltage, sensor polarity, RPLIDAR operation, ESP32 operation, power integrity, concurrent operation, and real full-system sensor data remain UNVERIFIED.
 
-Phase 3.2C implements an isolated BMP280-only OpenRF1 bring-up firmware target under `firmware/openrf1/bmp280_bringup/` and `OpenRF1_BMP280_Bringup.uvprojx`. It reuses the software-I2C and BMP280 driver boundary, emits USART1 JSONL, and keeps BH1750 and FullHardware targets separate. Physical ACK, chip ID, calibration read, configuration readback, live temperature, and live pressure remain UNVERIFIED until manual evidence is captured.
+Phase 3.2C implements an isolated BMP280-only OpenRF1 bring-up firmware target under `firmware/openrf1/bmp280_bringup/` and `OpenRF1_BMP280_Bringup.uvprojx`. It reuses the software-I2C and BMP280 driver boundary, emits USART1 JSONL, keeps BH1750 and FullHardware targets separate, and validates the committed BMP280 physical evidence offline. Absolute temperature/pressure accuracy, long-duration operation, shared-I2C concurrency, and full-hardware operation remain UNVERIFIED.
+
+Phase 3.2D implements an isolated MPU6050-only OpenRF1 software bring-up target under `firmware/openrf1/mpu6050_bringup/` and `OpenRF1_MPU6050_Bringup.uvprojx`. It reuses the software-I2C and MPU6050 driver boundary, emits USART1 JSONL for future manual capture, and keeps BH1750, BMP280, and FullHardware targets separate. Physical MPU6050 ACK, WHO_AM_I, configuration readback, live IMU telemetry, calibration, axis orientation, shared-I2C concurrency, and full-hardware operation remain UNVERIFIED.
 
 Emergency stopping remains a local STM32 safety responsibility in the plan. PC mapping occurs later and is short-range accumulated mapping, not a required reusable global SLAM map. ROS is not required.

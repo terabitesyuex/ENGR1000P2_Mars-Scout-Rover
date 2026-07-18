@@ -16,6 +16,7 @@ Supported phases:
 - `phase3.2a`
 - `phase3.2b`
 - `phase3.2c`
+- `phase3.2d`
 
 Development verification:
 
@@ -25,6 +26,7 @@ Development verification:
 .\tools\verify_phase.cmd phase3.2a -AllowDirty
 .\tools\verify_phase.cmd phase3.2b -AllowDirty
 .\tools\verify_phase.cmd phase3.2c -AllowDirty
+.\tools\verify_phase.cmd phase3.2d -AllowDirty
 ```
 
 Normal verification after commit and push:
@@ -35,6 +37,7 @@ Normal verification after commit and push:
 .\tools\verify_phase.cmd phase3.2a
 .\tools\verify_phase.cmd phase3.2b
 .\tools\verify_phase.cmd phase3.2c
+.\tools\verify_phase.cmd phase3.2d
 ```
 
 The verifier uses repository-local pytest basetemp under `.verification/pytest_tmp/`, checks Git state, selects Python, confirms pytest import, runs targeted tests, regressions, the complete PC suite, and configured smoke workflows.
@@ -178,6 +181,31 @@ Smoke workflow:
 - Report BMP280, BH1750, and FullHardware local Keil build evidence when local builds have been run.
 
 Phase 3.2C automated tests do not open real COM ports, USB devices, GPIO, I2C, flash tools, network sockets, motors, or real sensors. They validate the committed evidence file offline. The formal evidence marks isolated BMP280 ACK/address `0x76`, chip ID `0x58`, configuration readback, live compensated temperature/pressure telemetry, exact 500 ms periodicity, and stable 30-second capture as PHYSICAL_EVIDENCE_VERIFIED. Absolute temperature/pressure accuracy, long-duration operation, shared-I2C concurrency, and complete full-hardware operation remain UNVERIFIED.
+
+## Phase 3.2D Automated Software Tests
+
+Targeted:
+
+- `pc/tests/test_openrf1_mpu6050_bringup.py`
+
+Regression:
+
+- Phase 3.2C BMP280 bring-up/evidence tests.
+- Phase 3.2B firmware foundation tests.
+- Phase 3.2A BH1750 firmware/evidence tests.
+- STM32 protocol and recording bridge tests.
+- Phase 3 current-plan anchors.
+
+Smoke workflow:
+
+- Audit required MPU6050 bring-up files.
+- Confirm the isolated Keil target and output directory.
+- Confirm MPU6050 register configuration constants.
+- Confirm previous Phase 3.2A and Phase 3.2C raw evidence file hashes are unchanged.
+- Confirm generated Keil artifacts are not tracked.
+- Report MPU6050 local Keil build evidence when a local build has been run.
+
+Phase 3.2D automated tests do not open real COM ports, USB devices, GPIO, I2C, flash tools, network sockets, motors, or real sensors. MPU6050 ACK, WHO_AM_I, configuration readback, live IMU telemetry, calibration, axis orientation, shared-I2C concurrency, and complete full-hardware operation remain UNVERIFIED.
 
 ## Revised Phase Sequence
 
@@ -382,3 +410,22 @@ The Phase 3.2C verifier covers:
 - local build evidence reporting for BH1750, FullHardware, and BMP280 bring-up targets
 
 Recorded BMP280 physical evidence is documented in `evidence/phase3.2c/bmp280_physical_evidence.md`. Future repeat testing should follow `docs/openrf1_bmp280_bringup.md` and must keep private local details out of tracked files.
+
+## Phase 3.2D MPU6050 Bring-Up Tests
+
+Run:
+
+```powershell
+.\tools\verify_phase.cmd phase3.2d -AllowDirty
+```
+
+The Phase 3.2D verifier covers:
+
+- MPU6050 WHO_AM_I validation, register configuration constants, 14-byte burst decoding, raw conversion to g/dps/temperature units, and JSONL telemetry formatting
+- static source checks for the MPU6050-only firmware boundary
+- Keil target isolation under `Objects_MPU6050_Bringup/`
+- previous raw Phase 3.2A and Phase 3.2C evidence hash preservation
+- regression tests for Phase 3.2A, Phase 3.2B, and Phase 3.2C software/evidence contracts
+- local build evidence reporting for the MPU6050 bring-up target when a local build has been run
+
+Future manual testing should follow `docs/openrf1_mpu6050_bringup.md` and must keep private local details out of tracked files.

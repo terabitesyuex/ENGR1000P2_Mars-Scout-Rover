@@ -9,7 +9,8 @@
     "phase3.1",
     "phase3.2a",
     "phase3.2b",
-    "phase3.2c"
+    "phase3.2c",
+    "phase3.2d"
   ],
   "phases": {
     "phase1": {
@@ -700,6 +701,60 @@
             ".verification/phase3.2c/manual_hardware_status.txt"
           ],
           "warning": "Recorded Phase 3.2C physical evidence verifies isolated BMP280 ACK, address 0x76, chip ID 0x58, configuration readback, compensated live temperature/pressure telemetry, and 500 ms periodicity. Absolute temperature/pressure accuracy, long-duration operation, shared-I2C concurrency, and full-hardware operation remain UNVERIFIED."
+        }
+      ]
+    },
+    "phase3.2d": {
+      "display_name": "Phase 3.2D",
+      "required_files": [
+        "docs/openrf1_mpu6050_bringup.md",
+        "firmware/openrf1/mpu6050_bringup/board_config.h",
+        "firmware/openrf1/mpu6050_bringup/main_mpu6050_bringup.c",
+        "firmware/openrf1/mpu6050_bringup/platform_mpu6050_bringup.c",
+        "firmware/openrf1/mpu6050_bringup/platform_mpu6050_bringup.h",
+        "firmware/openrf1/mpu6050_bringup/telemetry_mpu6050_bringup.c",
+        "firmware/openrf1/mpu6050_bringup/telemetry_mpu6050_bringup.h",
+        "firmware/openrf1/full_hardware/mpu6050.c",
+        "firmware/openrf1/full_hardware/mpu6050.h",
+        "firmware/openrf1/keil/OpenRF1_MPU6050_Bringup.uvprojx",
+        "firmware/openrf1/keil/RTE/_OpenRF1_MPU6050_Bringup/RTE_Components.h",
+        "pc/src/rplidar_c1_tools/openrf1_mpu6050_bringup.py",
+        "pc/tests/test_openrf1_mpu6050_bringup.py",
+        "tools/audit_phase32d.py"
+      ],
+      "targeted": [
+        "pc/tests/test_openrf1_mpu6050_bringup.py"
+      ],
+      "regression": [
+        "pc/tests/test_openrf1_bmp280_bringup.py",
+        "pc/tests/test_phase32c_physical_evidence.py",
+        "pc/tests/test_phase32b_foundation.py",
+        "pc/tests/test_openrf1_phase32b_firmware_foundation.py",
+        "pc/tests/test_openrf1_bh1750.py",
+        "pc/tests/test_phase32a_physical_evidence.py",
+        "pc/tests/test_openrf1_firmware_foundation.py",
+        "pc/tests/test_stm32_sensor_protocol.py",
+        "pc/tests/test_stm32_recording_bridge.py",
+        "pc/tests/test_phase3_current_plan.py"
+      ],
+      "full": [
+        "pc/tests"
+      ],
+      "python_commands": [
+        {
+          "label": "Phase 3.2D MPU6050 bring-up audit",
+          "args": [
+            "tools/audit_phase32d.py",
+            "--audit-output",
+            ".verification/phase3.2d/software_audit.txt",
+            "--manual-output",
+            ".verification/phase3.2d/manual_hardware_status.txt"
+          ],
+          "expected_files": [
+            ".verification/phase3.2d/software_audit.txt",
+            ".verification/phase3.2d/manual_hardware_status.txt"
+          ],
+          "warning": "Phase 3.2D is SOFTWARE_READY only. MPU6050 ACK, WHO_AM_I, configuration readback, live IMU telemetry, calibration, axis orientation, shared-I2C concurrency, and full-hardware operation remain UNVERIFIED."
         }
       ]
     }

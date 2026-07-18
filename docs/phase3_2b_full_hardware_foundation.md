@@ -199,11 +199,19 @@ Full-hardware Phase 3.2B build:
 
 The full-hardware project must emit `Objects_FullHardware/OpenRF1_FullHardware.hex` and must not overwrite `Objects/OpenRF1_BH1750.hex`.
 
+Isolated Phase 3.2D MPU6050 build:
+
+```powershell
+& "$env:USERPROFILE\AppData\Local\Keil_v5\UV4\UV4.exe" -b firmware\openrf1\keil\OpenRF1_MPU6050_Bringup.uvprojx
+```
+
+The MPU6050 bring-up project must emit `Objects_MPU6050_Bringup/OpenRF1_MPU6050_Bringup.hex` and must not overwrite the BH1750, BMP280, or full-hardware outputs. Building is software evidence only; flashing and sensor validation remain manual.
+
 ## Incremental Bring-Up Order
 
 1. Preserve the recorded BH1750-only physical evidence and repeat only if wiring changes.
 2. Validate BMP280 alone at 3.3 V on the shared I2C signal bus.
-3. Validate MPU6050 alone at 5 V with AD0 -> GND.
+3. Validate MPU6050 alone at 5 V with AD0 -> GND using the Phase 3.2D target.
 4. Validate all three I2C devices together without tying their VCC rails together.
 5. Validate TCRT5000 raw inputs at 3.3 V.
 6. Measure Hall `S` voltage in both magnetic states before connecting it to an STM32 input.
