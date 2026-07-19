@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-07-19 - Single RPLIDAR C1 Inventory Rebaseline
+
+- Corrected the authoritative physical inventory from two RPLIDAR C1 units to one `RPLIDAR C1M1-R2`; `c1_1` is the only current physical LiDAR sensor.
+- Rebaselined current plans, defaults, examples, Phase 2.5 acceptance requirements, and verification workflows around one C1.
+- Preserved Phase 4A and Phase 4B implementations and numerical behavior.
+- Retained backward compatibility for historical or explicitly synthetic multi-LiDAR version-1 recordings, including `c1_2` fixtures.
+- Clarified that old `c1_2` artifacts are not current physical-inventory evidence.
+- No hardware testing occurred, no real C1 acceptance result was claimed, and nothing was pushed or merged.
+
 ## 2026-07-19 - Phase 4B Closed-Loop Wheel-Speed Control and Motion Safety Foundation
 
 - Added immutable, hardware-independent command, wheel-limit, PID, watchdog, safety, controller-state, and motion-control snapshot models that reuse Phase 4A conventions.

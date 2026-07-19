@@ -12,11 +12,11 @@ Electrical safety is the first project priority. Do not connect live hardware un
 | Black | GND | Controller and supply ground |
 | Fifth position | Unused | Leave unused |
 
-These wire functions preserve the verified C1 harness profile. They do not prove that either physical C1 is currently connected.
+These wire functions preserve the verified C1 harness profile. They do not prove that the one physical C1 is currently connected.
 
 ## Block-Level Inventory
 
-- RPLIDAR C1 x2.
+- RPLIDAR C1M1-R2 x1 (`c1_1`).
 - HC-SR04 x3.
 - TCRT5000 x2.
 - BH1750 x1.
@@ -37,7 +37,7 @@ These wire functions preserve the verified C1 harness profile. They do not prove
 - Black GND must share common ground with the controller and supply.
 - Do not connect LiDAR TX to TX or LiDAR RX to RX.
 - Do not drive LiDAR RX from a USB adapter and ESP32 at the same time.
-- Dual-C1 ESP32 wiring is UNVERIFIED.
+- Future second-C1 ESP32 wiring is NOT CURRENT SCOPE and remains UNVERIFIED.
 - ESP32-C3 GPIO21/GPIO20 are CONFIRMED_MODULE_EVIDENCE for the proposed module-side UART pins; OpenRF1 USART3 connector-to-MCU mapping remains UNVERIFIED.
 - Exact UART assignment is UNVERIFIED.
 
@@ -222,6 +222,6 @@ Physical connector orientation, cable orientation, TCRT output topology, TCRT ac
 - Verify common ground.
 - Verify connector orientation.
 - Verify current margin under motor load.
-- Verify each C1 independently before any dual-C1 wiring.
+- Verify the one `c1_1` unit before any future inventory expansion; dual-C1 wiring is NOT CURRENT SCOPE.
 - Verify STM32-ESP32 physical link before relying on transferred sensor data.
 - Label each neutral sensor ID after installation evidence exists.

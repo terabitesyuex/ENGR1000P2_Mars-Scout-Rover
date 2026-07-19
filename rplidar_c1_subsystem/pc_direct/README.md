@@ -1,6 +1,6 @@
 # SUPERSEDED HISTORICAL COPY
 
-This nested document is not current PC-direct guidance. Use repository-root `pc_direct/README.md`; Phase 2.5 must test `c1_1` and `c1_2` independently.
+This nested document is a superseded historical copy, not current PC-direct guidance. Use repository-root `pc_direct/README.md`; the current physical acceptance target is one `c1_1`. Any `c1_2` references here are HISTORICAL.
 
 # PC-Direct Verification
 

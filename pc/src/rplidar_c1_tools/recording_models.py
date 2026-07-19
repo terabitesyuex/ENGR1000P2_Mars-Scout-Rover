@@ -212,7 +212,7 @@ class MotionControlRecordSample:
 
 def default_sensor_inventory(
     *,
-    lidar_count: int = 2,
+    lidar_count: int = 1,
     include_auxiliary: bool = True,
 ) -> tuple[SensorDefinition, ...]:
     """Return the neutral planned inventory used by synthetic recordings."""

@@ -2,10 +2,8 @@
 
 Phase 2.5 adds a PC-side software capture boundary for a single RPLIDAR C1 stream. Automated verification uses fixture bytes only; real hardware must be tested manually with an explicit user-verified serial port.
 
-Both physical RPLIDAR C1 units must be tested independently:
-
-- `c1_1`
-- `c1_2`
+The current physical inventory has one RPLIDAR C1M1-R2, identified as `c1_1`.
+Historical recordings may contain `c1_2`; that ID is retained only for compatibility.
 
 Planned hardware path:
 
@@ -13,7 +11,7 @@ Planned hardware path:
 RPLIDAR C1 -> original XH2.54 cable -> supplied USB adapter -> PC
 ```
 
-Manual Phase 2.5 steps for each unit:
+Manual Phase 2.5 steps for the one physical unit:
 
 1. Confirm supply voltage, polarity, connector orientation, and common ground.
 2. List serial ports.
@@ -44,4 +42,4 @@ Fixture-only smoke command:
 python -m rplidar_c1_tools.cli capture-c1 --sensor-id c1_1 --sample-hex 3d0100a00f3e012da00f3e015aa00f3e0187a00f --frames 1 --points-per-frame 4 --read-chunk-size 5 --output .verification\phase2.5\c1_1_fixture.jsonl --overwrite
 ```
 
-One stable C1 is the baseline integration target. Simultaneous dual-C1 operation remains optional and UNVERIFIED until later feasibility tests.
+`c1_1` is the sole baseline integration target. Simultaneous dual-C1 operation is NOT CURRENT SCOPE.

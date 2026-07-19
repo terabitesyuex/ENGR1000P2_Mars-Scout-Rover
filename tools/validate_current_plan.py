@@ -35,9 +35,9 @@ class RequiredSnippet:
 
 
 REQUIRED_SNIPPETS = (
-    RequiredSnippet("README.md", "RPLIDAR C1 x2", "two C1 units documented"),
-    RequiredSnippet("README.md", "one stable C1", "one-C1 baseline documented"),
-    RequiredSnippet("README.md", "simultaneous dual-C1", "dual-C1 optional status documented"),
+    RequiredSnippet("README.md", "RPLIDAR C1M1-R2 x1", "single current C1 inventory documented"),
+    RequiredSnippet("README.md", "only active LiDAR integration target", "one-C1 baseline documented"),
+    RequiredSnippet("README.md", "no current dual-C1 feasibility evaluation", "dual-C1 out-of-scope status documented"),
     RequiredSnippet("README.md", "WiFi", "WiFi baseline documented"),
     RequiredSnippet("README.md", "ROS and a vehicle-mounted Linux computer are not required", "ROS/Linux non-goal documented"),
     RequiredSnippet("PROJECT_SPEC.md", "mandatory requirements", "authoritative requirements section"),

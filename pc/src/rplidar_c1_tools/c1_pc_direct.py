@@ -347,7 +347,13 @@ def capture_c1_session(
     if config.sensor_id != driver.sensor_id:
         raise ValueError("config sensor_id must match driver sensor_id")
     output = Path(output_path)
-    sensor_inventory = default_sensor_inventory(lidar_count=2, include_auxiliary=False)
+    # Current captures declare only c1_1. An explicit c1_2 request remains a
+    # backward-compatible fixture path and gets the legacy two-stream header.
+    inventory_count = 2 if config.sensor_id == "c1_2" else 1
+    sensor_inventory = default_sensor_inventory(
+        lidar_count=inventory_count,
+        include_auxiliary=False,
+    )
     with MultiSensorRecorder(
         output,
         sensor_inventory=sensor_inventory,
@@ -356,7 +362,7 @@ def capture_c1_session(
             "source": "pc_direct_c1",
             "captured_sensor_id": config.sensor_id,
             "hardware_validation": "manual_required",
-            "dual_c1_simultaneous": "not_attempted",
+            "dual_c1_simultaneous": "not_current_scope",
         },
         overwrite=overwrite,
     ) as recorder:

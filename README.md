@@ -58,7 +58,7 @@ See `docs/phase4b_closed_loop_motion_control_foundation.md` for equations, safet
 
 Ranging:
 
-- RPLIDAR C1 x2.
+- RPLIDAR C1M1-R2 x1.
 - HC-SR04 ultrasonic sensor x3.
 
 Motion and pose:
@@ -85,9 +85,9 @@ Controllers and chassis:
 - Four mecanum wheels.
 - Existing rover chassis.
 
-Use neutral sensor IDs until installation is physically verified: `c1_1`, `c1_2`, `ultrasonic_1`, `ultrasonic_2`, `ultrasonic_3`, `tcrt5000_1`, `tcrt5000_2`, `bh1750_1`, `bmp280_1`, `mpu6050_1`, and `hall_1`.
+Use neutral sensor IDs until installation is physically verified: `c1_1`, `ultrasonic_1`, `ultrasonic_2`, `ultrasonic_3`, `tcrt5000_1`, `tcrt5000_2`, `bh1750_1`, `bmp280_1`, `mpu6050_1`, and `hall_1`. Historical version-1 recordings and explicitly synthetic compatibility fixtures may contain `c1_2`.
 
-Two C1 units physically exist. Both must be tested independently in Phase 2.5. One stable C1 is the baseline integration target. Simultaneous dual-C1 use is optional and remains UNVERIFIED until UART, GPIO, bandwidth, buffering, timing, and power feasibility are proven.
+Exactly one physical RPLIDAR C1M1-R2 is available. `c1_1` is the only current physical LiDAR sensor and the only active LiDAR integration target. Physical acceptance remains UNVERIFIED. There is no current requirement to compare two physical units, no current dual-C1 integration phase, and no current dual-C1 feasibility evaluation. A future second C1 requires an explicit inventory change and new electrical, power, UART, bandwidth, buffering, timing, mounting, synchronization, and safety validation.
 
 The software pipeline can now accept a bounded PC-direct C1 byte stream and save it as JSONL. Real physical C1 operation still requires manual Phase 2.5 hardware evidence before it can be marked VERIFIED.
 
@@ -238,10 +238,10 @@ Phase 2.3 polar view shows zero degrees at the top and positive angles countercl
 
 Phase 2.4 implements a human-readable, streamable UTF-8 JSON Lines format named `mars_scout_multisensor_recording` version `1`. The first line is a header containing the sensor inventory. Each following line is one complete record.
 
-Create a deterministic two-C1 room session with auxiliary synthetic streams:
+Create the current one-C1 room session with auxiliary synthetic streams:
 
 ```powershell
-python -m rplidar_c1_tools.cli record-synthetic --scene room --frames 3 --lidar-count 2 --include-aux --output .verification\phase2.4\synthetic_multisensor_room.jsonl
+python -m rplidar_c1_tools.cli record-synthetic --scene room --frames 3 --lidar-count 1 --include-aux --output .verification\phase2.4\synthetic_multisensor_room.jsonl
 ```
 
 Inspect the recording:
@@ -319,7 +319,7 @@ The verifier checks Git state, Python selection, pytest import, targeted tests, 
 ## Revised Roadmap
 
 - Phase 2.4: multi-sensor recording, replay, reproducible datasets, current hardware inventory update, and project-plan rebaseline.
-- Phase 2.5: PC-direct testing of both RPLIDAR C1 units separately, real scan acquisition, distance/orientation checks, device identification, recording, and visualization.
+- Phase 2.5: PC-direct acceptance planning for one physical `c1_1`, real scan acquisition, distance/orientation checks, device identification, recording, and visualization; physical acceptance remains UNVERIFIED.
 - Phase 3.1: STM32 low-rate sensor telemetry software foundation, deterministic simulator, PC parser, recording bridge, and manual bring-up checklist.
 - Phase 3.2A: OpenRF1 STM32F103RCT6 + GY-302/BH1750 firmware foundation, mocked serial-capture workflow, and manual bring-up procedure.
 - Phase 3.2B: OpenRF1 multisensor and communications software foundation; physical integration remains future manual validation.
@@ -331,7 +331,7 @@ The verifier checks Git state, Python selection, pytest import, targeted tests, 
 - Phase 4B: software-only closed-loop wheel-speed control, command shaping, watchdog, local safety arbitration, and deterministic synthetic wheel-plant foundation.
 - Phase 4C: future real motor/encoder bring-up, physical direction discovery, electrical validation, and timer/interrupt/PWM validation.
 - Later Phase 4 hardware/control work: wheel encoder acquisition, measured geometry/sign configuration, MPU6050 integration, motor control, closed-loop motion, calibration, and physical odometry validation.
-- Phase 5: STM32-ESP32-computer communication, WiFi transport, one-C1 baseline integration, then optional dual-C1 feasibility evaluation.
+- Phase 5: STM32-ESP32-computer communication, WiFi transport, and one-C1 baseline integration. A second C1 is a future out-of-scope extension requiring a new inventory and feasibility review.
 - Phase 6: real-time PC visualization, rover trajectory, and short-range encoder/IMU-assisted accumulated 2D mapping.
 - Phase 7: local autonomous obstacle stop/turn behavior.
 - Phase 8: full Mars-like venue integration, environmental experiments, validation, reliability testing, and final presentation evidence.

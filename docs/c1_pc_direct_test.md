@@ -1,6 +1,6 @@
 # C1 PC-Direct Test Plan
 
-Phase 2.5 adds the PC-side software boundary for direct RPLIDAR C1 acquisition. Automated tests use mocked byte streams. They do not open serial ports and do not prove either physical unit works.
+Phase 2.5 adds the PC-side software boundary for direct RPLIDAR C1 acquisition. Automated tests use mocked byte streams. They do not open serial ports and do not prove the physical unit works.
 
 ## Scope
 
@@ -23,31 +23,30 @@ Not implemented:
 - SLAM.
 - Navigation.
 - Obstacle avoidance.
-- Dual-C1 simultaneous operation.
+- Dual-C1 simultaneous operation (NOT CURRENT SCOPE).
 - Automated access to real serial ports.
 
 ## Hardware Assumptions
 
 CONFIRMED:
 
-- RPLIDAR C1 x2 are available.
+- Exactly one RPLIDAR C1M1-R2 is available; its current neutral ID is `c1_1`.
 - Verified C1 UART value is 460800 baud, 8N1, 3.3 V TTL.
 - Verified C1 supply range is 4.8 V to 5.2 V.
 - Verified C1 wire functions are preserved in `HARDWARE_LOCK.md`.
 
 PLANNED:
 
-- Test `c1_1` and `c1_2` independently by PC-direct methods.
-- Use one stable C1 as the Phase 2.5 baseline.
+- Test `c1_1` by PC-direct methods as the sole Phase 2.5 physical acceptance target.
 - Use captured `ScanFrame` data with existing recording, replay, and visualization tools.
 
 UNVERIFIED:
 
-- Individual C1 serial IDs.
-- Individual C1 hardware revisions.
-- Operational status of either physical C1.
+- C1 serial ID.
+- C1 hardware revision.
+- Operational status of the physical C1.
 - Final mounting position or orientation.
-- Simultaneous dual-C1 operation.
+- Any future second-C1 operation.
 - Any COM port name.
 - Any ESP32 GPIO or UART assignment.
 
@@ -97,9 +96,9 @@ python -m rplidar_c1_tools.cli replay-recording data\raw\c1_1_pc_direct.jsonl --
 python -m rplidar_c1_tools.cli render-recording data\raw\c1_1_pc_direct.jsonl --sensor-id c1_1 --output-dir data\decoded\c1_1_pc_direct
 ```
 
-8. Repeat independently for `c1_2`.
+8. Preserve the recording and evidence as the one-device `c1_1` acceptance record. Do not infer physical success from fixture output.
 
-Do not connect or run both units simultaneously in Phase 2.5.
+Do not connect a second C1 for Phase 2.5; dual-C1 work is NOT CURRENT SCOPE.
 
 ## Acceptance Evidence
 

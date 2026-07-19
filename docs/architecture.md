@@ -6,7 +6,7 @@ The rover architecture separates hardware access, transport, data models, algori
 
 Ranging:
 
-- RPLIDAR C1 x2, neutral IDs `c1_1` and `c1_2`.
+- RPLIDAR C1M1-R2 x1, current physical ID `c1_1`.
 - HC-SR04 x3, neutral IDs `ultrasonic_1`, `ultrasonic_2`, `ultrasonic_3`.
 
 Motion and pose:
@@ -103,12 +103,12 @@ The Phase 2.4 JSONL recording format is a PC-side reproducibility format. Phase 
 
 Phase 4A adds pure host-side kinematics and odometry records to the same version-1 telemetry and recording containers. It has no hardware adapter and does not read encoders, motors, serial ports, GPIO, timers, or MPU6050 data. Explicit configuration separates later hardware acquisition from the mathematical layer.
 
-## Two-C1 Policy
+## Single-C1 Policy
 
-- Two C1 units are available.
-- Phase 2.5 must test both independently.
-- One stable C1 is the baseline integration target.
-- Simultaneous dual-C1 operation is optional and remains UNVERIFIED until UART, GPIO, bandwidth, buffering, timing, and power feasibility are measured.
+- Exactly one physical C1 is available and `c1_1` is the only active LiDAR integration target.
+- Phase 2.5 acceptance covers this one device only and remains UNVERIFIED until physical evidence is recorded.
+- There is no current dual-C1 integration or feasibility-evaluation phase.
+- A future second C1 requires an explicit inventory change and new electrical, power, UART, bandwidth, buffering, timing, mounting, synchronization, and safety validation.
 - Final exact LiDAR-derived avoidance ownership is not yet locked.
 
 ## Current Phase Scope

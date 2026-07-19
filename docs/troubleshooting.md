@@ -22,7 +22,7 @@ Missing header:
 Duplicate sensor ID:
 
 - Sensor IDs in `sensor_inventory` must be unique.
-- Use neutral IDs such as `c1_1` and `c1_2`.
+- Use the current physical neutral ID `c1_1`. Historical recordings may contain `c1_2`.
 
 Unknown sensor ID:
 
@@ -48,10 +48,10 @@ Replay timing:
 - `replay-recording` is immediate by default.
 - Timed replay is available for tests and experiments, but tests should inject fake sleep functions.
 
-Two-C1 filtering:
+Single-C1 filtering:
 
-- Use `--sensor-id c1_1` or `--sensor-id c1_2` for single-sensor replay.
-- Simultaneous dual-C1 hardware operation remains UNVERIFIED.
+- Use `--sensor-id c1_1` for current single-sensor replay. The explicit `c1_2` option is retained only for old version-1 compatibility recordings.
+- Simultaneous dual-C1 hardware operation is NOT CURRENT SCOPE.
 
 Visualization from replay:
 
@@ -88,8 +88,7 @@ Recording integration:
 
 Dual-C1:
 
-- Test `c1_1` and `c1_2` independently.
-- Do not run simultaneous dual-C1 operation in Phase 2.5.
+- NOT CURRENT SCOPE. Do not infer a second physical device from historical `c1_2` records or image filenames.
 
 ## Phase 3.1 STM32 Telemetry
 

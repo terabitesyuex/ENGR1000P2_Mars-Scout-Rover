@@ -10,7 +10,7 @@ The project inventory was rebaselined for Phase 2.4. This update adds newly conf
 
 Ranging:
 
-- RPLIDAR C1 x2.
+- RPLIDAR C1M1-R2 x1.
 - HC-SR04 ultrasonic sensor x3.
 
 Motion and pose:
@@ -42,7 +42,6 @@ Controllers and chassis:
 Neutral planned sensor IDs:
 
 - `c1_1`
-- `c1_2`
 - `ultrasonic_1`
 - `ultrasonic_2`
 - `ultrasonic_3`
@@ -206,11 +205,11 @@ PC planned responsibilities:
 
 ## UNVERIFIED VALUES
 
-- Individual C1 serial IDs: UNVERIFIED.
-- Individual C1 revisions: UNVERIFIED.
-- Both C1 units' operational status: UNVERIFIED.
+- C1 serial ID: UNVERIFIED.
+- C1 revision: UNVERIFIED.
+- Physical C1 operational status: UNVERIFIED.
 - Final C1 placement and orientation: UNVERIFIED.
-- Simultaneous dual-C1 architecture: UNVERIFIED and optional.
+- Dual-C1 integration: NOT CURRENT SCOPE.
 - exact ESP32 module UART GPIOs: CONFIRMED_MODULE_EVIDENCE for GPIO21 TX and GPIO20 RX; physical link UNVERIFIED.
 - exact OpenRF1 UART assignment: UNVERIFIED.
 - exact STM32-ESP32 connector: UNVERIFIED.
@@ -245,7 +244,7 @@ PC planned responsibilities:
 ## FUTURE TESTS
 
 - Test `c1_1` PC-direct through the supplied adapter.
-- Test `c1_2` PC-direct through the supplied adapter.
+- Test the one physical `c1_1` PC-direct through the supplied adapter.
 - Record device information with only redacted serial identifiers.
 - Measure distance and orientation against known references.
 - Verify supply voltage, polarity, current margin, ripple, and common ground before controller wiring.
@@ -258,7 +257,7 @@ PC planned responsibilities:
 - PC-direct capture software can consume a user-provided serial port or a test fixture byte stream.
 - Automated Phase 2.5 tests use fixture bytes only and do not open serial ports.
 - No physical PC-direct capture has been run by repository automation.
-- `c1_1` and `c1_2` operational status remain UNVERIFIED until independent manual tests are documented.
+- `c1_1` operational status remains UNVERIFIED until the one-device manual test is documented.
 - No COM port, mounting orientation, serial identifier, or hardware revision is inferred by software.
 
 ## Phase 3.1 Software Boundary Status

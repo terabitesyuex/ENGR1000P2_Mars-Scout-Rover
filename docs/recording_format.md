@@ -39,8 +39,8 @@ Example:
 
 Neutral IDs are used until mounting is physically verified:
 
-- `c1_1`
-- `c1_2`
+- `c1_1` (current physical LiDAR)
+- `c1_2` (historical or explicitly synthetic compatibility stream only)
 - `ultrasonic_1`
 - `ultrasonic_2`
 - `ultrasonic_3`
@@ -84,7 +84,7 @@ All non-header records include:
 
 Fields:
 
-- `sensor_id`: `c1_1` or `c1_2`.
+- `sensor_id`: a declared LiDAR stream ID. Current hardware uses `c1_1`; old version-1 recordings may declare `c1_2`.
 - `frame_id`
 - `source`
 - `metadata`
@@ -221,7 +221,7 @@ Fields:
 
 Fields:
 
-- `sensor_id`: `c1_1` or `c1_2`.
+- `sensor_id`: a declared LiDAR transport stream ID. Current hardware uses `c1_1`; old version-1 recordings may declare `c1_2`.
 - `rx_bytes`
 - `bytes_read`
 - `overflow_count`
@@ -288,10 +288,12 @@ Each record has `status: software_derived`, `origin: synthetic_phase4b_motion_co
 
 ## CLI Examples
 
-Create a deterministic two-C1 room session with auxiliary streams:
+Create the current one-C1 room session with auxiliary streams:
 
 ```powershell
-python -m rplidar_c1_tools.cli record-synthetic --scene room --frames 3 --lidar-count 2 --include-aux --output .verification\phase2.4\synthetic_multisensor_room.jsonl
+python -m rplidar_c1_tools.cli record-synthetic --scene room --frames 3 --lidar-count 1 --include-aux --output .verification\phase2.4\synthetic_multisensor_room.jsonl
+
+Explicit synthetic multi-LiDAR compatibility coverage may request `--lidar-count 2`; that output is SYNTHETIC and is not current physical inventory evidence.
 ```
 
 Inspect:

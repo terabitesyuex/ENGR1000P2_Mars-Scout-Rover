@@ -120,7 +120,7 @@ def main() -> int:
     record.add_argument("--scene", choices=("circle", "room"), default="room")
     record.add_argument("--output", type=Path, required=True)
     record.add_argument("--frames", type=_positive_int, default=3)
-    record.add_argument("--lidar-count", type=int, choices=(1, 2), default=2)
+    record.add_argument("--lidar-count", type=int, choices=(1, 2), default=1)
     record.add_argument("--point-count", type=_positive_int, default=360)
     record.add_argument("--include-aux", action="store_true")
     record.add_argument("--overwrite", action="store_true")

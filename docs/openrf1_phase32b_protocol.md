@@ -51,7 +51,7 @@ Payload fields:
 
 ### `lidar_transport_stats`
 
-Sensor ID: `c1_1` or `c1_2`.
+Sensor ID: current hardware uses `c1_1`; generic compatibility records may use `c1_2`.
 
 Payload fields:
 

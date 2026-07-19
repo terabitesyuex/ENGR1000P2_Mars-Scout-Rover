@@ -204,7 +204,7 @@ def capture_stm32_serial_telemetry(
         if recording_path is not None:
             recorder = MultiSensorRecorder(
                 recording_path,
-                sensor_inventory=default_sensor_inventory(lidar_count=2, include_auxiliary=True),
+                sensor_inventory=default_sensor_inventory(lidar_count=1, include_auxiliary=True),
                 metadata={
                     "source": "stm32_serial_capture",
                     "sensor_id": OPENRF1_BH1750_SENSOR_ID,

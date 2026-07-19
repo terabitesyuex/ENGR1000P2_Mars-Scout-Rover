@@ -35,16 +35,16 @@ This repository is the ENGR1000P2 Mars Scout Rover software and documentation ba
 
 ## Confirmed Inventory
 
-- Ranging: RPLIDAR C1 x2 and HC-SR04 x3.
+- Ranging: RPLIDAR C1M1-R2 x1 and HC-SR04 x3.
 - Motion and pose: four wheel encoders and MPU6050 x1.
 - Ground and landmark: TCRT5000 x2 for edge/drop detection and Hall sensor module x1 for magnetic landmark/checkpoint detection.
 - Environment: BH1750 x1 for illuminance in lux and BMP280 x1 for temperature and atmospheric pressure.
 - Controllers and chassis: STM32 controller board x1, ESP32 board x1, battery/power system, four encoded motors, four mecanum wheels, and existing rover chassis.
 - Phase 3.2A controller target for BH1750 bring-up: OpenRF1 robot controller with STM32F103RCT6, software I2C on PB1/SCL and PC3/SDA, and USART1 PA9/PA10 at 115200 8N1.
 
-Use neutral sensor IDs until mounting is physically verified: `c1_1`, `c1_2`, `ultrasonic_1`, `ultrasonic_2`, `ultrasonic_3`, `tcrt5000_1`, `tcrt5000_2`, `bh1750_1`, `bmp280_1`, `mpu6050_1`, and `hall_1`.
+Use neutral sensor IDs until mounting is physically verified: `c1_1`, `ultrasonic_1`, `ultrasonic_2`, `ultrasonic_3`, `tcrt5000_1`, `tcrt5000_2`, `bh1750_1`, `bmp280_1`, `mpu6050_1`, and `hall_1`. Historical version-1 recordings and explicitly synthetic compatibility fixtures may still contain `c1_2`.
 
-Two C1 units are available. Phase 2.5 must test both independently. One stable C1 is the baseline integration target; simultaneous dual-C1 operation is optional and remains UNVERIFIED until UART, GPIO, bandwidth, buffering, timing, and power feasibility are proven.
+Exactly one physical RPLIDAR C1M1-R2 is available. `c1_1` is the only current physical LiDAR sensor and the only active LiDAR integration target. Physical acceptance remains UNVERIFIED. There is no current requirement to compare two physical units, no current dual-C1 integration phase, and no current dual-C1 feasibility evaluation. A future second C1 would require an explicit inventory change plus new electrical, power, UART, bandwidth, buffering, timing, mounting, synchronization, and safety validation.
 
 ## Responsibility Split
 
@@ -79,7 +79,7 @@ Do not treat BH1750 communication failures as zero-lux readings; valid darkness 
 ## Phase Order
 
 - Phase 2.4: multi-sensor recording, replay, reproducible datasets, inventory update, and plan rebaseline.
-- Phase 2.5: PC-direct testing of both C1 units separately, real scan acquisition, device identification, recording, and visualization.
+- Phase 2.5: PC-direct acceptance planning for the one physical `c1_1`, real scan acquisition, device identification, recording, and visualization; physical acceptance remains UNVERIFIED.
 - Phase 3.1: STM32 low-rate sensor telemetry software foundation, simulator, parser, recording bridge, and manual bring-up checklist.
 - Phase 3.2A: OpenRF1 STM32F103RCT6 + GY-302/BH1750 firmware foundation and mocked PC serial-capture workflow.
 - Phase 3.2B: OpenRF1 multisensor and communications software foundation for proposed wiring; physical validation remains manual and UNVERIFIED.
@@ -91,7 +91,7 @@ Do not treat BH1750 communication failures as zero-lux readings; valid darkness 
 - Phase 4B: software-only wheel-speed closed-loop control, command shaping, watchdog, safety arbitration, and deterministic synthetic plant foundation; physical motor/encoder behavior remains UNVERIFIED.
 - Phase 4C: future real motor and encoder hardware bring-up, direction discovery, electrical checks, and timer/interrupt/PWM validation; not started.
 - Later Phase 4 work: encoder hardware acquisition, measured geometry/signs, MPU6050 integration, motor control, closed-loop motion, calibration, and physical odometry validation.
-- Phase 5: STM32-ESP32-PC communication, WiFi transport, one-C1 baseline integration, then optional dual-C1 feasibility evaluation.
+- Phase 5: STM32-ESP32-PC communication, WiFi transport, and one-C1 baseline integration. A second C1 is a future out-of-scope extension requiring a new inventory and feasibility review.
 - Phase 6: real-time PC visualization, rover trajectory, and short-range encoder/IMU-assisted accumulated 2D mapping.
 - Phase 7: local autonomous obstacle stop/turn behavior.
 - Phase 8: Mars-like venue integration, environmental experiments, validation, reliability testing, and final presentation evidence.

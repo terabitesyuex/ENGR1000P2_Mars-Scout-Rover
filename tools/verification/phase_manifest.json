@@ -90,6 +90,7 @@
       "targeted": [
         "pc/tests/test_recording.py",
         "pc/tests/test_replay.py",
+        "pc/tests/test_single_c1_inventory.py",
         "pc/tests/test_current_plan.py"
       ],
       "regression": [
@@ -164,9 +165,7 @@
           ],
           "expected_files": [
             ".verification/phase2.4/c1_1_last_polar.png",
-            ".verification/phase2.4/c1_1_last_point_cloud.png",
-            ".verification/phase2.4/c1_2_last_polar.png",
-            ".verification/phase2.4/c1_2_last_point_cloud.png"
+            ".verification/phase2.4/c1_1_last_point_cloud.png"
           ],
           "warning": "Manual replay visualization inspection is still required."
         }
@@ -177,7 +176,8 @@
       "targeted": [
         "pc/tests/test_c1_pc_direct.py",
         "pc/tests/test_recording.py",
-        "pc/tests/test_replay.py"
+        "pc/tests/test_replay.py",
+        "pc/tests/test_single_c1_inventory.py"
       ],
       "regression": [
         "pc/tests/test_visualization.py",
@@ -262,48 +262,6 @@
             ".verification/phase2.5/c1_1_last_point_cloud.png"
           ],
           "warning": "Manual C1 hardware capture and visual orientation inspection are still required."
-        },
-        {
-          "label": "Phase 2.5 capture c1_2 fixture",
-          "args": [
-            "-m",
-            "rplidar_c1_tools.cli",
-            "capture-c1",
-            "--sensor-id",
-            "c1_2",
-            "--sample-hex",
-            "3d0100a00f3e012da00f3e015aa00f3e0187a00f",
-            "--frames",
-            "1",
-            "--points-per-frame",
-            "4",
-            "--read-chunk-size",
-            "5",
-            "--output",
-            ".verification/phase2.5/c1_2_pc_direct_capture.jsonl",
-            "--overwrite"
-          ],
-          "expected_files": [
-            ".verification/phase2.5/c1_2_pc_direct_capture.jsonl"
-          ]
-        },
-        {
-          "label": "Phase 2.5 render c1_2 fixture",
-          "args": [
-            "-m",
-            "rplidar_c1_tools.cli",
-            "render-recording",
-            ".verification/phase2.5/c1_2_pc_direct_capture.jsonl",
-            "--sensor-id",
-            "c1_2",
-            "--output-dir",
-            ".verification/phase2.5"
-          ],
-          "expected_files": [
-            ".verification/phase2.5/c1_2_last_polar.png",
-            ".verification/phase2.5/c1_2_last_point_cloud.png"
-          ],
-          "warning": "Simultaneous dual-C1 operation remains UNVERIFIED."
         }
       ]
     },

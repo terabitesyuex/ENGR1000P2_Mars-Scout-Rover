@@ -1,6 +1,6 @@
 # SUPERSEDED HISTORICAL COPY
 
-This nested document is not the current project specification. Use the repository-root `PROJECT_SPEC.md` for the Phase 2.4 authoritative scope, two-C1 policy, sensor inventory, and phase order. Historical statements below may describe earlier single-C1 assumptions.
+This nested document is a superseded historical copy, not the current project specification. Use the repository-root `PROJECT_SPEC.md` for the authoritative single-C1 scope, sensor inventory, and phase order. Historical statements below are HISTORICAL and do not describe current hardware.
 
 # Project Specification
 

@@ -26,7 +26,12 @@ from rplidar_c1_tools.replay import inspect_recording, iter_lidar_scans, iter_re
 
 def test_writer_creates_versioned_header_with_two_neutral_c1_ids(tmp_path):
     path = tmp_path / "session.jsonl"
-    with MultiSensorRecorder(path, created_unix_us=123) as recorder:
+    with MultiSensorRecorder(
+        path,
+        created_unix_us=123,
+        sensor_inventory=default_sensor_inventory(lidar_count=2, include_auxiliary=False),
+        metadata={"fixture_scope": "SYNTHETIC multi-LiDAR compatibility"},
+    ) as recorder:
         recorder.write_lidar_scan("c1_1", generate_circle_scan(point_count=4))
         recorder.write_lidar_scan("c1_2", generate_circle_scan(point_count=4))
 
@@ -45,7 +50,11 @@ def test_lidar_recording_preserves_scan_frame_point_order_units_and_pose(tmp_pat
     pose = RoverPose(timestamp_us=0, x_m=1.0, y_m=2.0, yaw_rad=0.25)
     scan = generate_circle_scan(point_count=8, radius_mm=1500, timestamp_us=10, frame_id=7)
 
-    with MultiSensorRecorder(path) as recorder:
+    with MultiSensorRecorder(
+        path,
+        sensor_inventory=default_sensor_inventory(lidar_count=2, include_auxiliary=True),
+        metadata={"fixture_scope": "SYNTHETIC multi-LiDAR compatibility"},
+    ) as recorder:
         recorder.write_lidar_scan("c1_1", scan, pose=pose)
 
     [record] = list(iter_lidar_scans(path))
@@ -158,7 +167,11 @@ def test_writer_rejects_non_json_nan_payload(tmp_path):
 
 def test_inspection_counts_lidar_and_auxiliary_records(tmp_path):
     path = tmp_path / "session.jsonl"
-    with MultiSensorRecorder(path) as recorder:
+    with MultiSensorRecorder(
+        path,
+        sensor_inventory=default_sensor_inventory(lidar_count=2, include_auxiliary=True),
+        metadata={"fixture_scope": "SYNTHETIC multi-LiDAR compatibility"},
+    ) as recorder:
         recorder.write_lidar_scan("c1_1", generate_circle_scan(point_count=4))
         recorder.write_lidar_scan("c1_2", generate_circle_scan(point_count=4))
         recorder.write_illuminance_sample(IlluminanceSample(timestamp_us=0, illuminance_lux=10.0))

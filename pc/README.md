@@ -74,8 +74,7 @@ Expected output names include:
 
 - `c1_1_last_polar.png`
 - `c1_1_last_point_cloud.png`
-- `c1_2_last_polar.png`
-- `c1_2_last_point_cloud.png`
+- Historical or explicitly synthetic compatibility renders may also use `c1_2_last_polar.png` and `c1_2_last_point_cloud.png`; these are not current physical evidence.
 
 ## PC-Direct C1 Capture
 
