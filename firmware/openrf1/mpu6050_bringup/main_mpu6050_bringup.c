@@ -12,6 +12,9 @@ typedef struct {
     OpenRf1Status init_status;
     uint32_t sequence;
     uint32_t next_sample_ms;
+    int32_t gyro_bias_x_mdps;
+    int32_t gyro_bias_y_mdps;
+    int32_t gyro_bias_z_mdps;
     uint8_t who_am_i;
     uint8_t ready;
 } Mpu6050BringupApp;
@@ -19,6 +22,7 @@ typedef struct {
 static char g_telemetry_buffer[OPENRF1_MPU6050_TELEMETRY_BUFFER_BYTES];
 
 static OpenRf1Status initialize_mpu6050(Mpu6050BringupApp *app);
+static OpenRf1Status calibrate_gyro(Mpu6050BringupApp *app);
 static OpenRf1Status configure_register(Mpu6050BringupApp *app, Mpu6050BringupStage stage, uint8_t reg, uint8_t value, uint8_t *readback);
 static OpenRf1Status verify_final_configuration(Mpu6050BringupApp *app);
 static void emit_startup(Mpu6050BringupApp *app, uint32_t now_ms);
@@ -31,6 +35,9 @@ int main(void) {
 
     openrf1_mpu6050_platform_init();
     app.init_status = initialize_mpu6050(&app);
+    if (app.init_status == OPENRF1_STATUS_OK) {
+        app.init_status = calibrate_gyro(&app);
+    }
     app.ready = app.init_status == OPENRF1_STATUS_OK ? 1u : 0u;
     app.next_sample_ms = openrf1_mpu6050_millis() + OPENRF1_MPU6050_SAMPLE_PERIOD_MS;
     emit_startup(&app, openrf1_mpu6050_millis());
@@ -42,6 +49,47 @@ int main(void) {
             emit_imu_or_error(&app, now_ms);
         }
     }
+}
+
+static OpenRf1Status calibrate_gyro(Mpu6050BringupApp *app) {
+    const uint32_t sample_count = 500u;
+    int64_t sum_x_mdps = 0;
+    int64_t sum_y_mdps = 0;
+    int64_t sum_z_mdps = 0;
+
+    openrf1_mpu6050_delay_ms(5000u);
+
+    for (uint32_t i = 0u; i < sample_count; ++i) {
+        Mpu6050RawSample sample;
+        OpenRf1Status status = mpu6050_read_raw_sample(
+            OPENRF1_MPU6050_ADDRESS_7BIT,
+            &sample
+        );
+        if (status != OPENRF1_STATUS_OK) {
+            return status;
+        }
+
+        sum_x_mdps += mpu6050_gyro_raw_to_mdps(
+            sample.gyro_x_raw,
+            MPU6050_GYRO_RANGE_250DPS
+        );
+        sum_y_mdps += mpu6050_gyro_raw_to_mdps(
+            sample.gyro_y_raw,
+            MPU6050_GYRO_RANGE_250DPS
+        );
+        sum_z_mdps += mpu6050_gyro_raw_to_mdps(
+            sample.gyro_z_raw,
+            MPU6050_GYRO_RANGE_250DPS
+        );
+
+        openrf1_mpu6050_delay_ms(10u);
+    }
+
+    app->gyro_bias_x_mdps = (int32_t)(sum_x_mdps / (int64_t)sample_count);
+    app->gyro_bias_y_mdps = (int32_t)(sum_y_mdps / (int64_t)sample_count);
+    app->gyro_bias_z_mdps = (int32_t)(sum_z_mdps / (int64_t)sample_count);
+
+    return OPENRF1_STATUS_OK;
 }
 
 static OpenRf1Status initialize_mpu6050(Mpu6050BringupApp *app) {
@@ -177,7 +225,10 @@ static void emit_imu_or_error(Mpu6050BringupApp *app, uint32_t now_ms) {
         sizeof(g_telemetry_buffer),
         app->sequence,
         now_ms,
-        &sample
+        &sample,
+        app->gyro_bias_x_mdps,
+        app->gyro_bias_y_mdps,
+        app->gyro_bias_z_mdps
     );
     emit_line(format_status, app);
 }

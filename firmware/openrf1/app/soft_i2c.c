@@ -3,7 +3,7 @@
 #include "board_config.h"
 
 static void i2c_delay(void) {
-    volatile uint16_t ticks = 24u;
+    volatile uint16_t ticks = 240u;
     while (ticks-- > 0u) {
     }
 }

@@ -42,7 +42,10 @@ Mpu6050BringupTelemetryStatus mpu6050_bringup_format_imu(
     size_t buffer_size,
     uint32_t sequence,
     uint32_t timestamp_ms,
-    const Mpu6050RawSample *sample
+    const Mpu6050RawSample *sample,
+    int32_t gyro_bias_x_mdps,
+    int32_t gyro_bias_y_mdps,
+    int32_t gyro_bias_z_mdps
 );
 Mpu6050BringupTelemetryStatus mpu6050_bringup_format_error(
     char *buffer,

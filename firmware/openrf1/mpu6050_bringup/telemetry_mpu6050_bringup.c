@@ -155,7 +155,10 @@ Mpu6050BringupTelemetryStatus mpu6050_bringup_format_imu(
     size_t buffer_size,
     uint32_t sequence,
     uint32_t timestamp_ms,
-    const Mpu6050RawSample *sample
+    const Mpu6050RawSample *sample,
+    int32_t gyro_bias_x_mdps,
+    int32_t gyro_bias_y_mdps,
+    int32_t gyro_bias_z_mdps
 ) {
     if (buffer == 0 || buffer_size == 0u || sample == 0) {
         return MPU6050_BRINGUP_TELEMETRY_INVALID_ARGUMENT;
@@ -164,9 +167,9 @@ Mpu6050BringupTelemetryStatus mpu6050_bringup_format_imu(
     FixedValue accel_x = fixed3_from_milli(mpu6050_accel_raw_to_mg(sample->accel_x_raw, MPU6050_ACCEL_RANGE_2G));
     FixedValue accel_y = fixed3_from_milli(mpu6050_accel_raw_to_mg(sample->accel_y_raw, MPU6050_ACCEL_RANGE_2G));
     FixedValue accel_z = fixed3_from_milli(mpu6050_accel_raw_to_mg(sample->accel_z_raw, MPU6050_ACCEL_RANGE_2G));
-    FixedValue gyro_x = fixed3_from_milli(mpu6050_gyro_raw_to_mdps(sample->gyro_x_raw, MPU6050_GYRO_RANGE_250DPS));
-    FixedValue gyro_y = fixed3_from_milli(mpu6050_gyro_raw_to_mdps(sample->gyro_y_raw, MPU6050_GYRO_RANGE_250DPS));
-    FixedValue gyro_z = fixed3_from_milli(mpu6050_gyro_raw_to_mdps(sample->gyro_z_raw, MPU6050_GYRO_RANGE_250DPS));
+    FixedValue gyro_x = fixed3_from_milli(mpu6050_gyro_raw_to_mdps(sample->gyro_x_raw, MPU6050_GYRO_RANGE_250DPS) - gyro_bias_x_mdps);
+    FixedValue gyro_y = fixed3_from_milli(mpu6050_gyro_raw_to_mdps(sample->gyro_y_raw, MPU6050_GYRO_RANGE_250DPS) - gyro_bias_y_mdps);
+    FixedValue gyro_z = fixed3_from_milli(mpu6050_gyro_raw_to_mdps(sample->gyro_z_raw, MPU6050_GYRO_RANGE_250DPS) - gyro_bias_z_mdps);
     FixedValue temperature = fixed2_from_centi(mpu6050_temperature_raw_to_centideg_c(sample->temperature_raw));
 
     int written = snprintf(
