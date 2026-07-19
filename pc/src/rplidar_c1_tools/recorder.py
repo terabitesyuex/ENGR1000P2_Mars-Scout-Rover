@@ -17,6 +17,7 @@ from .recording_models import (
     ImuSample,
     LidarTransportStatsSample,
     LinkStatusSample,
+    MotionControlRecordSample,
     RoverPose,
     SCHEMA_NAME,
     SCHEMA_VERSION,
@@ -163,6 +164,25 @@ class MultiSensorRecorder:
 
     def write_odometry_pose_sample(self, sample: OdometryPoseSample) -> int:
         return self._write_sample_record("odometry_pose", sample)
+
+    def write_motion_control_sample(
+        self,
+        record_type: str,
+        sample: MotionControlRecordSample,
+    ) -> int:
+        allowed = {
+            "body_motion_command",
+            "wheel_speed_setpoint",
+            "wheel_speed_measurement",
+            "wheel_control_effort",
+            "motion_safety_state",
+            "motion_control_snapshot",
+        }
+        if record_type not in allowed:
+            raise RecordingError("unsupported motion-control record_type")
+        if not isinstance(sample, MotionControlRecordSample):
+            raise RecordingError("sample must be MotionControlRecordSample")
+        return self._write_sample_record(record_type, sample)
 
     def _write_sample_record(self, record_type: str, sample: object) -> int:
         try:

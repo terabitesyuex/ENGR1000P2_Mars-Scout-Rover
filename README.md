@@ -24,8 +24,9 @@ Major enhancements are encoder/IMU-assisted pose estimation, short-range accumul
 - Phase 3.2E: isolated OpenRF1 HC-SR04-only bring-up firmware foundation, PA5/PA4/CN6/TIM6 vendor-documented design lock, required external ECHO divider, Keil target, host-side HC-SR04 tests, and verifier support complete. Physical wiring, trigger/echo pulses, real distance data, timeout behavior, and distance accuracy remain UNVERIFIED.
 - Phase 3.2F: isolated OpenRF1 ground-sensor firmware foundation, X1/PC4 left TCRT5000 mapping, X2/PC5 right TCRT5000 mapping, X3/protected PB0 Hall mapping, X4 conflict documentation, independent debounce, Keil target, host-side tests, and verifier support complete. Physical wiring, voltage levels, active polarity, surface response, magnetic behavior, and serial periodicity remain UNVERIFIED.
 - Phase 4A: standard X-layout mecanum kinematics, explicit wheel-side encoder conversion, body-twist estimation, exact SE(2) odometry integration, deterministic simulation, version-1 telemetry/recording compatibility, tests, documentation, and verifier support complete as a software-only foundation. All rover geometry, encoder resolution/signs, roller orientation, hardware acquisition, and physical odometry accuracy remain UNVERIFIED.
+- Phase 4B: validated body-motion commands, proportional wheel desaturation, acceleration limiting, four independent PID controllers, command watchdog, local safety arbitration, deterministic synthetic wheel plants, version-1 telemetry/recording additions, CLI, tests, documentation, and verifier support complete as a software-only foundation. Real motor/encoder behavior, PWM mapping, physical PID tuning, stopping distance, and closed-loop performance remain UNVERIFIED.
 
-Phase 4A does not implement motor/PWM control, encoder GPIO/timers/interrupts, ESP32 WiFi firmware, mapping, SLAM, navigation, obstacle avoidance, physical C1 validation, MPU6050 fusion, closed-loop motion, or full multisensor hardware integration. Automated tests do not access real COM ports, USB devices, GPIO, timer peripherals, I2C, encoders, motors, flashing tools, WiFi, or sensors.
+Phases 4A and 4B do not implement real motor/PWM control, encoder GPIO/timers/interrupts, ESP32 WiFi firmware, mapping, SLAM, navigation, obstacle avoidance, physical C1 validation, MPU6050 fusion, physical closed-loop motion, or full multisensor hardware integration. Automated tests do not access real COM ports, USB devices, GPIO, timer peripherals, I2C, encoders, motors, flashing tools, WiFi, or sensors.
 
 ## Phase 4A Mecanum Kinematics and Odometry
 
@@ -40,6 +41,18 @@ python -m rplidar_c1_tools.cli simulate-mecanum-odometry --wheel-radius-m 0.05 -
 ```
 
 See `docs/phase4a_mecanum_kinematics_odometry_foundation.md` for formulas, encoder interpretation, SE(2) integration, telemetry/recording fields, and the complete UNVERIFIED hardware boundary.
+
+## Phase 4B Closed-Loop Motion Control
+
+Phase 4B reuses Phase 4A kinematics and adds pure command validation, proportional four-wheel desaturation, per-wheel angular-acceleration limits, derivative-on-measurement PID with conditional anti-windup, four independent controller states, supplied-timestamp watchdog logic, explicit permit-or-stop safety precedence, and a synthetic first-order wheel plant. Normalized effort is dimensionless mathematical output, not PWM or motor voltage.
+
+All geometry, limits, PID values, and plant values used by the CLI are explicit synthetic fixtures:
+
+```powershell
+python -m rplidar_c1_tools.cli simulate-motion-control --wheel-radius-m 0.05 --half-length-m 0.18 --half-width-m 0.16 --max-wheel-speed-rad-s 20 --wheel-acceleration-rad-s2 10 --pid-kp 0.05 --pid-ki 0.02 --pid-kd 0 --pid-output-min -1 --pid-output-max 1 --pid-integral-min -2 --pid-integral-max 2 --plant-gain-rad-s-per-effort 20 --plant-time-constant-s 0.2 --command-timeout-ms 250 --scenario combined_curved_motion --steps 20 --interval-ms 100 --output .verification\phase4b\motion_control.jsonl --overwrite
+```
+
+See `docs/phase4b_closed_loop_motion_control_foundation.md` for equations, safety precedence, telemetry additions, simulator scenarios, and the UNVERIFIED physical boundary.
 
 ## Confirmed Hardware Inventory
 
@@ -269,7 +282,7 @@ Captured files use the existing `mars_scout_multisensor_recording` JSONL schema.
 
 ## Phase Verification
 
-Supported phases include `phase1`, `phase2.1`, `phase2.2`, `phase2.3`, `phase2.4`, `phase2.5`, `phase3.1`, `phase3.2a`, `phase3.2b`, `phase3.2c`, `phase3.2d`, `phase3.2e`, `phase3.2f`, and `phase4a`.
+Supported phases include `phase1`, `phase2.1`, `phase2.2`, `phase2.3`, `phase2.4`, `phase2.5`, `phase3.1`, `phase3.2a`, `phase3.2b`, `phase3.2c`, `phase3.2d`, `phase3.2e`, `phase3.2f`, `phase4a`, and `phase4b`.
 
 Development verification:
 
@@ -283,6 +296,7 @@ Development verification:
 .\tools\verify_phase.cmd phase3.2e -AllowDirty
 .\tools\verify_phase.cmd phase3.2f -AllowDirty
 .\tools\verify_phase.cmd phase4a -AllowDirty
+.\tools\verify_phase.cmd phase4b -AllowDirty
 ```
 
 Normal verification after commit and push:
@@ -297,6 +311,7 @@ Normal verification after commit and push:
 .\tools\verify_phase.cmd phase3.2e
 .\tools\verify_phase.cmd phase3.2f
 .\tools\verify_phase.cmd phase4a
+.\tools\verify_phase.cmd phase4b
 ```
 
 The verifier checks Git state, Python selection, pytest import, targeted tests, regressions, the complete PC suite, and configured smoke workflows. Hardware and safety facts still require physical verification.
@@ -313,6 +328,8 @@ The verifier checks Git state, Python selection, pytest import, targeted tests, 
 - Phase 3.2E: OpenRF1 HC-SR04-only software bring-up firmware; physical wiring, pulses, real distance data, timeout behavior, and accuracy remain unverified.
 - Phase 3.2F: OpenRF1 ground-sensor-only software bring-up firmware; physical wiring, voltage levels, active polarity, surface behavior, magnetic behavior, and serial periodicity remain unverified.
 - Phase 4A: software-only mecanum kinematics, explicit encoder conversion, deterministic body-twist estimation, and SE(2) odometry foundation.
+- Phase 4B: software-only closed-loop wheel-speed control, command shaping, watchdog, local safety arbitration, and deterministic synthetic wheel-plant foundation.
+- Phase 4C: future real motor/encoder bring-up, physical direction discovery, electrical validation, and timer/interrupt/PWM validation.
 - Later Phase 4 hardware/control work: wheel encoder acquisition, measured geometry/sign configuration, MPU6050 integration, motor control, closed-loop motion, calibration, and physical odometry validation.
 - Phase 5: STM32-ESP32-computer communication, WiFi transport, one-C1 baseline integration, then optional dual-C1 feasibility evaluation.
 - Phase 6: real-time PC visualization, rover trajectory, and short-range encoder/IMU-assisted accumulated 2D mapping.

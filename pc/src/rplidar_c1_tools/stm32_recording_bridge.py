@@ -15,6 +15,7 @@ from .recording_models import (
     ImuSample,
     LidarTransportStatsSample,
     LinkStatusSample,
+    MotionControlRecordSample,
     OdometryPoseSample,
     SubsystemStatusSample,
     UltrasonicSample,
@@ -227,6 +228,25 @@ def stm32_message_to_recording_sample(message: Stm32TelemetryMessage) -> tuple[s
         )
         return ("odometry_pose", sample)
 
+    if message.message_type in {
+        "body_motion_command",
+        "wheel_speed_setpoint",
+        "wheel_speed_measurement",
+        "wheel_control_effort",
+        "motion_safety_state",
+        "motion_control_snapshot",
+    }:
+        origin = str(payload.pop("origin"))
+        sample = MotionControlRecordSample(
+            timestamp_us=timestamp_us,
+            sensor_id=message.sensor_id,
+            origin=origin,
+            control_data=payload,
+            status=message.status,
+            source_sequence=source_sequence,
+        )
+        return (message.message_type, sample)
+
     raise ValueError(f"unsupported message_type: {message.message_type}")
 
 
@@ -262,6 +282,15 @@ def bridge_stm32_message_to_recording(
         return recorder.write_body_twist_sample(sample)  # type: ignore[arg-type]
     if record_type == "odometry_pose":
         return recorder.write_odometry_pose_sample(sample)  # type: ignore[arg-type]
+    if record_type in {
+        "body_motion_command",
+        "wheel_speed_setpoint",
+        "wheel_speed_measurement",
+        "wheel_control_effort",
+        "motion_safety_state",
+        "motion_control_snapshot",
+    }:
+        return recorder.write_motion_control_sample(record_type, sample)  # type: ignore[arg-type]
     raise ValueError(f"unsupported record_type: {record_type}")
 
 

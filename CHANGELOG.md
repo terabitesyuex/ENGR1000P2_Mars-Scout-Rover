@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-07-19 - Phase 4B Closed-Loop Wheel-Speed Control and Motion Safety Foundation
+
+- Added immutable, hardware-independent command, wheel-limit, PID, watchdog, safety, controller-state, and motion-control snapshot models that reuse Phase 4A conventions.
+- Added proportional four-wheel desaturation, per-wheel acceleration limiting, derivative-on-measurement PID with explicit conditional anti-windup, four independent controller states, deterministic disable/reset, and safety-stop restart behavior.
+- Added a deterministic synthetic first-order four-wheel plant with canonical motion, shaping, watchdog, emergency-stop, ground-edge, ultrasonic, and slow-wheel scenarios.
+- Extended `mars_scout_stm32_sensor_telemetry` version 1 and `mars_scout_multisensor_recording` version 1 with additive software-derived Phase 4B message/record types.
+- Added `simulate-motion-control`, focused/regression tests, documentation, hygiene auditing, and `phase4b` verifier support. No firmware or hardware-access implementation was added.
+
 All notable subsystem changes are recorded here. Track protocol, GPIO, power, data-format, firmware, and calibration changes explicitly.
 
 ## 2026-07-19 - Phase 4A Mecanum Kinematics and Odometry Foundation

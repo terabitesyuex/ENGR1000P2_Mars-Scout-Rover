@@ -36,6 +36,12 @@ MESSAGE_TYPES = (
     "wheel_angular_velocity",
     "body_twist",
     "odometry_pose",
+    "body_motion_command",
+    "wheel_speed_setpoint",
+    "wheel_speed_measurement",
+    "wheel_control_effort",
+    "motion_safety_state",
+    "motion_control_snapshot",
 )
 
 ULTRASONIC_SENSOR_IDS = ("ultrasonic_1", "ultrasonic_2", "ultrasonic_3")
@@ -51,6 +57,12 @@ WHEEL_ENCODER_DELTA_SENSOR_IDS = ("wheel_encoders",)
 WHEEL_ANGULAR_VELOCITY_SENSOR_IDS = ("mecanum_wheels",)
 BODY_TWIST_SENSOR_IDS = ("rover_body",)
 ODOMETRY_POSE_SENSOR_IDS = ("rover_odometry",)
+BODY_MOTION_COMMAND_SENSOR_IDS = ("motion_command",)
+WHEEL_SPEED_SETPOINT_SENSOR_IDS = ("mecanum_wheel_setpoints",)
+WHEEL_SPEED_MEASUREMENT_SENSOR_IDS = ("mecanum_wheel_measurements",)
+WHEEL_CONTROL_EFFORT_SENSOR_IDS = ("mecanum_wheel_control",)
+MOTION_SAFETY_STATE_SENSOR_IDS = ("motion_safety",)
+MOTION_CONTROL_SNAPSHOT_SENSOR_IDS = ("motion_control",)
 
 SENSOR_IDS_BY_MESSAGE_TYPE = {
     "ultrasonic": ULTRASONIC_SENSOR_IDS,
@@ -66,6 +78,12 @@ SENSOR_IDS_BY_MESSAGE_TYPE = {
     "wheel_angular_velocity": WHEEL_ANGULAR_VELOCITY_SENSOR_IDS,
     "body_twist": BODY_TWIST_SENSOR_IDS,
     "odometry_pose": ODOMETRY_POSE_SENSOR_IDS,
+    "body_motion_command": BODY_MOTION_COMMAND_SENSOR_IDS,
+    "wheel_speed_setpoint": WHEEL_SPEED_SETPOINT_SENSOR_IDS,
+    "wheel_speed_measurement": WHEEL_SPEED_MEASUREMENT_SENSOR_IDS,
+    "wheel_control_effort": WHEEL_CONTROL_EFFORT_SENSOR_IDS,
+    "motion_safety_state": MOTION_SAFETY_STATE_SENSOR_IDS,
+    "motion_control_snapshot": MOTION_CONTROL_SNAPSHOT_SENSOR_IDS,
 }
 
 

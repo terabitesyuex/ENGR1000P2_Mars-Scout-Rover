@@ -133,4 +133,6 @@ Phase 3.2F implements an isolated ground-sensor-only OpenRF1 software bring-up t
 
 Phase 4A implements the standard X-layout mecanum equations, explicit raw-to-mathematical encoder signs, wheel-side count conversion, body-twist estimation, and exact constant-twist SE(2) integration on the host. It is a SOFTWARE_VERIFIED software-only foundation. Actual wheel geometry, resolution, gear ratio, counter width, signs, roller orientation, encoder acquisition, motor control, MPU6050 fusion, wheel slip, and physical accuracy remain UNVERIFIED.
 
+Phase 4B layers pure control stages above Phase 4A: validated body commands, inverse kinematics, proportional wheel desaturation, per-wheel acceleration limits, explicit safety arbitration, four independent PID states, and dimensionless normalized efforts. A separate deterministic first-order synthetic plant feeds Phase 4A forward kinematics and optional pose integration. Hardware adapters remain outside these modules. Phase 4B does not import or access serial, USB, GPIO, I2C, timers, encoders, motors, or sensors.
+
 Emergency stopping remains a local STM32 safety responsibility in the plan. PC mapping occurs later and is short-range accumulated mapping, not a required reusable global SLAM map. ROS is not required.

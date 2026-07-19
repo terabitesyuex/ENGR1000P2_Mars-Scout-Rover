@@ -287,3 +287,14 @@ Pose differs slightly from the requested synthetic scenario:
 
 - The simulator quantizes cumulative encoder counts before reconstructing wheel velocity and body twist. Deterministic quantization is expected.
 - This is not evidence of physical wheel slip, calibration, or odometry accuracy.
+
+## Phase 4B Closed-Loop Motion Control
+
+- If all outputs are zero, inspect `motion_safety_state.stop_reason`, `command_age_ms`, and `targets_replaced_with_zero` before changing PID values.
+- A command becomes stale at `command_age_ms >= command_timeout_ms`; supplied timestamps must be monotonic and no wrap is inferred.
+- If mixed motion changes direction under limiting, verify that desaturation used one shared scale and the Phase 4A wheel order remains front-left, front-right, rear-left, rear-right.
+- If integral state grows during saturation, verify that error is trying to unwind saturation; same-direction saturation must report conditional integration blocked.
+- A first PID update intentionally has zero derivative because no previous measurement exists.
+- Synthetic oscillation or slow-wheel mismatch is evidence about chosen synthetic parameters only. Do not transfer fixture gains to hardware.
+- Normalized effort is not PWM, verified polarity, motor voltage, or a physical safety limit.
+- Phase 4B automation must never open serial/USB, invoke Keil/FlyMcu, or access GPIO, I2C, timers, encoders, motors, or sensors.

@@ -20,6 +20,7 @@ Supported phases:
 - `phase3.2e`
 - `phase3.2f`
 - `phase4a`
+- `phase4b`
 
 Development verification:
 
@@ -33,6 +34,7 @@ Development verification:
 .\tools\verify_phase.cmd phase3.2e -AllowDirty
 .\tools\verify_phase.cmd phase3.2f -AllowDirty
 .\tools\verify_phase.cmd phase4a -AllowDirty
+.\tools\verify_phase.cmd phase4b -AllowDirty
 ```
 
 Normal verification after commit and push:
@@ -47,6 +49,7 @@ Normal verification after commit and push:
 .\tools\verify_phase.cmd phase3.2e
 .\tools\verify_phase.cmd phase3.2f
 .\tools\verify_phase.cmd phase4a
+.\tools\verify_phase.cmd phase4b
 ```
 
 The verifier uses repository-local pytest basetemp under `.verification/pytest_tmp/`, checks Git state, selects Python, confirms pytest import, runs targeted tests, regressions, the complete PC suite, and configured smoke workflows.
@@ -538,3 +541,15 @@ The Phase 4A verifier covers:
 - privacy and generated-artifact tracking scans.
 
 Phase 4A automated tests do not open COM ports, USB devices, GPIO, timers, encoders, motors, I2C, Keil, FlyMcu, flashing tools, network sockets, or sensors. Actual geometry, counts per wheel revolution, gear ratio, counter width, direction signs, roller orientation, acquisition timing, wheel slip, motor behavior, MPU6050 fusion, and physical odometry accuracy remain UNVERIFIED.
+
+## Phase 4B Closed-Loop Motion-Control Foundation Tests
+
+Run:
+
+```powershell
+.\tools\verify_phase.cmd phase4b -AllowDirty
+```
+
+The Phase 4B verifier covers body-command validation; canonical and mixed Phase 4A targets; proportional desaturation; per-wheel acceleration limiting and reversal; derivative-on-measurement PID; positive/negative saturation and conditional anti-windup; recovery, disable, and reset; four independent controller states; supplied-timestamp watchdog boundaries; emergency, controller, communication, edge, ultrasonic, sensor-validity, and external-stop policies; deterministic stop/restart; all 12 synthetic scenarios; slow-wheel mismatch; JSONL parsing; recording conversion and inspection; CLI success/failure/overwrite behavior; Phase 4A and Phase 3 regression tests; the full PC suite; privacy/artifact scans; and source-level no-hardware-import checks.
+
+Phase 4B automated tests do not open COM ports, USB devices, GPIO, I2C, timers, encoders, motors, sensors, network sockets, Keil, FlyMcu, or flashing tools. Motor rotation, encoder acquisition, physical direction, PWM mapping, usable physical PID gains, roller orientation, trajectory following, stopping distance, and real closed-loop performance remain UNVERIFIED.

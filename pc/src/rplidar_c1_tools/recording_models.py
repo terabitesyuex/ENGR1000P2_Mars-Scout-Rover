@@ -198,6 +198,18 @@ class OdometryPoseSample:
     source_sequence: int | None = None
 
 
+@dataclass(frozen=True, slots=True)
+class MotionControlRecordSample:
+    """Preserved validated Phase 4B payload for an additive v1 record type."""
+
+    timestamp_us: int
+    sensor_id: str
+    origin: str
+    control_data: dict[str, Any]
+    status: str = "software_derived"
+    source_sequence: int | None = None
+
+
 def default_sensor_inventory(
     *,
     lidar_count: int = 2,
@@ -314,6 +326,42 @@ def default_sensor_inventory(
                     "software_derived_odometry_pose",
                     "SE(2)-integrated software odometry; not physical accuracy evidence",
                     ("x_m", "y_m", "yaw_rad"),
+                ),
+                SensorDefinition(
+                    "motion_command",
+                    "software_derived_body_motion_command",
+                    "Validated Phase 4B command; not physical motion evidence",
+                    ("m_s", "rad_s", "timestamp_ms"),
+                ),
+                SensorDefinition(
+                    "mecanum_wheel_setpoints",
+                    "software_derived_wheel_speed_setpoint",
+                    "Requested, shaped, and safety-applied mathematical wheel targets",
+                    ("rad_s",),
+                ),
+                SensorDefinition(
+                    "mecanum_wheel_measurements",
+                    "synthetic_wheel_speed_measurement",
+                    "Synthetic first-order plant wheel speeds; not encoder evidence",
+                    ("rad_s",),
+                ),
+                SensorDefinition(
+                    "mecanum_wheel_control",
+                    "software_derived_normalized_control_effort",
+                    "Dimensionless mathematical effort; not PWM or motor voltage",
+                    ("normalized",),
+                ),
+                SensorDefinition(
+                    "motion_safety",
+                    "software_derived_motion_safety_state",
+                    "Pure Phase 4B permit-or-stop arbitration result",
+                    ("boolean", "milliseconds"),
+                ),
+                SensorDefinition(
+                    "motion_control",
+                    "software_derived_motion_control_snapshot",
+                    "Complete synthetic Phase 4B pipeline snapshot",
+                    ("m_s", "rad_s", "normalized", "m", "rad"),
                 ),
             ]
         )

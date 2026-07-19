@@ -9,6 +9,7 @@ from typing import Any
 
 from .stm32_sensor_models import (
     BAROMETER_SENSOR_IDS,
+    BODY_MOTION_COMMAND_SENSOR_IDS,
     BODY_TWIST_SENSOR_IDS,
     GROUND_EDGE_SENSOR_IDS,
     HALL_SENSOR_IDS,
@@ -16,6 +17,8 @@ from .stm32_sensor_models import (
     ILLUMINANCE_SENSOR_IDS,
     LIDAR_TRANSPORT_STATS_SENSOR_IDS,
     LINK_STATUS_SENSOR_IDS,
+    MOTION_CONTROL_SNAPSHOT_SENSOR_IDS,
+    MOTION_SAFETY_STATE_SENSOR_IDS,
     MESSAGE_TYPES,
     SENSOR_IDS_BY_MESSAGE_TYPE,
     STM32_TELEMETRY_PROTOCOL,
@@ -25,7 +28,10 @@ from .stm32_sensor_models import (
     ULTRASONIC_SENSOR_IDS,
     ODOMETRY_POSE_SENSOR_IDS,
     WHEEL_ANGULAR_VELOCITY_SENSOR_IDS,
+    WHEEL_CONTROL_EFFORT_SENSOR_IDS,
     WHEEL_ENCODER_DELTA_SENSOR_IDS,
+    WHEEL_SPEED_MEASUREMENT_SENSOR_IDS,
+    WHEEL_SPEED_SETPOINT_SENSOR_IDS,
     Stm32TelemetryMessage,
 )
 
@@ -177,6 +183,18 @@ def _validate_payload(message: Stm32TelemetryMessage, line_number: int | None) -
         _validate_body_twist(message, line_number)
     elif message.message_type == "odometry_pose":
         _validate_odometry_pose(message, line_number)
+    elif message.message_type == "body_motion_command":
+        _validate_body_motion_command(message, line_number)
+    elif message.message_type == "wheel_speed_setpoint":
+        _validate_wheel_speed_setpoint(message, line_number)
+    elif message.message_type == "wheel_speed_measurement":
+        _validate_wheel_speed_measurement(message, line_number)
+    elif message.message_type == "wheel_control_effort":
+        _validate_wheel_control_effort(message, line_number)
+    elif message.message_type == "motion_safety_state":
+        _validate_motion_safety_state(message, line_number)
+    elif message.message_type == "motion_control_snapshot":
+        _validate_motion_control_snapshot(message, line_number)
     else:
         raise Stm32TelemetryFormatError("unknown message_type", line_number=line_number)
 
@@ -441,13 +459,261 @@ def _validate_odometry_pose(message: Stm32TelemetryMessage, line_number: int | N
         )
 
 
+def _validate_body_motion_command(
+    message: Stm32TelemetryMessage,
+    line_number: int | None,
+) -> None:
+    _require_sensor_id(message.sensor_id, BODY_MOTION_COMMAND_SENSOR_IDS, line_number)
+    _require_software_derived_status(message, line_number)
+    payload = dict(message.payload)
+    allowed = {
+        "origin",
+        "vx_m_s",
+        "vy_m_s",
+        "yaw_rate_rad_s",
+        "command_timestamp_ms",
+        "command_id",
+        "source",
+        "motion_requested",
+    }
+    _require_allowed_fields(payload, allowed, line_number)
+    _require_phase4b_origin(payload, line_number)
+    for key in ("vx_m_s", "vy_m_s", "yaw_rate_rad_s"):
+        _validate_finite(payload.get(key), f"payload.{key}", line_number)
+    _validate_non_negative_int(
+        payload.get("command_timestamp_ms"),
+        "payload.command_timestamp_ms",
+        line_number,
+    )
+    command_id = payload.get("command_id")
+    if command_id is not None and (not isinstance(command_id, str) or not command_id):
+        raise Stm32TelemetryFormatError(
+            "payload.command_id must be a non-empty string or null",
+            line_number=line_number,
+        )
+    if not isinstance(payload.get("source"), str) or not payload.get("source"):
+        raise Stm32TelemetryFormatError(
+            "payload.source must be a non-empty string",
+            line_number=line_number,
+        )
+    _validate_bool(payload.get("motion_requested"), "payload.motion_requested", line_number)
+
+
+def _validate_wheel_speed_setpoint(
+    message: Stm32TelemetryMessage,
+    line_number: int | None,
+) -> None:
+    _require_sensor_id(message.sensor_id, WHEEL_SPEED_SETPOINT_SENSOR_IDS, line_number)
+    _require_software_derived_status(message, line_number)
+    payload = dict(message.payload)
+    wheel_fields = {
+        f"{stage}_{wheel}_rad_s"
+        for stage in ("requested", "desaturated", "acceleration_limited", "applied")
+        for wheel in ("front_left", "front_right", "rear_left", "rear_right")
+    }
+    flag_fields = {
+        f"{wheel}_rate_limited"
+        for wheel in ("front_left", "front_right", "rear_left", "rear_right")
+    }
+    allowed = {
+        "origin",
+        "desaturation_applied",
+        "desaturation_scale_factor",
+        *wheel_fields,
+        *flag_fields,
+    }
+    _require_allowed_fields(payload, allowed, line_number)
+    _require_phase4b_origin(payload, line_number)
+    for key in wheel_fields:
+        _validate_finite(payload.get(key), f"payload.{key}", line_number)
+    _validate_bool(
+        payload.get("desaturation_applied"),
+        "payload.desaturation_applied",
+        line_number,
+    )
+    scale = payload.get("desaturation_scale_factor")
+    _validate_positive_finite(scale, "payload.desaturation_scale_factor", line_number)
+    if float(scale) > 1.0:
+        raise Stm32TelemetryFormatError(
+            "payload.desaturation_scale_factor must not exceed 1",
+            line_number=line_number,
+        )
+    for key in flag_fields:
+        _validate_bool(payload.get(key), f"payload.{key}", line_number)
+
+
+def _validate_wheel_speed_measurement(
+    message: Stm32TelemetryMessage,
+    line_number: int | None,
+) -> None:
+    _require_sensor_id(
+        message.sensor_id,
+        WHEEL_SPEED_MEASUREMENT_SENSOR_IDS,
+        line_number,
+    )
+    _require_software_derived_status(message, line_number)
+    payload = dict(message.payload)
+    fields = {
+        "front_left_rad_s",
+        "front_right_rad_s",
+        "rear_left_rad_s",
+        "rear_right_rad_s",
+    }
+    _require_allowed_fields(payload, {"origin", *fields}, line_number)
+    _require_phase4b_origin(payload, line_number)
+    for key in fields:
+        _validate_finite(payload.get(key), f"payload.{key}", line_number)
+
+
+def _validate_wheel_control_effort(
+    message: Stm32TelemetryMessage,
+    line_number: int | None,
+) -> None:
+    _require_sensor_id(message.sensor_id, WHEEL_CONTROL_EFFORT_SENSOR_IDS, line_number)
+    _require_software_derived_status(message, line_number)
+    payload = dict(message.payload)
+    fields = {
+        "front_left_normalized",
+        "front_right_normalized",
+        "rear_left_normalized",
+        "rear_right_normalized",
+    }
+    _require_allowed_fields(payload, {"origin", "output_meaning", *fields}, line_number)
+    _require_phase4b_origin(payload, line_number)
+    for key in fields:
+        _validate_finite(payload.get(key), f"payload.{key}", line_number)
+    if payload.get("output_meaning") != "dimensionless_mathematical_not_pwm":
+        raise Stm32TelemetryFormatError(
+            "payload.output_meaning must distinguish effort from PWM",
+            line_number=line_number,
+        )
+
+
+def _validate_motion_safety_state(
+    message: Stm32TelemetryMessage,
+    line_number: int | None,
+) -> None:
+    _require_sensor_id(message.sensor_id, MOTION_SAFETY_STATE_SENSOR_IDS, line_number)
+    _require_software_derived_status(message, line_number)
+    payload = dict(message.payload)
+    boolean_fields = {
+        "permit_motion",
+        "forced_stop",
+        "command_stale",
+        "latched_fault",
+        "targets_replaced_with_zero",
+    }
+    _require_allowed_fields(
+        payload,
+        {"origin", "stop_reason", "command_age_ms", *boolean_fields},
+        line_number,
+    )
+    _require_phase4b_origin(payload, line_number)
+    for key in boolean_fields:
+        _validate_bool(payload.get(key), f"payload.{key}", line_number)
+    _validate_non_negative_int(
+        payload.get("command_age_ms"),
+        "payload.command_age_ms",
+        line_number,
+    )
+    stop_reasons = {
+        "none",
+        "disabled",
+        "emergency_stop",
+        "stale_command",
+        "communication_fault",
+        "ground_edge",
+        "ultrasonic_obstacle",
+        "critical_sensor_invalid",
+        "controller_fault",
+        "external_stop",
+    }
+    if payload.get("stop_reason") not in stop_reasons:
+        raise Stm32TelemetryFormatError(
+            "payload.stop_reason is unsupported",
+            line_number=line_number,
+        )
+    if bool(payload["permit_motion"]) == bool(payload["forced_stop"]):
+        raise Stm32TelemetryFormatError(
+            "payload permit_motion and forced_stop must be opposites",
+            line_number=line_number,
+        )
+
+
+def _validate_motion_control_snapshot(
+    message: Stm32TelemetryMessage,
+    line_number: int | None,
+) -> None:
+    _require_sensor_id(
+        message.sensor_id,
+        MOTION_CONTROL_SNAPSHOT_SENSOR_IDS,
+        line_number,
+    )
+    _require_software_derived_status(message, line_number)
+    payload = dict(message.payload)
+    wheel_fields = {
+        f"{stage}_{wheel}_rad_s"
+        for stage in ("requested", "desaturated", "acceleration_limited", "measured")
+        for wheel in ("front_left", "front_right", "rear_left", "rear_right")
+    }
+    finite_fields = {
+        "requested_vx_m_s",
+        "requested_vy_m_s",
+        "requested_yaw_rate_rad_s",
+        "front_left_effort_normalized",
+        "front_right_effort_normalized",
+        "rear_left_effort_normalized",
+        "rear_right_effort_normalized",
+        "estimated_vx_m_s",
+        "estimated_vy_m_s",
+        "estimated_yaw_rate_rad_s",
+        "synthetic_pose_x_m",
+        "synthetic_pose_y_m",
+        "synthetic_pose_yaw_rad",
+        *wheel_fields,
+    }
+    _require_allowed_fields(
+        payload,
+        {"origin", "permit_motion", "stop_reason", *finite_fields},
+        line_number,
+    )
+    _require_phase4b_origin(payload, line_number)
+    for key in finite_fields:
+        _validate_finite(payload.get(key), f"payload.{key}", line_number)
+    _validate_bool(payload.get("permit_motion"), "payload.permit_motion", line_number)
+    if not isinstance(payload.get("stop_reason"), str) or not payload.get("stop_reason"):
+        raise Stm32TelemetryFormatError(
+            "payload.stop_reason must be a non-empty string",
+            line_number=line_number,
+        )
+
+
+def _require_phase4b_origin(
+    payload: dict[str, Any],
+    line_number: int | None,
+) -> None:
+    if payload.get("origin") != "synthetic_phase4b_motion_control":
+        raise Stm32TelemetryFormatError(
+            "Phase 4B control telemetry requires explicit synthetic origin",
+            line_number=line_number,
+        )
+
+
+def _validate_bool(value: object, name: str, line_number: int | None) -> None:
+    if not isinstance(value, bool):
+        raise Stm32TelemetryFormatError(
+            f"{name} must be a boolean",
+            line_number=line_number,
+        )
+
+
 def _require_software_derived_status(
     message: Stm32TelemetryMessage,
     line_number: int | None,
 ) -> None:
     if message.status != "software_derived":
         raise Stm32TelemetryFormatError(
-            "derived Phase 4A telemetry requires status software_derived",
+            "derived motion telemetry requires status software_derived",
             line_number=line_number,
         )
 

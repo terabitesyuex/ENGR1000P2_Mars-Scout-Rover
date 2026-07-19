@@ -132,7 +132,10 @@ These facts do not verify the wiring, mounting, serial identifiers, revisions, o
 - Phase 3.2D: isolated OpenRF1 MPU6050-only software bring-up firmware, Keil target, host-side tests, and verifier support; physical ACK, WHO_AM_I, configuration readback, live IMU telemetry, calibration, axis orientation, and shared-I2C operation remain unverified.
 - Phase 3.2E: isolated OpenRF1 HC-SR04-only software bring-up firmware, PA5/PA4/TIM6 vendor-documented design lock, external ECHO divider requirement, Keil target, host-side tests, and verifier support; physical wiring, pulses, real distance data, timeout behavior, and absolute accuracy remain unverified.
 - Phase 3.2F: isolated OpenRF1 ground-sensor-only software bring-up firmware, X1/PC4 left TCRT5000 mapping, X2/PC5 right TCRT5000 mapping, X3/protected PB0 Hall mapping, X4 PC14/PB1 conflict documentation, Keil target, host-side tests, and verifier support; physical wiring, voltage levels, active polarity, surface response, magnetic behavior, and serial periodicity remain unverified.
-- Phase 4: wheel encoders, MPU6050, mecanum kinematics, closed-loop motion, and odometry.
+- Phase 4A: software-only mecanum kinematics, encoder conversion, and odometry foundation.
+- Phase 4B: software-only wheel-speed control, command shaping, watchdog, safety arbitration, and synthetic plant foundation.
+- Phase 4C: future real motor/encoder hardware bring-up and physical direction/timer/interrupt/PWM validation.
+- Later Phase 4: physical PID tuning, MPU6050-assisted pose estimation, real closed-loop motion, and physical odometry validation.
 - Phase 5: STM32-ESP32-computer communication, WiFi transport, one-C1 baseline integration, then optional dual-C1 feasibility evaluation.
 - Phase 6: real-time computer visualization, rover trajectory, and short-range encoder/IMU-assisted accumulated 2D mapping.
 - Phase 7: local autonomous obstacle stop/turn behavior.

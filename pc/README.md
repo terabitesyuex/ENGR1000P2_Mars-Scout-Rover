@@ -153,6 +153,16 @@ python -m rplidar_c1_tools.cli record-stm32-telemetry --input .verification\phas
 
 This workflow opens no hardware and does not prove physical odometry accuracy.
 
+## Phase 4B Motion-Control Simulation
+
+`simulate-motion-control` runs the hardware-free Phase 4B command-shaping, watchdog/safety, independent PID, synthetic first-order wheel-plant, and Phase 4A forward-kinematics pipeline. Geometry, limits, gains, output/integral bounds, plant parameters, timeout, steps, and interval are explicit synthetic inputs. Output is additive version-1 JSONL and overwrite is refused unless requested.
+
+```powershell
+python -m rplidar_c1_tools.cli simulate-motion-control --wheel-radius-m 0.05 --half-length-m 0.18 --half-width-m 0.16 --max-wheel-speed-rad-s 20 --wheel-acceleration-rad-s2 10 --pid-kp 0.05 --pid-ki 0.02 --pid-kd 0 --pid-output-min -1 --pid-output-max 1 --pid-integral-min -2 --pid-integral-max 2 --plant-gain-rad-s-per-effort 20 --plant-time-constant-s 0.2 --command-timeout-ms 250 --scenario combined_curved_motion --steps 20 --interval-ms 100 --output .verification\phase4b\motion_control.jsonl --overwrite
+```
+
+These values are not rover measurements or usable physical PID tuning. The command never opens serial ports or accesses hardware.
+
 ## Data Location
 
 Generated development artifacts belong under `.verification/`, which is ignored by Git. Do not commit generated recordings or figures unless a future task explicitly asks for a curated fixture.
@@ -165,6 +175,7 @@ pc\.venv\Scripts\python.exe -m pytest pc\tests\test_stm32_sensor_models.py pc\te
 pc\.venv\Scripts\python.exe -m pytest pc\tests\test_openrf1_bh1750.py pc\tests\test_openrf1_firmware_foundation.py pc\tests\test_stm32_serial_capture.py -v
 pc\.venv\Scripts\python.exe -m pytest pc\tests -v
 pc\.venv\Scripts\python.exe -m pytest pc\tests\test_mecanum_kinematics_odometry.py pc\tests\test_mecanum_odometry_simulator.py pc\tests\test_mecanum_odometry_cli.py -v
+pc\.venv\Scripts\python.exe -m pytest pc\tests\test_motion_control.py pc\tests\test_motion_control_simulator.py pc\tests\test_motion_control_cli.py pc\tests\test_phase4b_foundation.py -v
 ```
 
 Phase verifier:
@@ -174,4 +185,5 @@ Phase verifier:
 .\tools\verify_phase.cmd phase3.1 -AllowDirty
 .\tools\verify_phase.cmd phase3.2a -AllowDirty
 .\tools\verify_phase.cmd phase4a -AllowDirty
+.\tools\verify_phase.cmd phase4b -AllowDirty
 ```

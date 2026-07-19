@@ -229,3 +229,16 @@ The PC bridge converts validated messages into `mars_scout_multisensor_recording
 - `odometry_pose` -> `odometry_pose`
 
 The bridge preserves sensor IDs, timestamps, status, raw values, and source telemetry sequence where supported. It does not create LiDAR scans.
+
+## Phase 4B Additive Software-Control Messages
+
+Phase 4B keeps `mars_scout_stm32_sensor_telemetry` at version `1` and adds `body_motion_command`, `wheel_speed_setpoint`, `wheel_speed_measurement`, `wheel_control_effort`, `motion_safety_state`, and `motion_control_snapshot`. Every Phase 4B message uses `status: software_derived` and requires `origin: synthetic_phase4b_motion_control`; it is not hardware evidence.
+
+- `body_motion_command` preserves validated body values, command timestamp/identity, source, and the requested-motion flag.
+- `wheel_speed_setpoint` distinguishes requested, proportionally desaturated, acceleration-limited, and safety-applied four-wheel targets and includes shaping flags.
+- `wheel_speed_measurement` contains finite synthetic first-order plant speeds.
+- `wheel_control_effort` contains dimensionless mathematical efforts explicitly labelled as not PWM.
+- `motion_safety_state` contains permission, forced-stop reason, command age/staleness, non-latched state, and target replacement.
+- `motion_control_snapshot` combines requested motion, every wheel stage, synthetic measurements, efforts, estimated body twist, synthetic pose, and safety result.
+
+The recording bridge maps each message to the identically named additive record type. Existing version-1 message fields, status meanings, ordering rules, and parser behavior are unchanged; older telemetry requires no Phase 4B messages.

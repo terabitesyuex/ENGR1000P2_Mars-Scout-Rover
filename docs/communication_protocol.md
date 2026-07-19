@@ -150,3 +150,7 @@ The following remain UNVERIFIED:
 - OpenRF1 USART2 connector-to-MCU pins.
 - OpenRF1 USART3 connector-to-MCU pins.
 - Physical STM32-to-ESP32 baud rate.
+
+## Phase 4B Software-Derived Control Records
+
+Phase 4B extends the existing version-1 telemetry vocabulary only for software-derived command, wheel-setpoint, synthetic wheel-measurement, normalized-effort, motion-safety, and complete control-snapshot records. This does not implement STM32 motor transport, ESP32 forwarding, WiFi, PWM, encoder acquisition, or any on-wire motor command. All Phase 4B outputs identify their synthetic/software origin.

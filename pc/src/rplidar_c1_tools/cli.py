@@ -11,6 +11,21 @@ from .mecanum_odometry_simulator import (
     MECANUM_ODOMETRY_SCENARIOS,
     generate_mecanum_odometry_telemetry_lines,
 )
+from .motion_control import (
+    FourWheelPIDConfiguration,
+    MotionControlConfiguration,
+    MotionSafetyPolicy,
+    PIDGains,
+    PIDLimits,
+    WheelAccelerationLimits,
+    WheelSpeedLimits,
+)
+from .motion_control_simulator import (
+    MOTION_CONTROL_SCENARIOS,
+    SyntheticWheelPlantParameters,
+    SyntheticWheelPlantWheelParameters,
+    generate_motion_control_telemetry_lines,
+)
 from .c1_pc_direct import (
     C1CaptureConfig,
     C1DriverError,
@@ -224,6 +239,70 @@ def main() -> int:
     simulate_mecanum.add_argument("--output", type=Path, required=True)
     simulate_mecanum.add_argument("--overwrite", action="store_true")
 
+    simulate_motion = subparsers.add_parser(
+        "simulate-motion-control",
+        help="Generate deterministic Phase 4B closed-loop control telemetry JSONL.",
+        description=(
+            "Run the hardware-free Phase 4B command-shaping, safety, PID, and "
+            "SYNTHETIC first-order wheel-plant pipeline. All parameters are test "
+            "inputs, not rover measurements or tuning values."
+        ),
+    )
+    simulate_motion.add_argument("--wheel-radius-m", type=float, required=True)
+    simulate_motion.add_argument("--half-length-m", type=float, required=True)
+    simulate_motion.add_argument("--half-width-m", type=float, required=True)
+    simulate_motion.add_argument("--max-wheel-speed-rad-s", type=float, required=True)
+    simulate_motion.add_argument(
+        "--wheel-acceleration-rad-s2",
+        type=float,
+        required=True,
+    )
+    simulate_motion.add_argument("--pid-kp", type=float, required=True)
+    simulate_motion.add_argument("--pid-ki", type=float, required=True)
+    simulate_motion.add_argument("--pid-kd", type=float, required=True)
+    simulate_motion.add_argument("--pid-output-min", type=float, required=True)
+    simulate_motion.add_argument("--pid-output-max", type=float, required=True)
+    simulate_motion.add_argument("--pid-integral-min", type=float, required=True)
+    simulate_motion.add_argument("--pid-integral-max", type=float, required=True)
+    simulate_motion.add_argument(
+        "--plant-gain-rad-s-per-effort",
+        type=float,
+        required=True,
+        help="Explicit SYNTHETIC steady wheel speed per normalized effort.",
+    )
+    simulate_motion.add_argument(
+        "--plant-time-constant-s",
+        type=float,
+        required=True,
+        help="Explicit SYNTHETIC shared first-order time constant.",
+    )
+    simulate_motion.add_argument(
+        "--slow-front-left-time-constant-s",
+        type=float,
+        help=(
+            "Required only for slow_front_left_wheel; explicit SYNTHETIC mismatch."
+        ),
+    )
+    simulate_motion.add_argument(
+        "--command-timeout-ms",
+        type=_positive_int,
+        required=True,
+    )
+    simulate_motion.add_argument(
+        "--scenario",
+        choices=MOTION_CONTROL_SCENARIOS,
+        required=True,
+    )
+    simulate_motion.add_argument("--steps", type=_positive_int, required=True)
+    simulate_motion.add_argument("--interval-ms", type=_positive_int, required=True)
+    simulate_motion.add_argument(
+        "--start-timestamp-ms",
+        type=_non_negative_int,
+        default=0,
+    )
+    simulate_motion.add_argument("--output", type=Path, required=True)
+    simulate_motion.add_argument("--overwrite", action="store_true")
+
     inspect_stm32 = subparsers.add_parser(
         "inspect-stm32-telemetry",
         help="Validate and summarize STM32 sensor telemetry JSONL.",
@@ -387,6 +466,41 @@ def main() -> int:
                 overwrite=args.overwrite,
             )
             print(path)
+            return 0
+        if args.command == "simulate-motion-control":
+            path = simulate_motion_control(
+                output_path=args.output,
+                geometry=MecanumGeometry(
+                    wheel_radius_m=args.wheel_radius_m,
+                    half_length_m=args.half_length_m,
+                    half_width_m=args.half_width_m,
+                ),
+                wheel_speed_limits=WheelSpeedLimits(args.max_wheel_speed_rad_s),
+                wheel_acceleration_limits=WheelAccelerationLimits.shared(
+                    args.wheel_acceleration_rad_s2
+                ),
+                gains=PIDGains(args.pid_kp, args.pid_ki, args.pid_kd),
+                limits=PIDLimits(
+                    output_min=args.pid_output_min,
+                    output_max=args.pid_output_max,
+                    integral_min=args.pid_integral_min,
+                    integral_max=args.pid_integral_max,
+                ),
+                plant_gain_rad_s_per_effort=args.plant_gain_rad_s_per_effort,
+                plant_time_constant_s=args.plant_time_constant_s,
+                slow_front_left_time_constant_s=(
+                    args.slow_front_left_time_constant_s
+                ),
+                command_timeout_ms=args.command_timeout_ms,
+                scenario=args.scenario,
+                step_count=args.steps,
+                interval_ms=args.interval_ms,
+                start_timestamp_ms=args.start_timestamp_ms,
+                overwrite=args.overwrite,
+            )
+            print(
+                f"wrote Phase 4B synthetic motion-control telemetry: {path}"
+            )
             return 0
         if args.command == "inspect-stm32-telemetry":
             text = inspect_stm32_telemetry_file(args.input)
@@ -671,6 +785,69 @@ def simulate_mecanum_odometry(
     lines = generate_mecanum_odometry_telemetry_lines(
         geometry=geometry,
         encoder_configuration=encoder_configuration,
+        scenario=scenario,
+        step_count=step_count,
+        interval_ms=interval_ms,
+        start_timestamp_ms=start_timestamp_ms,
+    )
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
+    return output_path
+
+
+def simulate_motion_control(
+    *,
+    output_path: Path,
+    geometry: MecanumGeometry,
+    wheel_speed_limits: WheelSpeedLimits,
+    wheel_acceleration_limits: WheelAccelerationLimits,
+    gains: PIDGains,
+    limits: PIDLimits,
+    plant_gain_rad_s_per_effort: float,
+    plant_time_constant_s: float,
+    slow_front_left_time_constant_s: float | None,
+    command_timeout_ms: int,
+    scenario: str,
+    step_count: int,
+    interval_ms: int,
+    start_timestamp_ms: int,
+    overwrite: bool,
+) -> Path:
+    """Write deterministic software-only Phase 4B telemetry fixture lines."""
+    if output_path.exists() and not overwrite:
+        raise ValueError(f"telemetry output already exists: {output_path}")
+    if scenario == "slow_front_left_wheel" and slow_front_left_time_constant_s is None:
+        raise ValueError(
+            "slow_front_left_wheel requires --slow-front-left-time-constant-s"
+        )
+    shared_plant = SyntheticWheelPlantWheelParameters(
+        gain_rad_s_per_normalized_effort=plant_gain_rad_s_per_effort,
+        time_constant_s=plant_time_constant_s,
+    )
+    front_left_plant = (
+        SyntheticWheelPlantWheelParameters(
+            gain_rad_s_per_normalized_effort=plant_gain_rad_s_per_effort,
+            time_constant_s=slow_front_left_time_constant_s,
+        )
+        if scenario == "slow_front_left_wheel"
+        else shared_plant
+    )
+    plant = SyntheticWheelPlantParameters(
+        front_left=front_left_plant,
+        front_right=shared_plant,
+        rear_left=shared_plant,
+        rear_right=shared_plant,
+    )
+    configuration = MotionControlConfiguration(
+        geometry=geometry,
+        wheel_speed_limits=wheel_speed_limits,
+        wheel_acceleration_limits=wheel_acceleration_limits,
+        wheel_pid=FourWheelPIDConfiguration.shared(gains, limits),
+        safety_policy=MotionSafetyPolicy(command_timeout_ms=command_timeout_ms),
+    )
+    lines = generate_motion_control_telemetry_lines(
+        configuration=configuration,
+        plant_parameters=plant,
         scenario=scenario,
         step_count=step_count,
         interval_ms=interval_ms,

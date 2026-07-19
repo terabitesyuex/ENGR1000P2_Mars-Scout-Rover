@@ -22,6 +22,7 @@ AUTHORITATIVE_FILES = (
     "docs/openrf1_hcsr04_bringup.md",
     "docs/openrf1_ground_sensors_bringup.md",
     "docs/phase4a_mecanum_kinematics_odometry_foundation.md",
+    "docs/phase4b_closed_loop_motion_control_foundation.md",
     "docs/test_plan.md",
 )
 
@@ -106,6 +107,12 @@ REQUIRED_SNIPPETS = (
     RequiredSnippet("docs/phase4a_mecanum_kinematics_odometry_foundation.md", "counts_per_wheel_revolution", "Phase 4A explicit encoder resolution documented"),
     RequiredSnippet("docs/phase4a_mecanum_kinematics_odometry_foundation.md", "UNVERIFIED physical facts", "Phase 4A physical boundary documented"),
     RequiredSnippet("docs/test_plan.md", "phase4a", "Phase 4A verifier documented"),
+    RequiredSnippet("README.md", "Phase 4B", "Phase 4B software status documented"),
+    RequiredSnippet("README.md", "simulate-motion-control", "Phase 4B simulator CLI documented"),
+    RequiredSnippet("AGENTS.md", "Phase 4B software work is complete", "Phase 4B software boundary documented"),
+    RequiredSnippet("docs/phase4b_closed_loop_motion_control_foundation.md", "conditional integration", "Phase 4B anti-windup documented"),
+    RequiredSnippet("docs/phase4b_closed_loop_motion_control_foundation.md", "UNVERIFIED physical facts", "Phase 4B physical boundary documented"),
+    RequiredSnippet("docs/test_plan.md", "phase4b", "Phase 4B verifier documented"),
 )
 
 
