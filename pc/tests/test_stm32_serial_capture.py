@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 import subprocess
 import sys
+import types
 
 import pytest
 
@@ -14,6 +16,7 @@ from rplidar_c1_tools.stm32_sensor_protocol import encode_stm32_telemetry_messag
 from rplidar_c1_tools.stm32_sensor_simulator import generate_synthetic_stm32_lines
 from rplidar_c1_tools.stm32_serial_capture import (
     FileChunkSerialReader,
+    PySerialLineReader,
     Stm32SerialCaptureError,
     Stm32SerialCaptureInterrupted,
     capture_stm32_serial_telemetry,
@@ -77,14 +80,63 @@ def test_capture_preserves_hardware_fault_without_zero_lux(tmp_path):
     assert entry["illuminance_lux"] is None
 
 
-def test_capture_rejects_malformed_json_invalid_utf8_oversized_and_timeout(tmp_path):
+def test_pyserial_reader_configures_control_lines_before_open(monkeypatch):
+    events: list[tuple[str, object]] = []
+
+    class FakeSerial:
+        def __init__(self):
+            events.append(("construct", None))
+            self.closed = False
+
+        def __setattr__(self, name, value):
+            if name != "closed":
+                events.append((name, value))
+            object.__setattr__(self, name, value)
+
+        def open(self):
+            events.append(("open", None))
+
+        def read(self, _size):
+            return b""
+
+        def close(self):
+            self.closed = True
+
+    monkeypatch.setitem(sys.modules, "serial", types.SimpleNamespace(Serial=FakeSerial))
+
+    reader = PySerialLineReader(port="USER_SELECTED_PORT", baud=115200, timeout_s=2.5)
+    reader.close()
+
+    assert events == [
+        ("construct", None),
+        ("port", "USER_SELECTED_PORT"),
+        ("baudrate", 115200),
+        ("bytesize", 8),
+        ("parity", "N"),
+        ("stopbits", 1),
+        ("timeout", 2.5),
+        ("dtr", False),
+        ("rts", False),
+        ("open", None),
+    ]
+
+
+def test_capture_counts_malformed_json_and_continues(tmp_path):
     bad_json = _write_bytes(tmp_path / "bad.jsonl", b"not-json\n")
-    with pytest.raises(Stm32SerialCaptureError, match="invalid JSON"):
-        capture_stm32_serial_telemetry(
-            reader=FileChunkSerialReader(bad_json),
-            telemetry_output=tmp_path / "bad_out.jsonl",
-            recording_output=None,
-        )
+    good = generate_bh1750_telemetry_lines(samples=1)[0].encode("ascii") + b"\n"
+    mixed = _write_bytes(tmp_path / "mixed.jsonl", bad_json.read_bytes() + good)
+
+    summary = capture_stm32_serial_telemetry(
+        reader=FileChunkSerialReader(mixed),
+        telemetry_output=tmp_path / "mixed_out.jsonl",
+        recording_output=None,
+    )
+
+    assert summary.messages == 1
+    assert summary.malformed_lines == 1
+
+
+def test_capture_rejects_invalid_utf8_oversized_and_timeout(tmp_path):
 
     invalid_utf8 = _write_bytes(tmp_path / "utf8.jsonl", b"\xff\n")
     with pytest.raises(Stm32SerialCaptureError, match="ASCII/UTF-8"):
@@ -112,14 +164,15 @@ def test_capture_rejects_malformed_json_invalid_utf8_oversized_and_timeout(tmp_p
         )
 
 
-def test_capture_rejects_wrong_message_type_sensor_and_invalid_lux(tmp_path):
+def test_capture_counts_wrong_message_type_sensor_and_invalid_lux(tmp_path):
     wrong_type = _write_lines(tmp_path / "wrong_type.jsonl", [generate_synthetic_stm32_lines(cycles=1)[0]])
-    with pytest.raises(Stm32SerialCaptureError, match="illuminance"):
-        capture_stm32_serial_telemetry(
-            reader=FileChunkSerialReader(wrong_type),
-            telemetry_output=tmp_path / "wrong_type_out.jsonl",
-            recording_output=None,
-        )
+    summary = capture_stm32_serial_telemetry(
+        reader=FileChunkSerialReader(wrong_type),
+        telemetry_output=tmp_path / "wrong_type_out.jsonl",
+        recording_output=None,
+    )
+    assert summary.messages == 0
+    assert summary.malformed_lines == 1
 
     wrong_sensor = _write_lines(
         tmp_path / "wrong_sensor.jsonl",
@@ -136,12 +189,13 @@ def test_capture_rejects_wrong_message_type_sensor_and_invalid_lux(tmp_path):
             ).replace('"bh1750_1"', '"bmp280_1"')
         ],
     )
-    with pytest.raises(Stm32SerialCaptureError, match="sensor_id"):
-        capture_stm32_serial_telemetry(
-            reader=FileChunkSerialReader(wrong_sensor),
-            telemetry_output=tmp_path / "wrong_sensor_out.jsonl",
-            recording_output=None,
-        )
+    summary = capture_stm32_serial_telemetry(
+        reader=FileChunkSerialReader(wrong_sensor),
+        telemetry_output=tmp_path / "wrong_sensor_out.jsonl",
+        recording_output=None,
+    )
+    assert summary.messages == 0
+    assert summary.malformed_lines == 1
 
     invalid_lux = _write_lines(
         tmp_path / "invalid_lux.jsonl",
@@ -158,12 +212,58 @@ def test_capture_rejects_wrong_message_type_sensor_and_invalid_lux(tmp_path):
             ).replace("10.0", "-1.0")
         ],
     )
-    with pytest.raises(Stm32SerialCaptureError, match="non-negative"):
-        capture_stm32_serial_telemetry(
-            reader=FileChunkSerialReader(invalid_lux),
-            telemetry_output=tmp_path / "invalid_lux_out.jsonl",
-            recording_output=None,
-        )
+    summary = capture_stm32_serial_telemetry(
+        reader=FileChunkSerialReader(invalid_lux),
+        telemetry_output=tmp_path / "invalid_lux_out.jsonl",
+        recording_output=None,
+    )
+    assert summary.messages == 0
+    assert summary.malformed_lines == 1
+
+
+def test_capture_waits_through_startup_grace_before_first_frame(tmp_path):
+    line = generate_bh1750_telemetry_lines(samples=1, start_timestamp_ms=10_000)[0]
+    reader = DelayedReader(empty_reads_before_payload=11, payload=(line + "\n").encode("ascii"))
+    clock = AdvancingClock()
+
+    summary = capture_stm32_serial_telemetry(
+        reader=reader,
+        telemetry_output=tmp_path / "delayed.jsonl",
+        recording_output=None,
+        max_messages=1,
+        max_empty_reads=2,
+        startup_grace_s=12.0,
+        clock=clock,
+    )
+
+    assert summary.messages == 1
+    assert summary.first_timestamp_ms == 10_000
+    assert reader.closed is True
+
+
+def test_independent_capture_sessions_reset_source_ordering_baseline(tmp_path):
+    first_source = _write_lines(
+        tmp_path / "first.jsonl",
+        [_with_sequence(generate_bh1750_telemetry_lines(samples=1, start_timestamp_ms=9900)[0], 99)],
+    )
+    second_source = _write_lines(
+        tmp_path / "second.jsonl",
+        generate_bh1750_telemetry_lines(samples=1, start_timestamp_ms=0),
+    )
+
+    first = capture_stm32_serial_telemetry(
+        reader=FileChunkSerialReader(first_source),
+        telemetry_output=tmp_path / "first_out.jsonl",
+        recording_output=None,
+    )
+    second = capture_stm32_serial_telemetry(
+        reader=FileChunkSerialReader(second_source),
+        telemetry_output=tmp_path / "second_out.jsonl",
+        recording_output=None,
+    )
+
+    assert first.first_timestamp_ms == 9900
+    assert second.first_timestamp_ms == 0
 
 
 def test_capture_refuses_overwrite_and_closes_on_interrupt(tmp_path):
@@ -256,6 +356,34 @@ class InterruptingReader:
         self.closed = True
 
 
+class DelayedReader:
+    def __init__(self, *, empty_reads_before_payload: int, payload: bytes) -> None:
+        self.empty_reads_before_payload = empty_reads_before_payload
+        self.payload = payload
+        self.offset = 0
+        self.closed = False
+
+    def read(self, size: int) -> bytes:
+        if self.empty_reads_before_payload > 0:
+            self.empty_reads_before_payload -= 1
+            return b""
+        chunk = self.payload[self.offset : self.offset + size]
+        self.offset += len(chunk)
+        return chunk
+
+    def close(self) -> None:
+        self.closed = True
+
+
+class AdvancingClock:
+    def __init__(self) -> None:
+        self.now = 0.0
+
+    def __call__(self) -> float:
+        self.now += 1.0
+        return self.now
+
+
 def _write_lines(path: Path, lines) -> Path:
     path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
     return path
@@ -264,6 +392,12 @@ def _write_lines(path: Path, lines) -> Path:
 def _write_bytes(path: Path, payload: bytes) -> Path:
     path.write_bytes(payload)
     return path
+
+
+def _with_sequence(line: str, sequence: int) -> str:
+    payload = json.loads(line)
+    payload["sequence"] = sequence
+    return json.dumps(payload, allow_nan=False, separators=(",", ":"), sort_keys=True)
 
 
 def _run_cli(cwd: Path, *args: str) -> subprocess.CompletedProcess[str]:

@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-07-20 - STM32 Serial Capture Hardening
+
+- Updated the STM32 serial capture path to set DTR and RTS low before opening pyserial, add a configurable startup grace period, count malformed BH1750 telemetry lines without terminating the capture, and preserve session reset behavior for independent reconnects.
+
 ## 2026-07-19 - Single RPLIDAR C1 Inventory Rebaseline
 
 - Corrected the authoritative physical inventory from two RPLIDAR C1 units to one `RPLIDAR C1M1-R2`; `c1_1` is the only current physical LiDAR sensor.
