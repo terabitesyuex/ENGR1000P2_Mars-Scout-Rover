@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-07-20 - Phase 3.2D Manual MPU6050 Evidence
+
+- Recorded sanitized Phase 3.2D isolated MPU6050 manual evidence for OpenRF1 wiring, ACK/address `0x68`, WHO_AM_I `0x68`, configuration readback, live IMU JSONL, startup gyro-bias semantics, A-reported approximately 10 Hz telemetry during a 15-second isolated test, no reported sequence loss, and isolated axis response.
+- Updated project status documentation and Phase 3.2D audit checks to distinguish isolated MANUAL_EVIDENCE_VERIFIED results from shared-I2C, final rover-frame orientation, absolute accuracy, full-hardware operation, ESP32/WiFi integration, and motor-vibration behavior that remain UNVERIFIED.
+
 ## 2026-07-20 - MPU6050 Bring-Up Parser Fixtures
 
 - Added strict MPU6050 bring-up JSONL parsing helpers and deterministic Phase 3.2D fixtures covering delayed startup, contiguous sequences, 100 ms sample spacing, raw-versus-bias-corrected gyro semantics, and error telemetry with null measurement fields.

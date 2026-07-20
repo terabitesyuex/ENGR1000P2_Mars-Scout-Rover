@@ -682,6 +682,9 @@
         "firmware/openrf1/keil/RTE/_OpenRF1_MPU6050_Bringup/RTE_Components.h",
         "pc/src/rplidar_c1_tools/openrf1_mpu6050_bringup.py",
         "pc/tests/test_openrf1_mpu6050_bringup.py",
+        "data/test_vectors/phase3.2d/mpu6050_startup_grace_session.jsonl",
+        "data/test_vectors/phase3.2d/mpu6050_error_session.jsonl",
+        "evidence/phase3.2d/mpu6050_manual_evidence.md",
         "tools/audit_phase32d.py"
       ],
       "targeted": [
@@ -716,7 +719,7 @@
             ".verification/phase3.2d/software_audit.txt",
             ".verification/phase3.2d/manual_hardware_status.txt"
           ],
-          "warning": "Phase 3.2D is SOFTWARE_READY only. MPU6050 ACK, WHO_AM_I, configuration readback, live IMU telemetry, calibration, axis orientation, shared-I2C concurrency, and full-hardware operation remain UNVERIFIED."
+          "warning": "Phase 3.2D has isolated sanitized manual evidence for MPU6050 ACK, WHO_AM_I, configuration readback, live IMU telemetry, and startup gyro-bias semantics. Axis orientation, absolute accuracy, shared-I2C concurrency, and full-hardware operation remain UNVERIFIED."
         }
       ]
     },

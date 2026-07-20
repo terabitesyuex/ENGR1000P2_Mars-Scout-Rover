@@ -1,25 +1,25 @@
 # OpenRF1 MPU6050 Bring-Up
 
-Phase 3.2D adds an isolated MPU6050-only firmware target for future bench bring-up on the OpenRF1 STM32F103RCT6 controller. Repository automation validates source, tests, and project structure only; it does not flash the MCU, open a COM port, access GPIO/I2C, or physically read the sensor.
+Phase 3.2D adds an isolated MPU6050-only firmware target for bring-up on the OpenRF1 STM32F103RCT6 controller. Repository automation validates source, tests, fixtures, evidence documentation, and project structure only; it does not flash the MCU, open a COM port, access GPIO/I2C, or physically read the sensor.
 
 ## Hardware Facts
 
 | Item | Value | Status |
 | --- | --- | --- |
 | Controller | OpenRF1 robot controller, STM32F103RCT6 | CONFIRMED by Phase 3.2A evidence |
-| Sensor ID | `mpu6050_1` | PLANNED neutral ID |
+| Sensor ID | `mpu6050_1` | MANUAL_EVIDENCE_VERIFIED for isolated bring-up |
 | MPU6050 module count | x1 | CONFIRMED inventory |
-| Module supply | GY-521/MPU6050 VCC -> OpenRF1 5 V | CONFIRMED_MODULE_EVIDENCE for module capability; not physically tested here |
-| Ground | GY-521/MPU6050 GND -> OpenRF1 GND | PLANNED; PHYSICAL_VERIFICATION_REQUIRED |
-| I2C SCL | PB1 / connector B1 | CONFIRMED OpenRF1 software-I2C signal |
-| I2C SDA | PC3 / connector C3 | CONFIRMED OpenRF1 software-I2C signal |
-| Address strap | AD0 -> GND | PLANNED for deterministic address `0x68` |
+| Module supply | GY-521/MPU6050 VCC -> OpenRF1 H4 5 V | MANUAL_EVIDENCE_VERIFIED for isolated bring-up |
+| Ground | GY-521/MPU6050 GND -> OpenRF1 H4 GND | MANUAL_EVIDENCE_VERIFIED for isolated bring-up |
+| I2C SCL | PB1 / SCL | MANUAL_EVIDENCE_VERIFIED for isolated bring-up |
+| I2C SDA | PC3 / SDA | MANUAL_EVIDENCE_VERIFIED for isolated bring-up |
+| Address strap | AD0 measured at 0 V | MANUAL_EVIDENCE_VERIFIED for deterministic address `0x68` |
 | Unused pins | INT, XDA, XCL, FSYNC disconnected | PLANNED polling bring-up |
-| Address | `0x68` | PLANNED; ACK remains PHYSICAL_VERIFICATION_REQUIRED |
-| WHO_AM_I register | `0x75` -> expected `0x68` | PHYSICAL_VERIFICATION_REQUIRED |
+| Address | `0x68` | MANUAL_EVIDENCE_VERIFIED for isolated bring-up |
+| WHO_AM_I register | `0x75` -> `0x68` | MANUAL_EVIDENCE_VERIFIED for isolated bring-up |
 | Debug UART | USART1 PA9 TX / PA10 RX, 115200 8N1 through CH340 | CONFIRMED path from Phase 3.2A; port user-selected |
 
-Do not mark the MPU6050 address, ACK, WHO_AM_I, configuration readback, live IMU telemetry, axis orientation, accelerometer offset, gyro bias, yaw drift, shared-I2C behavior, or full-hardware operation as verified until real evidence exists.
+Do not mark absolute accuracy, calibration-time movement detection, calibration motion rejection, final rover-frame axis orientation, accelerometer offsets, yaw drift, shared-I2C behavior, or full-hardware operation as verified until real evidence exists.
 
 ## Firmware Target
 
@@ -44,10 +44,14 @@ The target reuses the established STM32F103RC, `STM32F10X_HD`, `USE_STDPERIPH_DR
 9. Write and read back `CONFIG = 0x03`.
 10. Write and read back `GYRO_CONFIG = 0x00`.
 11. Write and read back `ACCEL_CONFIG = 0x00`.
-12. Read 14 bytes from `ACCEL_XOUT_H = 0x3B`.
-13. Emit raw and scaled IMU telemetry every 100 ms.
+12. Wait 5000 ms for startup warmup.
+13. Collect 500 gyro samples at approximately 10 ms intervals.
+14. Average X/Y/Z gyro bias from converted mdps values.
+15. Read 14 bytes from `ACCEL_XOUT_H = 0x3B`.
+16. Emit raw and scaled IMU telemetry every 100 ms.
 
 The 100 ms wake-up wait is an initialization-only settle interval. Runtime sampling uses a monotonic deadline update and bounded telemetry writes.
+The startup gyro-bias calibration is initialization-only and assumes the module remains still for approximately 12 seconds after power-on or reset. It does not implement movement detection or motion rejection.
 
 ## Telemetry
 
@@ -71,7 +75,15 @@ Error sample example:
 {"protocol":"mars_scout_stm32_sensor_telemetry","version":1,"sequence":1,"timestamp_ms":110,"message_type":"imu","sensor_id":"mpu6050_1","status":"nack","payload":{"accel_raw":null,"gyro_raw":null,"temperature_raw":null,"accel_g":null,"gyro_dps":null,"temperature_c":null,"initialization_stage":"read_who_am_i","operation":"read_who_am_i","register":"0x75","error_code":"nack"}}
 ```
 
-No firmware path fabricates acceleration, angular rate, or temperature when I2C access, WHO_AM_I validation, configuration write/readback, or burst reading fails. The scaled `accel_g`, `gyro_dps`, and `temperature_c` values are raw-register conversions only; they are not calibrated motion, orientation, odometry, or navigation estimates.
+No firmware path fabricates acceleration, angular rate, or temperature when I2C access, WHO_AM_I validation, configuration write/readback, calibration sampling, or burst reading fails. `gyro_raw` preserves raw register data. `gyro_dps` subtracts the startup dynamic gyro-bias estimate; `accel_g` and `temperature_c` are raw-register conversions. These values are not rover-frame orientation, odometry, navigation, or absolute-accuracy evidence.
+
+## PC-Side Offline Fixtures
+
+Small deterministic Phase 3.2D fixtures live under `data/test_vectors/phase3.2d/`.
+They cover normal `sensor_identity`, normal `imu`, startup-delayed first output,
+approximately 100 ms periodicity, error telemetry with null measurement fields,
+malformed JSON rejection, wrong sensor ID rejection, sequence-gap rejection,
+nondecreasing timestamp enforcement, and new-session sequence reset behavior.
 
 ## Manual Validation Procedure
 
@@ -85,15 +97,23 @@ Do not run this procedure from automated tests.
 6. Flash `OpenRF1_MPU6050_Bringup.hex` with the established OpenRF1 flashing workflow.
 7. Open the user-identified CH340 serial port at 115200 8N1.
 8. Capture JSONL without recording the port number in committed files.
-9. Pass criteria: identity line reports `status:"ok"`, `who_am_i:"0x68"`, the configured registers match the expected values above, and IMU samples arrive every approximately 100 ms with changing raw values when the module is moved.
+9. Keep the module still during startup warmup and gyro-bias calibration.
+10. Pass criteria: identity line reports `status:"ok"`, `who_am_i:"0x68"`, the configured registers match the expected values above, and IMU samples arrive every approximately 100 ms with changing raw values when the module is moved.
 
 Future physical evidence must keep raw files sanitized and must not record concrete port numbers, Windows usernames, absolute paths, Desktop paths, MCU unique serial numbers, or unrelated device identifiers.
 
+## Recorded Manual Evidence
+
+- Isolated firmware flashing and execution from Flash: MANUAL_EVIDENCE_VERIFIED.
+- H4 connector order, MPU6050 wiring, AD0 at 0 V, 5 V supply level, SCL/SDA idle level, and continuity checks: MANUAL_EVIDENCE_VERIFIED.
+- I2C ACK at `0x68`, WHO_AM_I `0x68`, and isolated configuration readback: MANUAL_EVIDENCE_VERIFIED.
+- Live IMU JSON telemetry and approximately 10 Hz output: MANUAL_EVIDENCE_VERIFIED.
+- Startup dynamic gyro-bias calibration and `gyro_raw` / bias-corrected `gyro_dps` semantics: MANUAL_EVIDENCE_VERIFIED.
+- A's 15-second continuity test reported 151 frames, 15000 ms timestamp span, 100 ms median and maximum intervals, no sequence gaps greater than one, and largest sequence gap of one: MANUAL_EVIDENCE_VERIFIED.
+- Manual rotation/flip produced expected isolated axis response: MANUAL_EVIDENCE_VERIFIED.
+
 ## Remaining Limitations
 
-- MPU6050 ACK and WHO_AM_I are PHYSICAL_VERIFICATION_REQUIRED.
-- Configuration readback is PHYSICAL_VERIFICATION_REQUIRED.
-- Live acceleration, angular-rate, and temperature telemetry are PHYSICAL_VERIFICATION_REQUIRED.
-- Absolute acceleration accuracy, gyro bias, accelerometer offsets, yaw drift, axis orientation relative to the rover, and temperature accuracy remain UNVERIFIED.
+- Absolute acceleration accuracy, absolute angular-rate accuracy, calibration-time movement detection, calibration motion rejection, long-duration thermal drift, accelerometer offsets, yaw drift, axis orientation relative to the rover, and temperature accuracy remain UNVERIFIED.
 - Shared-I2C operation with BH1750 and BMP280 remains UNVERIFIED.
 - Complete full-hardware operation remains UNVERIFIED.

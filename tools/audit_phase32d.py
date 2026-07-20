@@ -34,6 +34,9 @@ REQUIRED_FILES = (
     "firmware/openrf1/keil/RTE/_OpenRF1_MPU6050_Bringup/RTE_Components.h",
     "pc/src/rplidar_c1_tools/openrf1_mpu6050_bringup.py",
     "pc/tests/test_openrf1_mpu6050_bringup.py",
+    "data/test_vectors/phase3.2d/mpu6050_startup_grace_session.jsonl",
+    "data/test_vectors/phase3.2d/mpu6050_error_session.jsonl",
+    "evidence/phase3.2d/mpu6050_manual_evidence.md",
     "tools/audit_phase32d.py",
 )
 
@@ -64,11 +67,12 @@ def main() -> int:
     _check_source_boundaries(lines, failures)
     _check_git_hygiene(lines, failures)
     _check_previous_evidence_hashes(lines, failures)
-    _check_no_phase32d_physical_evidence(lines, failures)
+    _check_phase32d_manual_evidence(lines, failures)
     _check_private_information(lines, failures)
     _check_build_evidence(lines)
     lines.append("software_status: SOFTWARE_READY")
-    lines.append("physical_status: PHYSICAL_VERIFICATION_REQUIRED")
+    lines.append("isolated_manual_evidence_status: MANUAL_EVIDENCE_VERIFIED")
+    lines.append("full_hardware_status: UNVERIFIED")
     lines.append("hardware_access_by_automation: none")
     lines.append("flash_attempted_by_automation: no")
     lines.append("serial_port_opened_by_automation: no")
@@ -210,12 +214,37 @@ def _check_previous_evidence_hashes(lines: list[str], failures: list[str]) -> No
             failures.append(f"previous evidence hash mismatch: {relative}")
 
 
-def _check_no_phase32d_physical_evidence(lines: list[str], failures: list[str]) -> None:
+def _check_phase32d_manual_evidence(lines: list[str], failures: list[str]) -> None:
     evidence_root = REPO_ROOT / "evidence/phase3.2d"
-    files = [path for path in evidence_root.rglob("*") if path.is_file()] if evidence_root.exists() else []
-    lines.append(f"phase3_2d_physical_evidence_files_present: {bool(files)}")
-    if files:
-        failures.append("Phase 3.2D physical evidence files are not allowed yet")
+    allowed = {REPO_ROOT / "evidence/phase3.2d/mpu6050_manual_evidence.md"}
+    files = set(path for path in evidence_root.rglob("*") if path.is_file()) if evidence_root.exists() else set()
+    unexpected = sorted(path.relative_to(REPO_ROOT).as_posix() for path in files - allowed)
+    evidence_path = REPO_ROOT / "evidence/phase3.2d/mpu6050_manual_evidence.md"
+    lines.append(f"phase3_2d_manual_evidence_present: {evidence_path in files}")
+    lines.append(f"phase3_2d_unexpected_evidence_files_present: {bool(unexpected)}")
+    if evidence_path not in files:
+        failures.append("missing Phase 3.2D sanitized manual evidence file")
+        return
+    if unexpected:
+        failures.append("unexpected Phase 3.2D evidence files: " + ", ".join(unexpected))
+
+    text = evidence_path.read_text(encoding="utf-8")
+    required_snippets = (
+        "MANUAL_EVIDENCE_VERIFIED",
+        "I2C ACK at address `0x68`",
+        "WHO_AM_I register result `0x68`",
+        "configuration readback",
+        "Startup dynamic gyro-bias calibration",
+        "`gyro_raw` preserves raw register data",
+        "`gyro_dps` subtracts the",
+        "Shared-I2C concurrency",
+        "Complete multisensor firmware operation",
+        "It did not flash hardware",
+    )
+    missing = [snippet for snippet in required_snippets if snippet not in text]
+    lines.append(f"phase3_2d_manual_evidence_required_snippets_present: {not missing}")
+    if missing:
+        failures.append("missing manual evidence snippets: " + ", ".join(missing))
 
 
 def _check_private_information(lines: list[str], failures: list[str]) -> None:
@@ -264,14 +293,15 @@ def manual_status_text() -> str:
             "mcu_identity: CONFIRMED by Phase 3.2A OpenRF1 evidence",
             "mpu6050_module_count: CONFIRMED x1 inventory",
             "mpu6050_module_vcc_5v_rule: CONFIRMED_MODULE_EVIDENCE for GY-521 style module",
-            "mpu6050_planned_address_0x68: PLANNED using AD0 to GND",
-            "mpu6050_who_am_i_0x68: PHYSICAL_VERIFICATION_REQUIRED",
-            "mpu6050_i2c_ack: PHYSICAL_VERIFICATION_REQUIRED",
-            "mpu6050_configuration_readback: PHYSICAL_VERIFICATION_REQUIRED",
-            "mpu6050_live_imu_temperature_telemetry: PHYSICAL_VERIFICATION_REQUIRED",
+            "mpu6050_isolated_wiring: MANUAL_EVIDENCE_VERIFIED for VCC/GND/SCL/SDA/AD0",
+            "mpu6050_address_0x68: MANUAL_EVIDENCE_VERIFIED in isolated bring-up",
+            "mpu6050_who_am_i_0x68: MANUAL_EVIDENCE_VERIFIED in isolated bring-up",
+            "mpu6050_i2c_ack: MANUAL_EVIDENCE_VERIFIED in isolated bring-up",
+            "mpu6050_configuration_readback: MANUAL_EVIDENCE_VERIFIED in isolated bring-up",
+            "mpu6050_live_imu_temperature_telemetry: MANUAL_EVIDENCE_VERIFIED in isolated bring-up",
+            "mpu6050_startup_gyro_bias_semantics: MANUAL_EVIDENCE_VERIFIED in isolated bring-up",
             "mpu6050_axis_orientation: UNVERIFIED",
             "mpu6050_accelerometer_offset: UNVERIFIED",
-            "mpu6050_gyro_bias: UNVERIFIED",
             "mpu6050_yaw_drift: UNVERIFIED",
             "shared_i2c_multidevice_concurrency: UNVERIFIED",
             "complete_full_hardware_operation: UNVERIFIED",
