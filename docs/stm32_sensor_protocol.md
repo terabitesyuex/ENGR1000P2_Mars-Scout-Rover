@@ -126,7 +126,7 @@ Payload:
 
 Phase 3.2B records raw MPU6050 samples and deterministic conversion helpers only. It does not claim calibration, sensor fusion, orientation, odometry, SLAM, or navigation.
 
-Phase 3.2D also defines an isolated MPU6050 bring-up JSONL stream with `sensor_identity` and `imu` records for future manual USART1 capture. That stream is validated by dedicated Phase 3.2D helpers/tests and is not a calibrated rover-frame IMU, odometry, or sensor-fusion contract. MPU6050 ACK, WHO_AM_I, configuration readback, live telemetry, calibration, and axis orientation remain UNVERIFIED.
+Phase 3.2D also defines an isolated MPU6050 bring-up JSONL stream with `sensor_identity` and `imu` records for manual USART1 capture. That stream is validated offline by dedicated Phase 3.2D helpers, fixtures, and tests and is not a calibrated rover-frame IMU, odometry, or sensor-fusion contract. Isolated MPU6050 ACK, WHO_AM_I, configuration readback, live telemetry, startup gyro-bias calibration, approximately 10 Hz output, and manual axis response are MANUAL_EVIDENCE_VERIFIED for the isolated bring-up only. Absolute accuracy, calibration motion rejection, final rover-frame alignment, shared-I2C concurrency, and complete rover integration remain UNVERIFIED.
 
 ### `subsystem_status`
 

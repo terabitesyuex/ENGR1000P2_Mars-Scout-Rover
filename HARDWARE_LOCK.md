@@ -120,7 +120,7 @@ Phase 3.2D isolated MPU6050 bring-up plan, supplied for software preparation onl
 - Planned unused pins: INT, XDA, XCL, and FSYNC disconnected for polling bring-up.
 - Planned register checks: WHO_AM_I register `0x75` expected `0x68`, `PWR_MGMT_1 = 0x01`, `SMPLRT_DIV = 0x09`, `CONFIG = 0x03`, `GYRO_CONFIG = 0x00`, and `ACCEL_CONFIG = 0x00`.
 
-This Phase 3.2D connection plan is UNVERIFIED physical evidence. It does not confirm MPU6050 ACK, WHO_AM_I, register readback, live IMU data, calibration, axis orientation, shared-I2C operation, or full-hardware operation.
+The original Phase 3.2D connection plan has now been manually exercised only for the isolated MPU6050 target. A's sanitized evidence records H4 5 V/GND/PB1/SCL/PC3/SDA connector order, MPU6050 VCC/GND/SCL/SDA wiring, AD0 measured at 0 V, H4 5 V approximately 4.77 V, MPU6050 VCC approximately 4.78 V, SCL/SDA idle approximately 3.31 V, continuity checks, I2C ACK at `0x68`, WHO_AM_I `0x68`, isolated configuration readback, live IMU JSON telemetry, startup gyro-bias calibration, approximately 10 Hz output, a 15-second no-sequence-loss capture, and isolated axis response as MANUAL_EVIDENCE_VERIFIED. Absolute accuracy, calibration motion rejection, long-duration drift, shared-I2C operation, final rover-frame alignment, and full-hardware operation remain UNVERIFIED.
 
 Phase 3.2B module-specific electrical evidence:
 
@@ -231,7 +231,7 @@ PC planned responsibilities:
 - physical HC-SR04 timer accuracy and timeout behavior: UNVERIFIED.
 - BH1750 absolute illuminance calibration: UNVERIFIED.
 - BMP280 address in isolated Phase 3.2C capture: PHYSICAL_EVIDENCE_VERIFIED at `0x76`; full shared-I2C BMP280 operation remains UNVERIFIED.
-- actual MPU6050 I2C address: UNVERIFIED; Phase 3.2D software uses the planned `0x68` address with AD0 grounded, but no physical ACK or WHO_AM_I evidence exists yet.
+- actual MPU6050 I2C address: MANUAL_EVIDENCE_VERIFIED at `0x68` for the isolated Phase 3.2D bring-up with AD0 measured at 0 V; shared-I2C operation remains UNVERIFIED.
 - TCRT5000 and Hall output polarity remains UNVERIFIED.
 - physical TCRT5000 active polarity: UNVERIFIED.
 - physical Hall active polarity: UNVERIFIED.
@@ -250,7 +250,7 @@ PC planned responsibilities:
 - Verify supply voltage, polarity, current margin, ripple, and common ground before controller wiring.
 - Verify ESP32 GPIO and UART assignment before live integration.
 - Verify STM32-ESP32 physical link before relying on rover sensor data.
-- Verify HC-SR04 level interface, TCRT5000 polarity, Hall polarity, I2C addresses, MPU6050 WHO_AM_I/configuration/live telemetry, and sensor mounting offsets.
+- Verify HC-SR04 level interface, TCRT5000 polarity, Hall polarity, shared-I2C operation, final MPU6050 mounting orientation, and sensor mounting offsets.
 
 ## Phase 2.5 Software Boundary Status
 
@@ -312,11 +312,15 @@ PC planned responsibilities:
 - Phase 3.2D adds an isolated OpenRF1 MPU6050-only firmware boundary under `firmware/openrf1/mpu6050_bringup/`.
 - The Phase 3.2D Keil project is `firmware/openrf1/keil/OpenRF1_MPU6050_Bringup.uvprojx`.
 - The Phase 3.2D output directory is `Objects_MPU6050_Bringup/` and must not overwrite `Objects/OpenRF1_BH1750.hex`, `Objects_BMP280_Bringup/OpenRF1_BMP280_Bringup.hex`, or `Objects_FullHardware/OpenRF1_FullHardware.hex`.
-- Planned MPU6050-only wiring: GY-521/MPU6050 VCC -> OpenRF1 5 V, GND -> OpenRF1 GND, SCL -> PB1 / connector B1, SDA -> PC3 / connector C3, AD0 -> GND, and INT/XDA/XCL/FSYNC disconnected.
-- Planned address `0x68`, expected WHO_AM_I `0x68`, wake/configuration values `PWR_MGMT_1 = 0x01`, `SMPLRT_DIV = 0x09`, `CONFIG = 0x03`, `GYRO_CONFIG = 0x00`, and `ACCEL_CONFIG = 0x00`: SOFTWARE_READY only.
+- Isolated MPU6050-only wiring: GY-521/MPU6050 VCC -> OpenRF1 H4 5 V, GND -> H4 GND, SCL -> PB1 / SCL, SDA -> PC3 / SDA, AD0 measured at 0 V, and INT/XDA/XCL/FSYNC disconnected: MANUAL_EVIDENCE_VERIFIED for the isolated bring-up.
+- Address `0x68`, WHO_AM_I `0x68`, wake/configuration values `PWR_MGMT_1 = 0x01`, `SMPLRT_DIV = 0x09`, `CONFIG = 0x03`, `GYRO_CONFIG = 0x00`, and `ACCEL_CONFIG = 0x00` readback: MANUAL_EVIDENCE_VERIFIED for the isolated bring-up.
+- Software-I2C stable communication after the delay loop was changed from `ticks = 24u` to `ticks = 240u`: MANUAL_EVIDENCE_VERIFIED for the isolated bring-up.
+- Startup gyro-bias calibration uses 5000 ms warmup, 500 samples, and approximately 10 ms sample interval; `gyro_raw` remains raw register data and only `gyro_dps` subtracts the dynamic bias: MANUAL_EVIDENCE_VERIFIED.
+- A's reported final Keil build for `OpenRF1_MPU6050_FINAL_AUTO_CAL_20260720.hex` had 0 errors and 0 warnings, size 51928 bytes, and SHA-256 `403F46A865A32B496586CA4B36E476ECED53C2165868F4B0FA7BCBA8BCB0D55F`. Repository automation did not reproduce this Keil build or hash.
 - Automated Phase 3.2D tests use pure logic, static source checks, build/artifact audits, and previous evidence hash checks only.
 - No real COM port, USB device, GPIO, I2C bus, flash action, or real sensor is accessed by repository automation.
-- MPU6050 ACK, physical address, WHO_AM_I, configuration readback, live acceleration/angular-rate/temperature telemetry, absolute accuracy, gyro bias, accelerometer offsets, yaw drift, axis orientation, full multi-device shared-I2C concurrency, and complete full-hardware operation remain UNVERIFIED.
+- Isolated MPU6050 firmware flashing/execution, ACK, physical address, WHO_AM_I, configuration readback, live acceleration/angular-rate/temperature telemetry, startup gyro-bias calibration, approximately 10 Hz output, 15-second no-sequence-loss telemetry, and isolated axis response are MANUAL_EVIDENCE_VERIFIED.
+- Absolute acceleration accuracy, absolute angular-rate accuracy, calibration-time motion detection, calibration motion rejection, long-duration thermal drift, final rover-frame axis alignment, accelerometer offsets, yaw drift, full multi-device shared-I2C concurrency, motor-vibration behavior, encoder/IMU fusion, physical odometry accuracy, ESP32/WiFi integration, and complete full-hardware operation remain UNVERIFIED.
 
 ## Phase 3.2E HC-SR04 Bring-Up Boundary Status
 
@@ -391,7 +395,7 @@ PC planned responsibilities:
 - Disconnect the STM32/OpenRF1 5 V feed before plugging the ESP32-C3 SuperMini into USB; external 5 V and USB power must not be connected simultaneously.
 - Do not power the BMP280-3.3 module from the I2C connector 5 V pin.
 - For the BMP280-only bring-up, connect CSB to 3.3 V for I2C mode and SDO to GND for the planned `0x76` address before power-up.
-- For the MPU6050-only bring-up, use the GY-521/MPU6050 module 5 V VCC plan only for that module type, keep AD0 tied to GND for the planned `0x68` address, and do not claim ACK or WHO_AM_I until captured.
+- For the MPU6050-only bring-up, use the GY-521/MPU6050 module 5 V VCC plan only for that module type and keep AD0 tied to GND for the isolated `0x68` address; do not generalize the isolated ACK or WHO_AM_I evidence to shared-I2C, final installed orientation, or complete full-hardware operation.
 - Do not treat Hall `S` as STM32-safe until its high/low voltage is measured in both magnetic states.
 - Do not infer C1 signal identity from wire color alone.
 - Do not use USART1 for high-rate lidar payload.

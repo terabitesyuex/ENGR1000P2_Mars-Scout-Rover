@@ -124,21 +124,24 @@ def test_phase32b_current_plan_documents_software_foundation_boundaries():
 
 def test_phase32d_current_plan_documents_mpu6050_software_boundary():
     required = {
-        "README.md": [
-            "Phase 3.2D",
-            "OpenRF1_MPU6050_Bringup.uvprojx",
-            "Physical ACK, WHO_AM_I, live IMU telemetry",
-        ],
-        "HARDWARE_LOCK.md": [
-            "Phase 3.2D MPU6050 Bring-Up Boundary Status",
-            "Objects_MPU6050_Bringup",
-            "MPU6050 ACK, physical address, WHO_AM_I",
-        ],
-        "docs/openrf1_mpu6050_bringup.md": [
-            "GY-521/MPU6050 VCC -> OpenRF1 5 V",
-            "WHO_AM_I register",
-            "PHYSICAL_VERIFICATION_REQUIRED",
-        ],
+            "README.md": [
+                "Phase 3.2D",
+                "OpenRF1_MPU6050_Bringup.uvprojx",
+                "I2C ACK at `0x68`, WHO_AM_I `0x68`",
+                "shared-I2C concurrency",
+            ],
+            "HARDWARE_LOCK.md": [
+                "Phase 3.2D MPU6050 Bring-Up Boundary Status",
+                "Objects_MPU6050_Bringup",
+                "ACK, physical address, WHO_AM_I",
+                "MANUAL_EVIDENCE_VERIFIED",
+            ],
+            "docs/openrf1_mpu6050_bringup.md": [
+                "GY-521/MPU6050 VCC -> OpenRF1 H4 5 V",
+                "WHO_AM_I register",
+                "MANUAL_EVIDENCE_VERIFIED",
+                "Remaining Limitations",
+            ],
         "docs/test_plan.md": [
             "phase3.2d",
             "Phase 3.2D automated tests do not open real COM ports",
