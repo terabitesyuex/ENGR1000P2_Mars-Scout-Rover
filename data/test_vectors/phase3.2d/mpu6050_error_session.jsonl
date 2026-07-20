@@ -1,0 +1,1 @@
+{"message_type":"imu","payload":{"accel_g":null,"accel_raw":null,"error_code":"nack","gyro_dps":null,"gyro_raw":null,"initialization_stage":"read_who_am_i","operation":"read_who_am_i","register":"0x75","temperature_c":null,"temperature_raw":null},"protocol":"mars_scout_stm32_sensor_telemetry","sensor_id":"mpu6050_1","sequence":0,"status":"nack","timestamp_ms":10000,"version":1}
