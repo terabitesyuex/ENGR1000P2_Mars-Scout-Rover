@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-07-20 - MPU6050 Bring-Up Parser Fixtures
+
+- Added strict MPU6050 bring-up JSONL parsing helpers and deterministic Phase 3.2D fixtures covering delayed startup, contiguous sequences, 100 ms sample spacing, raw-versus-bias-corrected gyro semantics, and error telemetry with null measurement fields.
+
 ## 2026-07-20 - STM32 Serial Capture Hardening
 
 - Updated the STM32 serial capture path to set DTR and RTS low before opening pyserial, add a configurable startup grace period, count malformed BH1750 telemetry lines without terminating the capture, and preserve session reset behavior for independent reconnects.
