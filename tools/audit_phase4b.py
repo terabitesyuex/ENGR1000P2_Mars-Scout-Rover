@@ -25,6 +25,7 @@ PHASE4B_MODULES = (
     "pc/src/rplidar_c1_tools/motion_control.py",
     "pc/src/rplidar_c1_tools/motion_control_simulator.py",
 )
+PHASE4B_SCOPE_FILES = REQUIRED_FILES
 WINDOWS_USER_PATH_RE = re.compile(r"[A-Za-z]:\\(?:Users|Documents and Settings)\\")
 POSIX_USER_PATH_RE = re.compile(r"/(?:home|Users)/[^/\s]+/")
 COM_PORT_RE = re.compile(r"\bCOM[0-9]{1,3}\b")
@@ -156,15 +157,23 @@ def _check_documentation(lines: list[str], failures: list[str]) -> None:
 
 
 def _check_software_only_diff(lines: list[str], failures: list[str]) -> None:
-    result = _run_git("diff", "--name-only", BASE_COMMIT)
+    result = _run_git("log", "--format=%H", f"{BASE_COMMIT}..HEAD", "--", *PHASE4B_SCOPE_FILES)
     if result.returncode != 0:
         lines.append("firmware_files_changed: unknown")
-        failures.append("git diff against Phase 4A base failed")
+        failures.append("git diff against Phase 4B base failed")
         return
-    firmware = [path for path in result.stdout.splitlines() if path.startswith("firmware/")]
+    phase_commits = [line for line in result.stdout.splitlines() if line]
+    firmware: set[str] = set()
+    for commit in phase_commits:
+        changed = _run_git("diff-tree", "--no-commit-id", "--name-only", "-r", commit)
+        if changed.returncode != 0:
+            lines.append("firmware_files_changed: unknown")
+            failures.append(f"git diff-tree failed for Phase 4B scoped commit {commit}")
+            return
+        firmware.update(path for path in changed.stdout.splitlines() if path.startswith("firmware/"))
     lines.append(f"firmware_files_changed: {bool(firmware)}")
     if firmware:
-        failures.append("software-only phase changed firmware: " + ", ".join(firmware))
+        failures.append("software-only phase-scoped commit changed firmware: " + ", ".join(sorted(firmware)))
 
 
 def _check_privacy(lines: list[str], failures: list[str]) -> None:
