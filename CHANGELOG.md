@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-07-20 - Phase 4 Historical Firmware Audit Scope
+
+- Scoped Phase 4A and Phase 4B software-only firmware-diff audits to commits that touch their phase files, so later unrelated firmware follow-up commits do not break historical phase verification.
+- Added focused audit tests that keep phase-scoped firmware changes failing while confirming unrelated later firmware-only commits do not break historical Phase 4 verification.
+- Preserved Phase 4A and Phase 4B software-only hardware-access checks; motor/encoder behavior, physical tuning, stopping distance, and real closed-loop performance remain UNVERIFIED.
+
 ## 2026-07-20 - Phase 3.2D Manual MPU6050 Evidence
 
 - Recorded sanitized Phase 3.2D isolated MPU6050 manual evidence for OpenRF1 wiring, ACK/address `0x68`, WHO_AM_I `0x68`, configuration readback, live IMU JSONL, startup gyro-bias semantics, A-reported approximately 10 Hz telemetry during a 15-second isolated test, no reported sequence loss, and isolated axis response.
