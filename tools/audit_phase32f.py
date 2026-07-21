@@ -7,9 +7,18 @@ import hashlib
 from pathlib import Path
 import re
 import subprocess
+import sys
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT / "pc/src"))
+
+from rplidar_c1_tools.phase32f_evidence import (  # noqa: E402
+    CAPTURE_SPECS,
+    FORMAL_KEIL_HEX_SHA256,
+    Phase32fEvidenceError,
+    validate_all_phase32f_captures,
+)
 
 PHASE32A_EVIDENCE = (
     "evidence/phase3.2a/bh1750_physical_ba2024b_20260716_234217.jsonl",
@@ -34,7 +43,10 @@ REQUIRED_FILES = (
     "firmware/openrf1/keil/RTE/_OpenRF1_GroundSensors_Bringup/RTE_Components.h",
     "pc/src/rplidar_c1_tools/openrf1_ground_sensors_bringup.py",
     "pc/tests/test_openrf1_ground_sensors_bringup.py",
+    "pc/src/rplidar_c1_tools/phase32f_evidence.py",
+    "pc/tests/test_phase32f_physical_evidence.py",
     "tools/audit_phase32f.py",
+    "evidence/phase3.2f/tcrt5000_physical_evidence.md",
 )
 
 GENERATED_PATTERNS = (
@@ -67,12 +79,12 @@ def main() -> int:
     _check_documentation(lines, failures)
     _check_git_hygiene(lines, failures)
     _check_previous_evidence_hashes(lines, failures)
-    _check_no_phase32f_physical_evidence(lines, failures)
+    _check_phase32f_physical_evidence(lines, failures)
     _check_private_information(lines, failures)
     _check_build_evidence(lines)
     lines.append("software_status: SOFTWARE_READY")
-    lines.append("physical_status: PHYSICAL_VERIFICATION_REQUIRED")
-    lines.append("physical_evidence_verified: false")
+    lines.append("physical_status: ISOLATED_TCRT_EVIDENCE_RECORDED")
+    lines.append("physical_evidence_verified: isolated_tcrt_only")
     lines.append("hardware_access_by_automation: none")
     lines.append("flash_attempted_by_automation: no")
     lines.append("serial_port_opened_by_automation: no")
@@ -276,8 +288,6 @@ def _check_documentation(lines: list[str], failures: list[str]) -> None:
 
     ground_doc = REPO_ROOT / "docs/openrf1_ground_sensors_bringup.md"
     text = ground_doc.read_text(encoding="utf-8", errors="replace") if ground_doc.exists() else ""
-    if "PHYSICAL_EVIDENCE_VERIFIED" in text:
-        failures.append("Phase 3.2F documentation must not claim physical evidence verified")
     false_claims = (
         "left TCRT active polarity is verified",
         "right TCRT active polarity is verified",
@@ -333,12 +343,26 @@ def _check_previous_evidence_hashes(lines: list[str], failures: list[str]) -> No
             failures.append(f"previous evidence hash mismatch: {relative}")
 
 
-def _check_no_phase32f_physical_evidence(lines: list[str], failures: list[str]) -> None:
+def _check_phase32f_physical_evidence(lines: list[str], failures: list[str]) -> None:
+    try:
+        summaries = validate_all_phase32f_captures(REPO_ROOT)
+    except (OSError, UnicodeError, Phase32fEvidenceError) as exc:
+        lines.append("phase3_2f_tcrt_evidence_valid: False")
+        failures.append(f"invalid Phase 3.2F TCRT evidence: {exc}")
+        return
+
+    lines.append("phase3_2f_tcrt_evidence_valid: True")
+    lines.append(f"phase3_2f_tcrt_capture_count: {len(summaries)}")
+    lines.append(f"phase3_2f_tcrt_capture_frames_each: {summaries[0].record_count}")
+    lines.append(f"phase3_2f_tcrt_steady_interval_ms: {summaries[0].interval_ms}")
+    lines.append(f"phase3_2f_tcrt_formal_hex_sha256: {FORMAL_KEIL_HEX_SHA256}")
     evidence_root = REPO_ROOT / "evidence/phase3.2f"
-    files = [path for path in evidence_root.rglob("*") if path.is_file()] if evidence_root.exists() else []
-    lines.append(f"phase3_2f_physical_evidence_files_present: {bool(files)}")
-    if files:
-        failures.append("Phase 3.2F physical evidence files are not allowed in this software-only phase")
+    tracked_names = {path.name for path in evidence_root.glob("*.jsonl")}
+    expected_names = {spec["path"].name for spec in CAPTURE_SPECS.values()}
+    unexpected = sorted(tracked_names - expected_names)
+    if unexpected:
+        failures.append("unexpected Phase 3.2F evidence files: " + ", ".join(unexpected))
+    lines.append(f"phase3_2f_unexpected_evidence_files: {bool(unexpected)}")
 
 
 def _check_private_information(lines: list[str], failures: list[str]) -> None:
@@ -407,13 +431,18 @@ def manual_status_text() -> str:
             "hall_module_output_voltage: UNVERIFIED",
             "hall_active_polarity: UNVERIFIED",
             "hall_triggering_magnetic_pole: UNVERIFIED",
-            "white_surface_response: UNVERIFIED",
-            "black_surface_response: UNVERIFIED",
-            "edge_or_open_space_response: UNVERIFIED",
+            "tcrt_signal_connections_pc4_pc5: MANUAL_EVIDENCE_VERIFIED",
+            "tcrt_live_raw_and_debounced_response: MANUAL_EVIDENCE_VERIFIED",
+            "four_100_frame_captures_no_sequence_gaps: MANUAL_EVIDENCE_VERIFIED",
+            "actual_50_ms_serial_periodicity_steady_state: MANUAL_EVIDENCE_VERIFIED",
+            "white_surface_response_at_tested_geometry: MANUAL_EVIDENCE_VERIFIED",
+            "open_space_response_at_tested_geometry: MANUAL_EVIDENCE_VERIFIED",
+            "tcrt_semantic_polarity: UNVERIFIED",
+            "black_white_classification: UNVERIFIED",
+            "edge_or_open_space_safety_behavior: UNVERIFIED",
             "magnetic_activation: UNVERIFIED",
             "magnetic_release: UNVERIFIED",
             "real_debounce_suitability: UNVERIFIED",
-            "actual_50_ms_serial_periodicity: UNVERIFIED",
             "full_hardware_operation: UNVERIFIED",
             "hardware_access_by_automation: none",
         ]

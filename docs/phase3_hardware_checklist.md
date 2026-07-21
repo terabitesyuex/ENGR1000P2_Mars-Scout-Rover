@@ -42,13 +42,14 @@ Evidence table fields:
 
 ## TCRT5000
 
-- Verify connector orientation.
-- Verify supply voltage.
-- Verify raw idle and trigger states.
+- Isolated X1/PC4 and X2/PC5 signal connections are MANUAL_EVIDENCE_VERIFIED.
+- Both modules produced recorded raw/debounced transitions, and four 100-frame steady-state captures had no gaps and exact 50 ms timestamps.
+- Verify final connector orientation and strain relief after rover installation.
+- Measure supply and OUT high/low voltages with a multimeter.
 - Determine active polarity.
 - Measure performance over actual floor and edge materials.
 - Verify edge/drop threshold.
-- Verify both modules independently.
+- Verify dependable distance window and ambient-light margin.
 - Preserve raw state in telemetry until polarity is verified.
 
 ## Hall
@@ -61,14 +62,14 @@ Evidence table fields:
 
 ## Phase 3.2F Ground-Sensor Bring-Up
 
-Do not mark these items complete automatically.
+Completed boxes below are backed by `evidence/phase3.2f/`. Do not complete remaining boxes without new manual evidence.
 
-1. [ ] Confirm official Keil build.
-2. [ ] Record HEX SHA-256.
+1. [x] Confirm official Keil build.
+2. [x] Record HEX SHA-256.
 3. [ ] Remove all board power.
 4. [ ] Verify connector orientation.
-5. [ ] Verify signal 1 -> PC4.
-6. [ ] Verify signal 2 -> PC5.
+5. [x] Verify installed signal 1 -> PC4 connection.
+6. [x] Verify installed signal 2 -> PC5 connection.
 7. [ ] Verify signal 3 -> PB0.
 8. [ ] Confirm signal 4 remains unused.
 9. [ ] Confirm both TCRT modules receive 3.3 V.
@@ -76,16 +77,16 @@ Do not mark these items complete automatically.
 11. [ ] Confirm all modules share common ground.
 12. [ ] Confirm Hall S passes through the external 10 kOhm / 15 kOhm divider.
 13. [ ] Confirm Hall S is not directly connected to PB0.
-14. [ ] Flash isolated target.
-15. [ ] Reset and capture identity record.
-16. [ ] Confirm 50 ms periodic JSONL telemetry.
+14. [x] Flash isolated target.
+15. [x] Reset and capture identity record.
+16. [x] Confirm 50 ms steady-state periodic JSONL telemetry.
 17. [ ] Record resting levels.
-18. [ ] Test left TCRT over a light surface.
+18. [x] Test left TCRT over a reflective white surface at the recorded geometry.
 19. [ ] Test left TCRT over a dark surface.
-20. [ ] Test left TCRT over a safe open edge or lifted condition.
-21. [ ] Confirm only the left channel responds.
-22. [ ] Repeat the same tests for the right TCRT.
-23. [ ] Confirm only the right channel responds.
+20. [x] Test left TCRT in the recorded open-space geometry.
+21. [x] Confirm the left channel transition in isolated captures.
+22. [x] Repeat recorded reflective-surface/open-space tests for the right TCRT.
+23. [x] Confirm the right channel transition in isolated captures.
 24. [ ] Test Hall with no magnet.
 25. [ ] Approach the marked A3144 face with a suitable magnetic pole.
 26. [ ] Observe raw and debounced transition.
@@ -95,12 +96,12 @@ Do not mark these items complete automatically.
 30. [ ] Determine actual electrical and semantic polarity.
 31. [ ] Record Hall orientation and triggering pole.
 32. [ ] Record whether 20 ms debounce is suitable.
-33. [ ] Save raw JSONL without modification.
-34. [ ] Hash raw evidence before integration.
+33. [x] Save sanitized raw JSONL without modifying telemetry content.
+34. [x] Hash raw evidence before integration.
 
 When a multimeter later becomes available, also leave these incomplete until measured: 3.3 V rail measurement, 5 V rail measurement, left TCRT OUT high and low voltage, right TCRT OUT high and low voltage, Hall S voltage before divider without magnet, Hall S voltage before divider with magnet, PB0 voltage after divider without magnet, PB0 voltage after divider with magnet, and actual divider resistor values when practical.
 
-Phase 3.2F uses vendor-documented signal 1 / X1 / PC4, signal 2 / X2 / PC5, and signal 3 / X3 / PB0 mappings. Signal 4 / X4 remains unused because the schematic says PC14 while the old example maps X4 to PB1. Do not power the TCRT modules from the connector's 5 V pin. Do not connect Hall S directly to PB0. Do not share one VCC rail across all three modules. Raw GPIO values are not semantic detection states, and semantic polarity remains unverified.
+Phase 3.2F uses vendor-documented signal 1 / X1 / PC4, signal 2 / X2 / PC5, and signal 3 / X3 / PB0 mappings. Signal 4 / X4 remains unused because the schematic says PC14 while the old example maps X4 to PB1. Do not power the TCRT modules from the connector's 5 V pin. Do not connect Hall S directly to PB0. Do not share one VCC rail across all three modules. The recorded 0/1 responses are electrical states, not black/white/drop semantics; polarity remains unverified.
 
 ## BH1750 And BMP280
 

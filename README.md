@@ -4,7 +4,7 @@ This repository supports a low-cost Mars Scout Rover using an STM32 mecanum-whee
 
 Mandatory baseline functions are nearby-obstacle detection, local stop/turn collision avoidance, rover and sensor data acquisition, WiFi data transmission to a computer, real-time 2D LiDAR/radar-style display, reproducible evidence through recording/replay, and safe behavior when communication or sensors fail.
 
-Major enhancements are encoder/IMU-assisted pose estimation, short-range accumulated 2D environment mapping, optional dual-RPLIDAR C1 use after feasibility is verified, and environmental-change indication using illuminance, temperature, and atmospheric-pressure measurements. ROS and a vehicle-mounted Linux computer are not required.
+Major enhancements are encoder/IMU-assisted pose estimation, short-range accumulated 2D environment mapping, and environmental-change indication using illuminance, temperature, and atmospheric-pressure measurements. The current inventory has exactly one physical RPLIDAR C1M1-R2; dual-C1 work is not current scope. ROS and a vehicle-mounted Linux computer are not required.
 
 ## Current Phase
 
@@ -22,7 +22,7 @@ Major enhancements are encoder/IMU-assisted pose estimation, short-range accumul
 - Phase 3.2C: isolated OpenRF1 BMP280-only bring-up firmware, Keil target, host-side BMP280 register/telemetry tests, verifier support, and recorded BMP280 physical evidence complete. Absolute temperature and pressure accuracy remain UNVERIFIED.
 - Phase 3.2D: isolated OpenRF1 MPU6050-only bring-up firmware foundation, Keil target, host-side MPU6050 register/telemetry tests, verifier support, startup gyro-bias calibration software, and recorded isolated manual evidence complete. Absolute acceleration/gyro accuracy, calibration motion rejection, final rover-frame axis alignment, shared-I2C concurrency, and full-hardware operation remain UNVERIFIED.
 - Phase 3.2E: isolated OpenRF1 HC-SR04-only bring-up firmware foundation, PA5/PA4/CN6/TIM6 vendor-documented design lock, required external ECHO divider, Keil target, host-side HC-SR04 tests, and verifier support complete. Physical wiring, trigger/echo pulses, real distance data, timeout behavior, and distance accuracy remain UNVERIFIED.
-- Phase 3.2F: isolated OpenRF1 ground-sensor firmware foundation, X1/PC4 left TCRT5000 mapping, X2/PC5 right TCRT5000 mapping, X3/protected PB0 Hall mapping, X4 conflict documentation, independent debounce, Keil target, host-side tests, and verifier support complete. Physical wiring, voltage levels, active polarity, surface response, magnetic behavior, and serial periodicity remain UNVERIFIED.
+- Phase 3.2F: isolated OpenRF1 ground-sensor firmware foundation and TCRT5000 evidence closeout complete. A's evidence verifies the isolated build/flash, PC4/PC5 signal connections, labelled 3.3 V/common-GND connections, both modules' raw/debounced response, four 100-frame gap-free captures, and exact 50 ms steady-state timestamps. Electrical measurements, polarity semantics, black/white/drop classification, Hall behavior, long-duration operation, and full-rover operation remain UNVERIFIED.
 - Phase 4A: standard X-layout mecanum kinematics, explicit wheel-side encoder conversion, body-twist estimation, exact SE(2) odometry integration, deterministic simulation, version-1 telemetry/recording compatibility, tests, documentation, and verifier support complete as a software-only foundation. All rover geometry, encoder resolution/signs, roller orientation, hardware acquisition, and physical odometry accuracy remain UNVERIFIED.
 - Phase 4B: validated body-motion commands, proportional wheel desaturation, acceleration limiting, four independent PID controllers, command watchdog, local safety arbitration, deterministic synthetic wheel plants, version-1 telemetry/recording additions, CLI, tests, documentation, and verifier support complete as a software-only foundation. Real motor/encoder behavior, PWM mapping, physical PID tuning, stopping distance, and closed-loop performance remain UNVERIFIED.
 
@@ -191,6 +191,8 @@ AUTHORITATIVE_VENDOR_DOCUMENTED facts from the OpenRF1 vendor control-board pack
 
 The design-locked wiring contract powers both TCRT5000 modules from STM32 3.3 V, powers the Hall module from 5 V, and routes Hall S through the external 10 kOhm / 15 kOhm divider before PB0. Do not connect Hall S directly to PB0. Do not share one VCC rail across all three modules. Runtime telemetry reports numeric `raw_level` and `debounced_level` only; semantic polarity remains unverified.
 
+Sanitized evidence under `evidence/phase3.2f/` records the isolated build and flash plus four 100-frame TCRT captures. Both PC4 and PC5 channels changed in response to the tested reflective-surface/open-space geometry, with no sequence gaps and exact 50 ms steady-state timestamps. This does not validate colour classification, a dependable drop threshold, voltage margins, the Hall channel, or complete-rover behavior.
+
 ## Preserved Verified C1 Facts
 
 - Exact model in earlier verified files: SLAMTEC RPLIDAR C1M1-R2.
@@ -326,7 +328,7 @@ The verifier checks Git state, Python selection, pytest import, targeted tests, 
 - Phase 3.2C: OpenRF1 BMP280-only physical bring-up firmware and recorded isolated BMP280 evidence; absolute accuracy and full shared-bus operation remain unverified.
 - Phase 3.2D: OpenRF1 MPU6050-only software bring-up firmware and isolated manual evidence; absolute accuracy, calibration motion rejection, shared-I2C concurrency, full multisensor firmware, final installed orientation, and rover integration remain unverified.
 - Phase 3.2E: OpenRF1 HC-SR04-only software bring-up firmware; physical wiring, pulses, real distance data, timeout behavior, and accuracy remain unverified.
-- Phase 3.2F: OpenRF1 ground-sensor-only software bring-up firmware; physical wiring, voltage levels, active polarity, surface behavior, magnetic behavior, and serial periodicity remain unverified.
+- Phase 3.2F: OpenRF1 ground-sensor-only firmware and isolated TCRT5000 evidence; electrical measurements, semantic polarity, black/white/drop classification, Hall behavior, and full-hardware operation remain unverified.
 - Phase 4A: software-only mecanum kinematics, explicit encoder conversion, deterministic body-twist estimation, and SE(2) odometry foundation.
 - Phase 4B: software-only closed-loop wheel-speed control, command shaping, watchdog, local safety arbitration, and deterministic synthetic wheel-plant foundation.
 - Phase 4C: future real motor/encoder bring-up, physical direction discovery, electrical validation, and timer/interrupt/PWM validation.

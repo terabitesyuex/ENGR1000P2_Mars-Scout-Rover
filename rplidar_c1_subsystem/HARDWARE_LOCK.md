@@ -4,7 +4,7 @@ This nested document is not the current hardware lock. Use the repository-root `
 
 # Hardware Lock
 
-This file records hardware facts that must not drift silently during development. Unknown values remain explicit until physically verified.
+This file records historical hardware facts only. The authoritative hardware lock is the repository-root `HARDWARE_LOCK.md`. Current inventory has exactly one physical RPLIDAR C1M1-R2 (`c1_1`); there is no second physical C1. Unknown values remain explicit until physically verified.
 
 ## LiDAR
 

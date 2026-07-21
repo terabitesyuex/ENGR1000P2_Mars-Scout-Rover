@@ -1,6 +1,6 @@
 # SUPERSEDED HISTORICAL COPY
 
-This nested document is not current authoritative guidance. Use the repository-root `README.md`, `PROJECT_SPEC.md`, `HARDWARE_LOCK.md`, `AGENTS.md`, and `docs/` files for the Phase 2.4 plan. Historical statements below may describe earlier single-C1 or Phase 0 assumptions.
+This nested document is not current authoritative guidance. Use the repository-root `README.md`, `PROJECT_SPEC.md`, `HARDWARE_LOCK.md`, `AGENTS.md`, and `docs/` files. The current inventory has exactly one physical RPLIDAR C1M1-R2 (`c1_1`); `c1_2` is historical/synthetic compatibility only. Current Phase 3.2F isolated TCRT5000 evidence and all latest progress are recorded at the repository root.
 
 # RPLIDAR C1 Subsystem
 

@@ -1,6 +1,6 @@
 # OpenRF1 Ground-Sensor Bring-Up
 
-Phase 3.2F implements the isolated software bring-up path for two TCRT5000 digital reflective modules and one HW-477/A3144 Hall module on the OpenRF1 STM32F103RCT6 controller. No physical verification has yet occurred.
+Phase 3.2F implements the isolated bring-up path for two TCRT5000 digital reflective modules and one planned HW-477/A3144 Hall module on the OpenRF1 STM32F103RCT6 controller. A has completed the isolated TCRT5000 portion; the Hall portion and electrical measurements have not been performed.
 
 ## Source Status
 
@@ -27,8 +27,8 @@ The project logical assignment for this phase is:
 
 | Logical channel | Planned module signal | Connector signal | MCU pin | Status |
 | --- | --- | --- | --- | --- |
-| left TCRT5000 OUT | left TCRT5000 OUT | signal 1 / X1 / PC4 | PC4 | AUTHORITATIVE_VENDOR_DOCUMENTED mapping; physical wiring UNVERIFIED |
-| right TCRT5000 OUT | right TCRT5000 OUT | signal 2 / X2 / PC5 | PC5 | AUTHORITATIVE_VENDOR_DOCUMENTED mapping; physical wiring UNVERIFIED |
+| left TCRT5000 OUT | left TCRT5000 OUT | signal 1 / X1 / PC4 | PC4 | AUTHORITATIVE_VENDOR_DOCUMENTED mapping; installed isolated connection MANUAL_EVIDENCE_VERIFIED |
+| right TCRT5000 OUT | right TCRT5000 OUT | signal 2 / X2 / PC5 | PC5 | AUTHORITATIVE_VENDOR_DOCUMENTED mapping; installed isolated connection MANUAL_EVIDENCE_VERIFIED |
 | Hall S protected node | Hall S after external divider | signal 3 / X3 / PB0 | PB0 | AUTHORITATIVE_VENDOR_DOCUMENTED mapping; physical wiring UNVERIFIED |
 
 ## X4 Conflict
@@ -86,9 +86,9 @@ Only these modules should be connected during isolated validation. Signal 4 rema
 
 ## Electrical Notes
 
-The TCRT5000 modules are three-pin digital modules labelled OUT, VCC, and GND. The module PCB appears to contain digital conditioning logic, but the exact logic-chip identity, threshold, output topology, active polarity, black/white behavior, and edge/open-space behavior are UNVERIFIED.
+The TCRT5000 modules are three-pin digital modules labelled OUT, VCC, and GND. The module PCB appears to contain digital conditioning logic. A observed repeatable raw/debounced transitions for reflective-surface and open-space test geometry, but the exact logic-chip identity, threshold, output topology, active polarity, black/white classification, dependable distance window, and drop-safety behavior remain UNVERIFIED.
 
-The physical Hall module is marked HW-477 V0.2 and the sensor is marked 3144. The A3144 sensor-level datasheet establishes that the sensor output is open collector, needs a pull-up path, and is active-low for the appropriate magnetic pole. The HW-477 module-level pull-up and LED circuit are not authoritatively documented, so Hall S voltage before and after the divider remains UNVERIFIED. The user currently does not have a multimeter.
+The physical Hall module is marked HW-477 V0.2 and the sensor is marked 3144. The A3144 sensor-level datasheet establishes that the sensor output is open collector, needs a pull-up path, and is active-low for the appropriate magnetic pole. The HW-477 module-level pull-up and LED circuit are not authoritatively documented, so Hall S voltage before and after the divider remains UNVERIFIED. No multimeter evidence has yet been recorded.
 
 ## IMPLEMENTED / SOFTWARE_READY
 
@@ -107,11 +107,20 @@ The physical Hall module is marked HW-477 V0.2 and the sensor is marked 3144. Th
 - USART1 / CH340 JSONL output only; no startup prose or debug banner.
 - Host-side tests and Phase 3.2F software audit.
 
+## MANUAL_EVIDENCE_VERIFIED - Isolated TCRT5000 Only
+
+- Keil rebuilt `OpenRF1_GroundSensors_Bringup` with 0 errors and 0 warnings.
+- The generated HEX SHA-256 was `999B678986655A2F913EEA643CA1A21EEC0C5CE0C883E4E9A55F5BF9C605FCB5` and the isolated firmware was flashed and executed.
+- `tcrt5000_1` OUT was connected to X1/PC4 and `tcrt5000_2` OUT was connected to X2/PC5.
+- Both TCRT modules were connected to the labelled STM32 3.3 V supply and common GND. This verifies the connection choice, not the actual voltage.
+- Both channels produced live numeric raw/debounced transitions.
+- Four sanitized 100-frame captures under `evidence/phase3.2f/` contain no sequence gaps and use exact 50 ms steady-state timestamp increments.
+- The captured reflective-surface/open-space states are valid only for the tested geometry. They do not establish black/white, edge/drop, or safety semantics.
+
 ## UNVERIFIED
 
-- Physical ground-sensor validation status: PHYSICAL_VERIFICATION_REQUIRED.
-- Physical connector orientation.
-- Cable orientation.
+- Remaining physical validation status: PHYSICAL_VERIFICATION_REQUIRED.
+- Final connector/cable orientation, strain relief, and rover mounting.
 - Actual 3.3 V rail.
 - Actual 5 V rail.
 - Actual TCRT output voltage.
@@ -127,16 +136,16 @@ The physical Hall module is marked HW-477 V0.2 and the sensor is marked 3144. Th
 - Hall active polarity.
 - Hall triggering magnetic pole.
 - Hall release behavior.
-- White-surface response.
 - Black-surface response.
-- Edge/open-space response.
+- Black/white classification and calibrated optical threshold/distance window.
+- Reliable edge/open-space detection and moving-rover drop prevention.
 - Magnetic activation.
 - Magnetic release.
 - Optical threshold.
 - Hall trigger distance.
 - Real debounce suitability.
 - Disconnected-sensor behavior.
-- Actual 50 ms serial periodicity.
+- Startup-frame timing and long-duration serial periodicity.
 - Long-duration stability.
 - Moving-rover drop prevention.
 - Full-hardware operation.
@@ -163,12 +172,12 @@ Every output level is numeric `0` or `1`. No black, white, line, drop, edge, saf
 
 Do not mark any item complete until real manual evidence exists.
 
-1. [ ] Confirm official Keil build.
-2. [ ] Record HEX SHA-256.
+1. [x] Confirm official Keil build.
+2. [x] Record HEX SHA-256.
 3. [ ] Remove all board power.
 4. [ ] Verify connector orientation.
-5. [ ] Verify signal 1 -> PC4.
-6. [ ] Verify signal 2 -> PC5.
+5. [x] Verify installed signal 1 -> PC4 connection.
+6. [x] Verify installed signal 2 -> PC5 connection.
 7. [ ] Verify signal 3 -> PB0.
 8. [ ] Confirm signal 4 remains unused.
 9. [ ] Confirm both TCRT modules receive 3.3 V.
@@ -176,16 +185,16 @@ Do not mark any item complete until real manual evidence exists.
 11. [ ] Confirm all modules share common ground.
 12. [ ] Confirm Hall S passes through the external 10 kOhm / 15 kOhm divider.
 13. [ ] Confirm Hall S is not directly connected to PB0.
-14. [ ] Flash isolated target.
-15. [ ] Reset and capture identity record.
-16. [ ] Confirm 50 ms periodic JSONL telemetry.
+14. [x] Flash isolated target.
+15. [x] Reset and capture identity record.
+16. [x] Confirm 50 ms steady-state periodic JSONL telemetry.
 17. [ ] Record resting levels.
-18. [ ] Test left TCRT over a light surface.
+18. [x] Test left TCRT over a reflective white surface at the recorded geometry.
 19. [ ] Test left TCRT over a dark surface.
-20. [ ] Test left TCRT over a safe open edge or lifted condition.
-21. [ ] Confirm only the left channel responds.
-22. [ ] Repeat the same tests for the right TCRT.
-23. [ ] Confirm only the right channel responds.
+20. [x] Test left TCRT in recorded open-space geometry.
+21. [x] Confirm the left channel transition in the isolated captures.
+22. [x] Repeat recorded reflective-surface/open-space tests for the right TCRT.
+23. [x] Confirm the right channel transition in the isolated captures.
 24. [ ] Test Hall with no magnet.
 25. [ ] Approach the marked A3144 face with a suitable magnetic pole.
 26. [ ] Observe raw and debounced transition.
@@ -195,8 +204,8 @@ Do not mark any item complete until real manual evidence exists.
 30. [ ] Determine actual electrical and semantic polarity.
 31. [ ] Record Hall orientation and triggering pole.
 32. [ ] Record whether 20 ms debounce is suitable.
-33. [ ] Save raw JSONL without modification.
-34. [ ] Hash raw evidence before integration.
+33. [x] Save sanitized raw JSONL without modifying telemetry content.
+34. [x] Hash raw evidence before integration.
 
 When a multimeter later becomes available, add these incomplete checks:
 

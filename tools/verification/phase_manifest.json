@@ -794,10 +794,18 @@
         "firmware/openrf1/keil/RTE/_OpenRF1_GroundSensors_Bringup/RTE_Components.h",
         "pc/src/rplidar_c1_tools/openrf1_ground_sensors_bringup.py",
         "pc/tests/test_openrf1_ground_sensors_bringup.py",
+        "pc/src/rplidar_c1_tools/phase32f_evidence.py",
+        "pc/tests/test_phase32f_physical_evidence.py",
+        "evidence/phase3.2f/tcrt5000_physical_evidence.md",
+        "evidence/phase3.2f/tcrt5000_1_open_space.jsonl",
+        "evidence/phase3.2f/tcrt5000_1_white_surface.jsonl",
+        "evidence/phase3.2f/tcrt5000_2_open_space.jsonl",
+        "evidence/phase3.2f/tcrt5000_2_white_surface.jsonl",
         "tools/audit_phase32f.py"
       ],
       "targeted": [
-        "pc/tests/test_openrf1_ground_sensors_bringup.py"
+        "pc/tests/test_openrf1_ground_sensors_bringup.py",
+        "pc/tests/test_phase32f_physical_evidence.py"
       ],
       "regression": [
         "pc/tests/test_openrf1_hcsr04_bringup.py",
@@ -830,7 +838,7 @@
             ".verification/phase3.2f/software_audit.txt",
             ".verification/phase3.2f/manual_hardware_status.txt"
           ],
-          "warning": "Phase 3.2F is SOFTWARE_READY only. X1/PC4, X2/PC5, X3/PB0, the six-pin tracking connector order, and the X4 PC14/PB1 source conflict are vendor-documented; physical wiring, voltage measurements, active polarity, surface behavior, magnetic behavior, and serial periodicity remain UNVERIFIED."
+          "warning": "Phase 3.2F has isolated TCRT evidence only. PC4/PC5 signal connections, live response, four gap-free 100-frame captures, and exact 50 ms steady-state timestamps are MANUAL_EVIDENCE_VERIFIED; measured voltages, polarity semantics, black/white/drop classification, Hall behavior, long-duration timing, and full-hardware operation remain UNVERIFIED."
         }
       ]
     },

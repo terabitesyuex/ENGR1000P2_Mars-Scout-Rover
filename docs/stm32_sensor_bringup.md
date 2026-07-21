@@ -98,7 +98,7 @@ Phase 3.2F adds the isolated ground-sensor-only target `OpenRF1_GroundSensors_Br
 
 AUTHORITATIVE_VENDOR_DOCUMENTED values from the OpenRF1 vendor control-board package, OpenRF1 four-channel tracking example, and OpenRF1 schematic revision dated 2024-07-01: signal 1 / X1 / PC4, signal 2 / X2 / PC5, signal 3 / X3 / PB0, and tracking connector pin 1: GND, pin 2: X4 / schematic PC14, pin 3: X3 / PB0, pin 4: X2 / PC5, pin 5: X1 / PC4, pin 6: VCC_5V.
 
-The schematic says PC14 for X4 while the old example maps X4 to PB1, so signal 4 / X4 is unused. Do not connect Hall S directly to PB0; the external 10 kOhm / 15 kOhm divider is required before Hall S reaches PB0. Do not power the TCRT modules from the connector's 5 V pin, and do not share one VCC rail across the TCRT and Hall modules. Actual connector orientation, cable orientation, rail voltages, output voltages, active polarity, surface behavior, magnetic behavior, real debounce suitability, and actual 50 ms serial periodicity remain UNVERIFIED.
+The schematic says PC14 for X4 while the old example maps X4 to PB1, so signal 4 / X4 is unused. Do not connect Hall S directly to PB0; the external 10 kOhm / 15 kOhm divider is required before Hall S reaches PB0. Do not power the TCRT modules from the connector's 5 V pin, and do not share one VCC rail across the TCRT and Hall modules. A's isolated evidence verifies the PC4/PC5 signal connections, labelled 3.3 V/common-GND connections, live response from both TCRT modules, four gap-free 100-frame captures, and exact 50 ms steady-state timestamps. Actual rail/output voltages, active polarity, black/white/drop semantics, Hall behavior, startup/long-duration timing, and full-hardware operation remain UNVERIFIED.
 
 ## Future Runtime Constraints
 

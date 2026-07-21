@@ -1,6 +1,6 @@
 # SUPERSEDED HISTORICAL COPY
 
-Use repository-root `docs/communication_protocol.md` for current communication planning. Historical statements below may be stale.
+Use repository-root `docs/communication_protocol.md` for current communication planning. This mirror is historical; exactly one physical C1 (`c1_1`) is in the current inventory and real transport remains UNVERIFIED.
 
 # Communication Protocol
 

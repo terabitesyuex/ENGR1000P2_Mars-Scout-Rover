@@ -1,6 +1,6 @@
 # SUPERSEDED HISTORICAL COPY
 
-Use repository-root `docs/architecture.md` for the current Phase 2.4 architecture. Historical statements below may be stale.
+Use repository-root `docs/architecture.md` for current architecture, Phase 3.2F evidence, and one-C1 scope. This mirror is historical; its diagrams do not prove physical C1, WiFi, or rover integration.
 
 # Architecture
 

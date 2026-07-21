@@ -517,9 +517,12 @@ The Phase 3.2F verifier covers:
 - Keil target isolation under `Objects_GroundSensors_Bringup/`
 - no UTF-8 BOM in `OpenRF1_GroundSensors_Bringup.uvprojx`
 - previous raw Phase 3.2A and Phase 3.2C evidence hash preservation
+- locked hashes and privacy checks for all four sanitized Phase 3.2F TCRT captures
+- exactly 100 records per capture, strict telemetry identity/schema, binary raw/debounced levels, contiguous sequences, and exact 50 ms steady-state timestamps
+- captured PC4/X1 and PC5/X2 states without assigning black/white/drop semantics
 - regression tests for Phase 3.2A, Phase 3.2B, Phase 3.2C, Phase 3.2D, and Phase 3.2E software/evidence contracts
 
-Phase 3.2F automated tests do not open real COM ports, USB devices, GPIO, timer peripherals, flashing tools, or sensors. Future manual testing should follow `docs/openrf1_ground_sensors_bringup.md` and must keep private local details out of tracked files.
+Phase 3.2F automated tests do not open real COM ports, USB devices, GPIO, timer peripherals, flashing tools, or sensors. They validate committed sanitized evidence offline. Remaining voltage, polarity, colour/drop classification, Hall, mounting, and full-hardware checks should follow `docs/openrf1_ground_sensors_bringup.md` and must keep private local details out of tracked files.
 
 ## Phase 4A Mecanum Kinematics and Odometry Tests
 

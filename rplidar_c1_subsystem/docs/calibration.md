@@ -1,6 +1,6 @@
 # SUPERSEDED HISTORICAL COPY
 
-Use repository-root `docs/calibration.md` for current calibration planning. Historical statements below may be stale.
+Use repository-root `docs/calibration.md` for current calibration planning. The current physical inventory has one C1 (`c1_1`); Phase 3.2F TCRT captures do not establish optical calibration or polarity.
 
 # Calibration
 

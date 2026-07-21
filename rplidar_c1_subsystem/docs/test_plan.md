@@ -1,6 +1,6 @@
 # SUPERSEDED HISTORICAL COPY
 
-Use repository-root `docs/test_plan.md` for current Phase 2.4 verification and future validation planning. Historical statements below may be stale.
+Use repository-root `docs/test_plan.md` for current verification and future validation planning. This mirror is historical. Root Phase 3.2F evidence validation covers sanitized TCRT captures offline; it does not validate this mirror or physical rover operation.
 
 # Test Plan
 

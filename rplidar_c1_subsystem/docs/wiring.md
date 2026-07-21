@@ -1,6 +1,6 @@
 # SUPERSEDED HISTORICAL COPY
 
-Use repository-root `docs/wiring.md` for current wiring guidance. Historical statements below may be stale.
+Use repository-root `docs/wiring.md` for current wiring guidance. This mirror is historical and must not be used to infer a second C1, current GPIOs, current sensor voltages, or Phase 3.2F completion.
 
 # Wiring
 
