@@ -737,12 +737,27 @@
         "firmware/openrf1/hcsr04_bringup/telemetry_hcsr04_bringup.h",
         "firmware/openrf1/keil/OpenRF1_HCSR04_Bringup.uvprojx",
         "firmware/openrf1/keil/RTE/_OpenRF1_HCSR04_Bringup/RTE_Components.h",
+        "data/test_vectors/phase3.2e/hcsr04_valid_session.jsonl",
+        "data/test_vectors/phase3.2e/hcsr04_invalid_cases.jsonl",
+        "data/test_vectors/phase3.2e/hcsr04_invalid_utf8_bytes.txt",
+        "data/test_vectors/phase3.2e/hcsr04_oversized_line.txt",
+        "docs/phase3_2e_hcsr04_A_test_card.md",
+        "docs/phase3_2e_hcsr04_B_review_handoff.md",
+        "evidence/phase3.2e/hcsr04_manual_evidence_template.md",
         "pc/src/rplidar_c1_tools/openrf1_hcsr04_bringup.py",
+        "pc/src/rplidar_c1_tools/openrf1_hcsr04_capture.py",
+        "pc/src/rplidar_c1_tools/phase32e_evidence.py",
         "pc/tests/test_openrf1_hcsr04_bringup.py",
+        "pc/tests/test_openrf1_hcsr04_protocol.py",
+        "pc/tests/test_openrf1_hcsr04_capture.py",
+        "pc/tests/test_phase32e_evidence.py",
         "tools/audit_phase32e.py"
       ],
       "targeted": [
-        "pc/tests/test_openrf1_hcsr04_bringup.py"
+        "pc/tests/test_openrf1_hcsr04_bringup.py",
+        "pc/tests/test_openrf1_hcsr04_protocol.py",
+        "pc/tests/test_openrf1_hcsr04_capture.py",
+        "pc/tests/test_phase32e_evidence.py"
       ],
       "regression": [
         "pc/tests/test_openrf1_mpu6050_bringup.py",
@@ -761,6 +776,25 @@
         "pc/tests"
       ],
       "python_commands": [
+        {
+          "label": "Phase 3.2E mocked HC-SR04 capture",
+          "args": [
+            "-m",
+            "rplidar_c1_tools",
+            "capture-openrf1-hcsr04",
+            "--mock-input",
+            "data/test_vectors/phase3.2e/hcsr04_valid_session.jsonl",
+            "--raw-output",
+            ".verification/phase3.2e/mocked_hcsr04_raw.jsonl",
+            "--summary-output",
+            ".verification/phase3.2e/mocked_hcsr04_summary.json",
+            "--overwrite"
+          ],
+          "expected_files": [
+            ".verification/phase3.2e/mocked_hcsr04_raw.jsonl",
+            ".verification/phase3.2e/mocked_hcsr04_summary.json"
+          ]
+        },
         {
           "label": "Phase 3.2E HC-SR04 bring-up audit",
           "args": [

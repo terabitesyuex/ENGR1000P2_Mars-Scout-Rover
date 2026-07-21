@@ -7,9 +7,17 @@ import hashlib
 from pathlib import Path
 import re
 import subprocess
+import sys
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT / "pc" / "src"))
+
+from rplidar_c1_tools.phase32e_evidence import (  # noqa: E402
+    Phase32eEvidenceError,
+    TEMPLATE_RELATIVE_PATH,
+    validate_phase32e_evidence_candidate,
+)
 
 PHASE32A_EVIDENCE = (
     "evidence/phase3.2a/bh1750_physical_ba2024b_20260716_234217.jsonl",
@@ -33,7 +41,19 @@ REQUIRED_FILES = (
     "firmware/openrf1/keil/OpenRF1_HCSR04_Bringup.uvprojx",
     "firmware/openrf1/keil/RTE/_OpenRF1_HCSR04_Bringup/RTE_Components.h",
     "pc/src/rplidar_c1_tools/openrf1_hcsr04_bringup.py",
+    "pc/src/rplidar_c1_tools/openrf1_hcsr04_capture.py",
+    "pc/src/rplidar_c1_tools/phase32e_evidence.py",
     "pc/tests/test_openrf1_hcsr04_bringup.py",
+    "pc/tests/test_openrf1_hcsr04_capture.py",
+    "pc/tests/test_openrf1_hcsr04_protocol.py",
+    "pc/tests/test_phase32e_evidence.py",
+    "data/test_vectors/phase3.2e/hcsr04_valid_session.jsonl",
+    "data/test_vectors/phase3.2e/hcsr04_invalid_cases.jsonl",
+    "data/test_vectors/phase3.2e/hcsr04_invalid_utf8_bytes.txt",
+    "data/test_vectors/phase3.2e/hcsr04_oversized_line.txt",
+    "evidence/phase3.2e/hcsr04_manual_evidence_template.md",
+    "docs/phase3_2e_hcsr04_A_test_card.md",
+    "docs/phase3_2e_hcsr04_B_review_handoff.md",
     "tools/audit_phase32e.py",
 )
 
@@ -67,7 +87,7 @@ def main() -> int:
     _check_documentation(lines, failures)
     _check_git_hygiene(lines, failures)
     _check_previous_evidence_hashes(lines, failures)
-    _check_no_phase32e_physical_evidence(lines, failures)
+    _check_phase32e_evidence_lifecycle(lines, failures)
     _check_private_information(lines, failures)
     _check_build_evidence(lines)
     lines.append("software_status: SOFTWARE_READY")
@@ -145,6 +165,8 @@ def _check_source_contract(lines: list[str], failures: list[str]) -> None:
         "OPENRF1_HCSR04_TRIGGER_PULSE_US ((uint16_t)10u)",
         "OPENRF1_HCSR04_ECHO_TIMEOUT_US ((uint32_t)30000u)",
         "OPENRF1_HCSR04_MEASUREMENT_PERIOD_MS ((uint32_t)100u)",
+        "OPENRF1_HCSR04_TELEMETRY_MAX_LINE_BYTES ((uint16_t)512u)",
+        "OPENRF1_HCSR04_TELEMETRY_BUFFER_BYTES ((uint16_t)513u)",
         "OPENRF1_HCSR04_ECHO_SERIES_RESISTOR_OHM ((uint16_t)10000u)",
         "OPENRF1_HCSR04_ECHO_PULLDOWN_RESISTOR_OHM ((uint16_t)15000u)",
         "HCSR04_RESULT_ECHO_NOT_LOW_BEFORE_TRIGGER",
@@ -152,12 +174,14 @@ def _check_source_contract(lines: list[str], failures: list[str]) -> None:
         "HCSR04_RESULT_ECHO_FALL_TIMEOUT",
         "HCSR04_RESULT_TIMER_MEASUREMENT_FAILURE",
         "HCSR04_RESULT_PULSE_WIDTH_OUT_OF_BOUNDS",
+        "HCSR04_RESULT_TELEMETRY_FORMAT_FAILURE",
         "hcsr04_elapsed_us",
         "(echo_pulse_us * 343u + 1000u) / 2000u",
         "OPENRF1_HCSR04_WAIT_POLL_LIMIT",
         "next_attempt_ms += OPENRF1_HCSR04_MEASUREMENT_PERIOD_MS",
         "\\\"distance_model\\\":\\\"%s\\\"",
         "\\\"error\\\":{\\\"code\\\":\\\"%s\\\"",
+        "HCSR04_TELEMETRY_FORMAT_FAILURE",
     )
     missing = [snippet for snippet in required if snippet not in source_text]
     lines.append(f"hcsr04_source_required_snippets_present: {not missing}")
@@ -288,12 +312,27 @@ def _check_previous_evidence_hashes(lines: list[str], failures: list[str]) -> No
             failures.append(f"previous evidence hash mismatch: {relative}")
 
 
-def _check_no_phase32e_physical_evidence(lines: list[str], failures: list[str]) -> None:
+def _check_phase32e_evidence_lifecycle(lines: list[str], failures: list[str]) -> None:
     evidence_root = REPO_ROOT / "evidence/phase3.2e"
     files = [path for path in evidence_root.rglob("*") if path.is_file()] if evidence_root.exists() else []
-    lines.append(f"phase3_2e_physical_evidence_files_present: {bool(files)}")
-    if files:
-        failures.append("Phase 3.2E physical evidence files are not allowed in this software-only phase")
+    template = REPO_ROOT / TEMPLATE_RELATIVE_PATH
+    lines.append(f"phase3_2e_template_present: {template in files}")
+    if template not in files:
+        failures.append("missing explicit Phase 3.2E evidence template")
+    candidates = [path for path in files if path.name.endswith("_candidate.json")]
+    unknown = [path for path in files if path != template and path not in candidates]
+    lines.append(f"phase3_2e_candidate_count: {len(candidates)}")
+    lines.append("phase3_2e_physical_evidence_verified: false")
+    for candidate in candidates:
+        try:
+            validate_phase32e_evidence_candidate(candidate)
+        except Phase32eEvidenceError as exc:
+            failures.append(f"invalid evidence candidate {candidate.name}: {exc}")
+    if unknown:
+        failures.append(
+            "unclassified Phase 3.2E evidence files: "
+            + ", ".join(str(path.relative_to(REPO_ROOT)) for path in unknown)
+        )
 
 
 def _check_private_information(lines: list[str], failures: list[str]) -> None:
