@@ -183,7 +183,7 @@ AUTHORITATIVE_VENDOR_DOCUMENTED facts from the OpenRF1 vendor control-board pack
 
 Do not connect HC-SR04 ECHO directly to CN6 pin 4. The software phase locks the external protection design as HC-SR04 ECHO -> 10 kOhm series resistor -> protected PA4 / CN6-pin-4 node; protected PA4 node -> 15 kOhm resistor -> GND. Physical resistor installation, connector orientation, ECHO voltages, trigger pulse, echo pulse, real distance data, timeout behavior, and absolute distance accuracy remain UNVERIFIED.
 
-The isolated firmware retains bounded synchronous polling for diagnostics and may block one attempt up to the timeout. It is not the final non-blocking multisensor runtime. See `docs/phase3_2e_hcsr04_A_test_card.md` for future manual work and `docs/phase3_2e_hcsr04_B_review_handoff.md` for independent software review. No current Phase 3.2E physical evidence exists; status remains `PHYSICAL_VERIFICATION_REQUIRED`.
+The isolated firmware retains bounded synchronous polling for diagnostics; each wait stage may block up to the timeout and one attempt can traverse sequential bounded stages. It is not the final non-blocking multisensor runtime. See `docs/phase3_2e_hcsr04_A_test_card.md` for future manual work and `docs/phase3_2e_hcsr04_B_review_handoff.md` for independent software review. No current Phase 3.2E physical evidence exists; status remains `PHYSICAL_VERIFICATION_REQUIRED`.
 
 ## Phase 3.2F OpenRF1 Ground-Sensor Bring-Up
 

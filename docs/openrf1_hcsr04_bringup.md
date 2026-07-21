@@ -63,7 +63,7 @@ Soft materials and angled surfaces may produce weak or missing echoes. Very clos
 - Firmware buffer contract: 513 bytes including the trailing NUL. This replaces the former 768-byte buffer and reduces static RAM use by 255 bytes.
 - Formatter failure is surfaced with `telemetry_format_failure`; it is not silently dropped.
 
-The bounded synchronous polling in this isolated diagnostic firmware can block one measurement attempt for up to the 30000 us timeout. It is intentionally retained for low-risk isolated bring-up and is not a non-blocking production runtime. Future full-hardware integration must use the existing non-blocking state-machine foundation; this phase does not implement three-sensor concurrent acquisition.
+The bounded synchronous polling in this isolated diagnostic firmware can block each ECHO wait stage for up to the 30000 us timeout; one measurement attempt can traverse sequential bounded stages. It is intentionally retained for low-risk isolated bring-up and is not a non-blocking production runtime. Future full-hardware integration must use the existing non-blocking state-machine foundation; this phase does not implement three-sensor concurrent acquisition.
 
 ## UNVERIFIED
 
