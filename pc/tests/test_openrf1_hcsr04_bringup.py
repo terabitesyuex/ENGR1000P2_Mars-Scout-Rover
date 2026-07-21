@@ -234,6 +234,7 @@ def test_every_firmware_line_shape_fits_the_shared_512_byte_jsonl_contract():
     for line in lines:
         assert telemetry_line_bytes(line) <= HCSR04_TELEMETRY_MAX_LINE_BYTES
         validate_telemetry_buffer_capacity(line, HCSR04_FIRMWARE_BUFFER_BYTES)
+        validate_telemetry_buffer_capacity(line, telemetry_line_bytes(line) + 1)
         with pytest.raises(Hcsr04BringupError, match="including NUL"):
             validate_telemetry_buffer_capacity(line, telemetry_line_bytes(line))
 
