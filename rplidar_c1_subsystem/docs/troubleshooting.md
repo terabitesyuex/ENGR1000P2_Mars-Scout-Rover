@@ -1,6 +1,6 @@
 # SUPERSEDED HISTORICAL COPY
 
-Use repository-root `docs/troubleshooting.md` for current Phase 2.4 troubleshooting. Historical statements below may be stale.
+Use repository-root `docs/troubleshooting.md` for current troubleshooting. Current hardware has one physical C1 (`c1_1`); historical `c1_2` records and the Phase 3.2F TCRT evidence are not proof of a second unit or rover integration.
 
 # Troubleshooting
 

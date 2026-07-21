@@ -4,6 +4,10 @@ Use repository-root `CHANGELOG.md` for current changes. Historical entries below
 
 # Changelog
 
+## Current Status Notice - 2026-07-21
+
+This nested changelog is historical. The current repository has exactly one physical RPLIDAR C1M1-R2 (`c1_1`) and isolated TCRT5000 evidence is maintained at repository root. Do not use this mirror to claim dual-C1, Hall, full-rover, or WiFi validation.
+
 All notable subsystem changes are recorded here. Track protocol, GPIO, power, data-format, firmware, and calibration changes explicitly.
 
 ## 2026-07-14 - Phase 0 Skeleton

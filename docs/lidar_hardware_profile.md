@@ -7,7 +7,7 @@
 - Exact model: RPLIDAR C1M1-R2.
 - Ranging principle: fusion DTOF.
 
-Phase 2.4 inventory confirms two physical RPLIDAR C1 units are available. The profile below preserves the verified C1M1-R2 facts already locked in the repository; individual unit serial identifiers, hardware revisions, operational status, and mounting orientation remain UNVERIFIED until manual Phase 2.5 independent tests are performed and documented.
+Current inventory confirms exactly one physical RPLIDAR C1M1-R2, identified neutrally as `c1_1`. The profile below preserves the verified model-family facts already locked in the repository; this unit's redacted identity, operational acceptance, mounting orientation, and rover integration remain UNVERIFIED until manual Phase 2.5 evidence is recorded. Historical `c1_2` data is synthetic/compatibility material, not a second physical unit.
 
 ## Performance
 

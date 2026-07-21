@@ -1,6 +1,6 @@
 # SUPERSEDED HISTORICAL COPY
 
-Use repository-root `docs/lidar_protocol_notes.md` for current protocol notes. Historical statements below may be stale.
+Use repository-root `docs/lidar_protocol_notes.md` for current protocol notes. The only current physical LiDAR target is `c1_1`; transport remains subject to manual evidence.
 
 # LiDAR Protocol Notes
 

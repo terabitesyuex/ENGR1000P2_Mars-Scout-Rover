@@ -1,6 +1,6 @@
 # SUPERSEDED HISTORICAL COPY
 
-Use repository-root `docs/recording_format.md` for the current Phase 2.4 JSONL schema. Historical statements below may be stale.
+Use repository-root `docs/recording_format.md` for the current JSONL schema. Current hardware uses one physical C1 (`c1_1`); any `c1_2` stream below is historical or synthetic compatibility data.
 
 # Recording Format
 

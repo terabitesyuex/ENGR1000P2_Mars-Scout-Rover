@@ -10,6 +10,8 @@ Phase 3.2A capture tools use file-backed mock input in automated tests. Manual l
 
 Phase 3.2B tools use deterministic fixtures and pure codecs only. They do not open USART2, USART3, real COM ports, USB devices, WiFi sockets, GPIO, I2C, flashing tools, or sensors.
 
+Phase 3.2F adds offline validation for four sanitized TCRT5000 captures under `evidence/phase3.2f/`. The validator checks hashes, strict JSONL shape, contiguous sequences, and exact 50 ms steady-state timestamps; it does not open a port or infer black/white/drop semantics. The only current physical C1 is `c1_1`.
+
 ## Install For Development
 
 ```powershell

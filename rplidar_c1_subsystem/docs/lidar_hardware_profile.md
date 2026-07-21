@@ -1,6 +1,6 @@
 # SUPERSEDED HISTORICAL COPY
 
-Use repository-root `docs/lidar_hardware_profile.md` for current LiDAR hardware notes. Historical statements below may be stale.
+Use repository-root `docs/lidar_hardware_profile.md` for current LiDAR hardware notes. The current physical inventory has one C1 (`c1_1`); historical text below does not establish a second unit.
 
 # LiDAR Hardware Profile
 

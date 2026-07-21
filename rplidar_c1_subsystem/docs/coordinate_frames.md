@@ -1,6 +1,6 @@
 # SUPERSEDED HISTORICAL COPY
 
-Use repository-root `docs/coordinate_frames.md` for current coordinate-frame rules. Historical statements below may be stale.
+Use repository-root `docs/coordinate_frames.md` for current coordinate-frame rules. The current physical inventory has one C1 (`c1_1`); no dual-C1 transform is active.
 
 # Coordinate Frames
 

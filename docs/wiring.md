@@ -181,7 +181,7 @@ For any future non-CN6 HC-SR04 path, Echo level protection is conditional on mod
 
 ## Phase 3.2F Ground-Sensor-Only Bring-Up Wiring
 
-This is the isolated Phase 3.2F software-prepared bench target, not proof of physical operation. Connect only the two TCRT5000 modules and one Hall module after the required checks are complete.
+This is the isolated Phase 3.2F bench target. The two TCRT5000 PC4/PC5 connections and live response have isolated manual evidence; the Hall path and electrical measurements do not. Connect only the modules needed for the current controlled test.
 
 Vendor-documented tracking connector order:
 
@@ -196,12 +196,12 @@ Do not infer connector orientation from wire colours, cable orientation, apparen
 
 | Module signal | OpenRF1 connection | Status |
 | --- | --- | --- |
-| Left TCRT5000 OUT | connector signal 1 / X1 / PC4 | AUTHORITATIVE_VENDOR_DOCUMENTED mapping; physical wiring UNVERIFIED |
-| Left TCRT5000 VCC | STM32 3.3 V | DESIGN_LOCKED controlled bring-up supply; actual rail UNVERIFIED |
-| Left TCRT5000 GND | common GND | PLANNED; PHYSICAL_VERIFICATION_REQUIRED |
-| Right TCRT5000 OUT | connector signal 2 / X2 / PC5 | AUTHORITATIVE_VENDOR_DOCUMENTED mapping; physical wiring UNVERIFIED |
-| Right TCRT5000 VCC | STM32 3.3 V | DESIGN_LOCKED controlled bring-up supply; actual rail UNVERIFIED |
-| Right TCRT5000 GND | common GND | PLANNED; PHYSICAL_VERIFICATION_REQUIRED |
+| Left TCRT5000 OUT | connector signal 1 / X1 / PC4 | AUTHORITATIVE_VENDOR_DOCUMENTED mapping; isolated connection MANUAL_EVIDENCE_VERIFIED |
+| Left TCRT5000 VCC | STM32 labelled 3.3 V | Connection MANUAL_EVIDENCE_VERIFIED; actual rail voltage UNVERIFIED |
+| Left TCRT5000 GND | common GND | Isolated connection MANUAL_EVIDENCE_VERIFIED; continuity UNVERIFIED |
+| Right TCRT5000 OUT | connector signal 2 / X2 / PC5 | AUTHORITATIVE_VENDOR_DOCUMENTED mapping; isolated connection MANUAL_EVIDENCE_VERIFIED |
+| Right TCRT5000 VCC | STM32 labelled 3.3 V | Connection MANUAL_EVIDENCE_VERIFIED; actual rail voltage UNVERIFIED |
+| Right TCRT5000 GND | common GND | Isolated connection MANUAL_EVIDENCE_VERIFIED; continuity UNVERIFIED |
 | Hall + | 5 V | DESIGN_LOCKED module supply; actual rail UNVERIFIED |
 | Hall - | common GND | PLANNED; PHYSICAL_VERIFICATION_REQUIRED |
 | Hall S | external 10 kOhm / 15 kOhm divider -> connector signal 3 / X3 / PB0 | DESIGN_LOCKED protection requirement; physical divider installation UNVERIFIED |
@@ -214,7 +214,7 @@ The old tracking example maps X4 to PB1 while the schematic says PC14. Signal 4 
 
 The firmware configures PC4, PC5, and PB0 as floating input, samples every 5 ms, applies 4-sample independent debounce, and emits 50 ms JSONL raw/debounced numeric levels. Raw GPIO values are not semantic detection states, and semantic polarity remains unverified.
 
-Physical connector orientation, cable orientation, TCRT output topology, TCRT active polarity, Hall module-level output voltage, Hall active polarity, surface response, magnetic behavior, real debounce suitability, and full-hardware operation remain UNVERIFIED.
+The isolated PC4/PC5 TCRT channels produced live transitions and four gap-free 100-frame captures with exact 50 ms steady-state timestamps. Final connector/cable orientation, measured voltages, TCRT output topology, active polarity, black/white/drop classification, Hall voltages/polarity, magnetic behavior, long-duration debounce suitability, and full-hardware operation remain UNVERIFIED.
 
 ## Future Verification Checklist
 

@@ -1,6 +1,6 @@
 # SUPERSEDED HISTORICAL COPY
 
-This nested document is a superseded historical copy, not the current project specification. Use the repository-root `PROJECT_SPEC.md` for the authoritative single-C1 scope, sensor inventory, and phase order. Historical statements below are HISTORICAL and do not describe current hardware.
+This nested document is a superseded historical copy, not the current project specification. Use the repository-root `PROJECT_SPEC.md` for the authoritative single-C1 scope, sensor inventory, and phase order. Historical statements below are HISTORICAL and do not describe current hardware. The current inventory has exactly one physical SLAMTEC RPLIDAR C1M1-R2 (`c1_1`); dual-C1 work is out of scope until a future inventory change.
 
 # Project Specification
 

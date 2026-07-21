@@ -67,16 +67,16 @@ firmware/openrf1/full_hardware/
 | Interface | Proposal | Software status | Physical status |
 | --- | --- | --- | --- |
 | GY-302/BH1750 | VCC -> OpenRF1 5 V I2C supply, GND common, SCL PB1, SDA PC3, ADDR -> GND | address `0x23`; 500 ms telemetry path exists | MANUAL_EVIDENCE_VERIFIED for BH1750-only bring-up; absolute lux calibration UNVERIFIED |
-| GY-521/MPU6050 | VCC -> OpenRF1 5 V, GND common, SCL/SDA shared, AD0 -> GND, INT/XDA/XCL disconnected | raw-read/conversion foundation exists | CONFIRMED_MODULE_EVIDENCE for module supply/pull-ups/address default; real ACK/data UNVERIFIED |
-| BMP280-3.3 | VCC -> OpenRF1 3.3 V, GND common, SCL/SDA shared, CSB -> 3.3 V, SDO -> GND | chip-ID/raw/calibration/compensation foundation exists | CONFIRMED_MODULE_EVIDENCE for 3.3 V-only style board; real ACK/data UNVERIFIED |
-| Shared I2C signals | PB1/SCL and PC3/SDA shared across BH1750, MPU6050, and BMP280; module VCC rails are not tied together | CONFIRMED pins reused | BH1750 verified by recorded manual evidence; BMP280/MPU6050 ACKs UNVERIFIED |
+| GY-521/MPU6050 | VCC -> OpenRF1 5 V, GND common, SCL/SDA shared, AD0 -> GND, INT/XDA/XCL disconnected | raw-read/conversion foundation exists | MANUAL_EVIDENCE_VERIFIED for isolated ACK/address `0x68`, WHO_AM_I, configuration readback, live telemetry, startup bias, and axis response; shared-bus operation UNVERIFIED |
+| BMP280-3.3 | VCC -> OpenRF1 3.3 V, GND common, SCL/SDA shared, CSB -> 3.3 V, SDO -> GND | chip-ID/raw/calibration/compensation foundation exists | MANUAL_EVIDENCE_VERIFIED for isolated ACK `0x76`, chip ID `0x58`, configuration, compensated telemetry, and 30-second capture; accuracy/shared bus UNVERIFIED |
+| Shared I2C signals | PB1/SCL and PC3/SDA shared across BH1750, MPU6050, and BMP280; module VCC rails are not tied together | CONFIRMED pins reused | Each module has isolated evidence; concurrent shared-I2C operation remains UNVERIFIED |
 | ESP32-C3 TX/RX | ESP32 GPIO21 TX -> OpenRF1 RX3, GPIO20 RX <- TX3, ESP32 5 V input during non-USB operation | USART3 link contract exists | ESP32 module pins CONFIRMED_MODULE_EVIDENCE; OpenRF1 RX3/TX3 pins and real link UNVERIFIED |
-| RPLIDAR C1 | C1 TX -> OpenRF1 RX2, C1 RX <- TX2 | USART2 byte transport exists | UNVERIFIED |
+| RPLIDAR C1 | Exactly one physical `c1_1`; planned C1 TX -> OpenRF1 RX2, C1 RX <- TX2 | USART2 byte transport exists | Physical C1 acceptance and OpenRF1 transport UNVERIFIED; no second physical C1 |
 | HC-SR04 | Phase 3.2E supersedes the initial 3.3 V proposal for the isolated CN6 baseline: CN6 pin 1: VCC_5V, pin 2: GND, pin 3: PA5_TRIG, pin 4: PA4_ECHO | nonblocking state machine exists; isolated Phase 3.2E target adds PA5/PA4/TIM6 software | AUTHORITATIVE_VENDOR_DOCUMENTED for CN6/PA5/PA4/TIM6; physical wiring and Echo voltage UNVERIFIED |
-| TCRT5000 | VCC -> OpenRF1 3.3 V, GND common, OUT -> signal 1 / X1 / PC4 and signal 2 / X2 / PC5 | Phase 3.2F adds isolated 5 ms sampling, 20 ms debounce, and 50 ms JSONL telemetry | AUTHORITATIVE_VENDOR_DOCUMENTED for X1/PC4, X2/PC5, and connector pin order; installed wiring, output voltage, and polarity UNVERIFIED |
+| TCRT5000 | VCC -> OpenRF1 3.3 V, GND common, OUT -> signal 1 / X1 / PC4 and signal 2 / X2 / PC5 | Phase 3.2F adds isolated 5 ms sampling, 20 ms debounce, and 50 ms JSONL telemetry | MANUAL_EVIDENCE_VERIFIED for isolated PC4/PC5 connections, live response, and four 100-frame captures; measured voltages, polarity, black/white/drop semantics, and full hardware UNVERIFIED |
 | Hall | `+` -> OpenRF1 5 V, `-` -> GND, `S` -> external 10 kOhm / 15 kOhm divider -> signal 3 / X3 / PB0 | Phase 3.2F adds isolated raw/debounced Hall level telemetry without semantic polarity | AUTHORITATIVE_VENDOR_DOCUMENTED for X3/PB0 and connector pin order; installed divider, divided voltage, output topology, and polarity UNVERIFIED |
 
-Earlier Phase 3.2B planning did not infer unresolved line-input MCU pins from channel numbers. Phase 3.2F adds the isolated vendor-documented mapping for signal 1 / X1 / PC4, signal 2 / X2 / PC5, and signal 3 / X3 / PB0; physical wiring and polarity remain UNVERIFIED.
+Earlier Phase 3.2B planning did not infer unresolved line-input MCU pins from channel numbers. Phase 3.2F adds vendor-documented mappings and isolated manual evidence for installed TCRT PC4/PC5 connections. Hall wiring, measured voltages, polarity semantics, and full-hardware operation remain UNVERIFIED.
 
 ## I2C Addresses And Straps
 
@@ -165,7 +165,7 @@ Still UNVERIFIED:
 - OpenRF1 USART2 user-UART MCU pins and DMA/interrupt channel details.
 - OpenRF1 USART3 Bluetooth-UART MCU pins and DMA/interrupt channel details.
 - PWM channel 0 through 5 MCU GPIO/timer mappings beyond the Phase 3.2E CN6 PA5/PA4 isolated baseline.
-- physical line-input connector orientation, cable orientation, installed wiring, TCRT output voltages, Hall divider values, Hall divided voltage, and active polarity.
+- final line-input connector/cable orientation, TCRT output voltages, Hall installation/divider values, Hall divided voltage, and active polarity.
 - Physical HC-SR04 ECHO voltage before/after the required external Phase 3.2E divider.
 - TCRT5000 and Hall active polarity.
 

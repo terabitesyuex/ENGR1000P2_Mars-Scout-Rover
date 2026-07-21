@@ -356,10 +356,14 @@ PC planned responsibilities:
 - Do not connect Hall S directly to PB0.
 - Do not power the TCRT modules from the connector's 5 V pin during controlled bring-up.
 - Do not share one VCC rail across all three modules.
-- Automated Phase 3.2F tests use pure logic, static source checks, build/artifact audits, and previous evidence hash checks only.
+- Automated Phase 3.2F tests use pure logic, static source checks, build/artifact audits, and offline validation of the four sanitized TCRT captures.
 - No real COM port, USB device, GPIO, timer peripheral, flash action, or real sensor is accessed by repository automation.
-- physical connector orientation: UNVERIFIED.
-- cable orientation: UNVERIFIED.
+- isolated firmware build and flash: MANUAL_EVIDENCE_VERIFIED.
+- installed left OUT -> signal 1 / X1 / PC4 and right OUT -> signal 2 / X2 / PC5: MANUAL_EVIDENCE_VERIFIED.
+- labelled 3.3 V/common-GND module connections: MANUAL_EVIDENCE_VERIFIED as connections only; voltage remains unmeasured.
+- live raw/debounced response from both TCRT modules: MANUAL_EVIDENCE_VERIFIED for the tested geometry.
+- four 100-frame captures without sequence gaps and exact 50 ms steady-state timestamps: MANUAL_EVIDENCE_VERIFIED.
+- final connector/cable orientation and strain relief: UNVERIFIED.
 - actual 3.3 V rail: UNVERIFIED.
 - actual 5 V rail: UNVERIFIED.
 - actual TCRT output voltage: UNVERIFIED.
@@ -369,12 +373,12 @@ PC planned responsibilities:
 - Hall module-level output voltage: UNVERIFIED.
 - Hall active polarity: UNVERIFIED.
 - Hall triggering magnetic pole: UNVERIFIED.
-- white-surface response: UNVERIFIED.
+- reflective white-surface response at the tested geometry: MANUAL_EVIDENCE_VERIFIED.
 - black-surface response: UNVERIFIED.
-- edge/open-space response: UNVERIFIED.
+- open-space response at the tested geometry: MANUAL_EVIDENCE_VERIFIED; dependable drop/edge safety classification is UNVERIFIED.
 - magnetic activation: UNVERIFIED.
 - magnetic release: UNVERIFIED.
-- optical threshold, Hall trigger distance, real debounce suitability, actual 50 ms serial periodicity, long-duration stability, moving-rover drop prevention, and complete full-hardware operation remain UNVERIFIED.
+- optical threshold, reliable detection distance, black/white classification, Hall trigger distance, real debounce suitability outside the captured steady states, startup timing, long-duration stability, moving-rover drop prevention, and complete full-hardware operation remain UNVERIFIED.
 - raw GPIO values are not semantic detection states, and semantic polarity remains unverified.
 
 ## Safety Rules
