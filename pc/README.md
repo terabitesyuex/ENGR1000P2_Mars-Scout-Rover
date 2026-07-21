@@ -124,7 +124,7 @@ Manual live capture requires a user-verified port:
 python -m rplidar_c1_tools capture-stm32-serial --port <USER_VERIFIED_COM_PORT> --baud 115200 --duration 30 --telemetry-output bh1750_telemetry.jsonl --recording-output bh1750_recording.jsonl --overwrite
 ```
 
-The live serial reader sets DTR and RTS low before opening pyserial, which avoids an avoidable CH340 reset pulse on boards that expose those control lines. The capture loop allows a default 12-second startup grace period before the first valid line; adjust it with `--startup-grace-s` only when the operator has a specific reason. Malformed BH1750 telemetry lines are counted and skipped, while invalid byte encoding, oversized lines, and read timeouts remain fatal.
+The live serial reader sets DTR and RTS low before opening pyserial, which avoids an avoidable CH340 reset pulse on boards that expose those control lines. The capture loop allows a default 12-second startup grace period before the first valid line; adjust it with `--startup-grace-s` only when the operator has a specific reason. Malformed BH1750 telemetry lines are counted and skipped, and each valid frame resets the consecutive-malformed counter. Capture fails after 5 consecutive malformed lines by default, or when the source ends without any valid message; use `--max-consecutive-malformed-lines` to set a different positive limit. Invalid byte encoding, oversized lines, and read timeouts remain fatal.
 
 If pyserial is unavailable for manual live capture, install it only in the repository virtual environment:
 

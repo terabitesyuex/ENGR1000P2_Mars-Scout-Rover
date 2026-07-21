@@ -120,7 +120,7 @@ Phase 3.2D isolated MPU6050 bring-up plan, supplied for software preparation onl
 - Planned unused pins: INT, XDA, XCL, and FSYNC disconnected for polling bring-up.
 - Planned register checks: WHO_AM_I register `0x75` expected `0x68`, `PWR_MGMT_1 = 0x01`, `SMPLRT_DIV = 0x09`, `CONFIG = 0x03`, `GYRO_CONFIG = 0x00`, and `ACCEL_CONFIG = 0x00`.
 
-The original Phase 3.2D connection plan has now been manually exercised only for the isolated MPU6050 target. A's sanitized evidence records H4 5 V/GND/PB1/SCL/PC3/SDA connector order, MPU6050 VCC/GND/SCL/SDA wiring, AD0 measured at 0 V, H4 5 V approximately 4.77 V, MPU6050 VCC approximately 4.78 V, SCL/SDA idle approximately 3.31 V, continuity checks, I2C ACK at `0x68`, WHO_AM_I `0x68`, isolated configuration readback, live IMU JSON telemetry, startup gyro-bias calibration, approximately 10 Hz output, a 15-second no-sequence-loss capture, and isolated axis response as MANUAL_EVIDENCE_VERIFIED. Absolute accuracy, calibration motion rejection, long-duration drift, shared-I2C operation, final rover-frame alignment, and full-hardware operation remain UNVERIFIED.
+The original Phase 3.2D connection plan has now been manually exercised only for the isolated MPU6050 target. A's sanitized evidence is limited to the reported isolated VCC/GND/SCL/SDA/AD0 wiring, I2C ACK/address `0x68`, WHO_AM_I `0x68`, isolated configuration readback, live IMU JSON telemetry, startup gyro-bias semantics, approximately 10 Hz output during a 15-second isolated test with no reported sequence loss, and isolated sensor-axis response. Exact electrical measurements, continuity, delay-loop tuning, build/HEX metadata, exact timing statistics, and exact bias/noise statistics remain UNVERIFIED, together with absolute accuracy, calibration motion rejection, long-duration drift, shared-I2C operation, final rover-frame alignment, and full-hardware operation.
 
 Phase 3.2B module-specific electrical evidence:
 
@@ -312,14 +312,13 @@ PC planned responsibilities:
 - Phase 3.2D adds an isolated OpenRF1 MPU6050-only firmware boundary under `firmware/openrf1/mpu6050_bringup/`.
 - The Phase 3.2D Keil project is `firmware/openrf1/keil/OpenRF1_MPU6050_Bringup.uvprojx`.
 - The Phase 3.2D output directory is `Objects_MPU6050_Bringup/` and must not overwrite `Objects/OpenRF1_BH1750.hex`, `Objects_BMP280_Bringup/OpenRF1_BMP280_Bringup.hex`, or `Objects_FullHardware/OpenRF1_FullHardware.hex`.
-- Isolated MPU6050-only wiring: GY-521/MPU6050 VCC -> OpenRF1 H4 5 V, GND -> H4 GND, SCL -> PB1 / SCL, SDA -> PC3 / SDA, AD0 measured at 0 V, and INT/XDA/XCL/FSYNC disconnected: MANUAL_EVIDENCE_VERIFIED for the isolated bring-up.
+- A reported the isolated MPU6050-only wiring as GY-521/MPU6050 VCC -> OpenRF1 H4 5 V, GND -> H4 GND, SCL -> PB1 / SCL, SDA -> PC3 / SDA, and AD0 -> GND. Exact connector orientation and electrical measurements remain UNVERIFIED.
 - Address `0x68`, WHO_AM_I `0x68`, wake/configuration values `PWR_MGMT_1 = 0x01`, `SMPLRT_DIV = 0x09`, `CONFIG = 0x03`, `GYRO_CONFIG = 0x00`, and `ACCEL_CONFIG = 0x00` readback: MANUAL_EVIDENCE_VERIFIED for the isolated bring-up.
-- Software-I2C stable communication after the delay loop was changed from `ticks = 24u` to `ticks = 240u`: MANUAL_EVIDENCE_VERIFIED for the isolated bring-up.
-- Startup gyro-bias calibration uses 5000 ms warmup, 500 samples, and approximately 10 ms sample interval; `gyro_raw` remains raw register data and only `gyro_dps` subtracts the dynamic bias: MANUAL_EVIDENCE_VERIFIED.
-- A's reported final Keil build for `OpenRF1_MPU6050_FINAL_AUTO_CAL_20260720.hex` had 0 errors and 0 warnings, size 51928 bytes, and SHA-256 `403F46A865A32B496586CA4B36E476ECED53C2165868F4B0FA7BCBA8BCB0D55F`. Repository automation did not reproduce this Keil build or hash.
+- `gyro_raw` remains raw register data and only `gyro_dps` subtracts the startup dynamic bias: MANUAL_EVIDENCE_VERIFIED. Exact bias and noise statistics remain UNVERIFIED.
+- Software-I2C delay-loop tuning and reproducible Keil build/HEX metadata remain UNVERIFIED.
 - Automated Phase 3.2D tests use pure logic, static source checks, build/artifact audits, and previous evidence hash checks only.
 - No real COM port, USB device, GPIO, I2C bus, flash action, or real sensor is accessed by repository automation.
-- Isolated MPU6050 firmware flashing/execution, ACK, physical address, WHO_AM_I, configuration readback, live acceleration/angular-rate/temperature telemetry, startup gyro-bias calibration, approximately 10 Hz output, 15-second no-sequence-loss telemetry, and isolated axis response are MANUAL_EVIDENCE_VERIFIED.
+- Isolated MPU6050 ACK/address, WHO_AM_I, configuration readback, live IMU telemetry, startup gyro-bias semantics, A-reported approximately 10 Hz output during a 15-second test with no reported sequence loss, and isolated sensor-axis response are MANUAL_EVIDENCE_VERIFIED.
 - Absolute acceleration accuracy, absolute angular-rate accuracy, calibration-time motion detection, calibration motion rejection, long-duration thermal drift, final rover-frame axis alignment, accelerometer offsets, yaw drift, full multi-device shared-I2C concurrency, motor-vibration behavior, encoder/IMU fusion, physical odometry accuracy, ESP32/WiFi integration, and complete full-hardware operation remain UNVERIFIED.
 
 ## Phase 3.2E HC-SR04 Bring-Up Boundary Status

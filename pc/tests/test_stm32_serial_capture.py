@@ -136,6 +136,48 @@ def test_capture_counts_malformed_json_and_continues(tmp_path):
     assert summary.malformed_lines == 1
 
 
+def test_capture_stops_at_default_consecutive_malformed_threshold(tmp_path):
+    source = _write_lines(tmp_path / "malformed.jsonl", ["not-json"] * 5)
+
+    with pytest.raises(
+        Stm32SerialCaptureError,
+        match=r"maximum consecutive malformed telemetry lines reached \(5\)",
+    ):
+        capture_stm32_serial_telemetry(
+            reader=FileChunkSerialReader(source),
+            telemetry_output=tmp_path / "malformed_out.jsonl",
+            recording_output=None,
+        )
+
+
+def test_valid_frame_resets_consecutive_malformed_count(tmp_path):
+    good_lines = generate_bh1750_telemetry_lines(samples=2)
+    source = _write_lines(
+        tmp_path / "interleaved.jsonl",
+        ["not-json"] * 4 + [good_lines[0]] + ["not-json"] * 4 + [good_lines[1]],
+    )
+
+    summary = capture_stm32_serial_telemetry(
+        reader=FileChunkSerialReader(source),
+        telemetry_output=tmp_path / "interleaved_out.jsonl",
+        recording_output=None,
+    )
+
+    assert summary.messages == 2
+    assert summary.malformed_lines == 8
+
+
+def test_capture_fails_when_stream_ends_without_valid_message(tmp_path):
+    source = _write_lines(tmp_path / "only_malformed.jsonl", ["not-json"])
+
+    with pytest.raises(Stm32SerialCaptureError, match="without any valid telemetry"):
+        capture_stm32_serial_telemetry(
+            reader=FileChunkSerialReader(source),
+            telemetry_output=tmp_path / "only_malformed_out.jsonl",
+            recording_output=None,
+        )
+
+
 def test_capture_rejects_invalid_utf8_oversized_and_timeout(tmp_path):
 
     invalid_utf8 = _write_bytes(tmp_path / "utf8.jsonl", b"\xff\n")
@@ -165,13 +207,17 @@ def test_capture_rejects_invalid_utf8_oversized_and_timeout(tmp_path):
 
 
 def test_capture_counts_wrong_message_type_sensor_and_invalid_lux(tmp_path):
-    wrong_type = _write_lines(tmp_path / "wrong_type.jsonl", [generate_synthetic_stm32_lines(cycles=1)[0]])
+    good = generate_bh1750_telemetry_lines(samples=1)[0]
+    wrong_type = _write_lines(
+        tmp_path / "wrong_type.jsonl",
+        [generate_synthetic_stm32_lines(cycles=1)[0], good],
+    )
     summary = capture_stm32_serial_telemetry(
         reader=FileChunkSerialReader(wrong_type),
         telemetry_output=tmp_path / "wrong_type_out.jsonl",
         recording_output=None,
     )
-    assert summary.messages == 0
+    assert summary.messages == 1
     assert summary.malformed_lines == 1
 
     wrong_sensor = _write_lines(
@@ -187,14 +233,14 @@ def test_capture_counts_wrong_message_type_sensor_and_invalid_lux(tmp_path):
                     status="simulated",
                 )
             ).replace('"bh1750_1"', '"bmp280_1"')
-        ],
+        ] + [good],
     )
     summary = capture_stm32_serial_telemetry(
         reader=FileChunkSerialReader(wrong_sensor),
         telemetry_output=tmp_path / "wrong_sensor_out.jsonl",
         recording_output=None,
     )
-    assert summary.messages == 0
+    assert summary.messages == 1
     assert summary.malformed_lines == 1
 
     invalid_lux = _write_lines(
@@ -210,14 +256,14 @@ def test_capture_counts_wrong_message_type_sensor_and_invalid_lux(tmp_path):
                     status="simulated",
                 )
             ).replace("10.0", "-1.0")
-        ],
+        ] + [good],
     )
     summary = capture_stm32_serial_telemetry(
         reader=FileChunkSerialReader(invalid_lux),
         telemetry_output=tmp_path / "invalid_lux_out.jsonl",
         recording_output=None,
     )
-    assert summary.messages == 0
+    assert summary.messages == 1
     assert summary.malformed_lines == 1
 
 

@@ -24,6 +24,7 @@ from .stm32_sensor_protocol import (
 DEFAULT_STM32_SERIAL_BAUD = 115200
 DEFAULT_STM32_SERIAL_TIMEOUT_S = 1.0
 DEFAULT_STARTUP_GRACE_S = 12.0
+DEFAULT_MAX_CONSECUTIVE_MALFORMED_LINES = 5
 DEFAULT_LINE_LENGTH_LIMIT_BYTES = 512
 
 
@@ -161,6 +162,7 @@ def capture_stm32_serial_telemetry(
     read_chunk_size: int = 64,
     max_empty_reads: int = 10,
     startup_grace_s: float = DEFAULT_STARTUP_GRACE_S,
+    max_consecutive_malformed_lines: int = DEFAULT_MAX_CONSECUTIVE_MALFORMED_LINES,
     line_length_limit_bytes: int = DEFAULT_LINE_LENGTH_LIMIT_BYTES,
     overwrite: bool = False,
     clock: Callable[[], float] = time.monotonic,
@@ -179,6 +181,10 @@ def capture_stm32_serial_telemetry(
             raise Stm32SerialCaptureError("max_empty_reads must be positive")
         if startup_grace_s < 0.0:
             raise Stm32SerialCaptureError("startup_grace_s must be non-negative")
+        if max_consecutive_malformed_lines <= 0:
+            raise Stm32SerialCaptureError(
+                "max_consecutive_malformed_lines must be positive"
+            )
         if line_length_limit_bytes <= 0:
             raise Stm32SerialCaptureError("line_length_limit_bytes must be positive")
 
@@ -196,6 +202,7 @@ def capture_stm32_serial_telemetry(
     last_timestamp_ms: int | None = None
     messages = 0
     malformed_lines = 0
+    consecutive_malformed_lines = 0
     start_s = clock()
 
     telemetry_stream = None
@@ -235,10 +242,17 @@ def capture_stm32_serial_telemetry(
             try:
                 message = parse_stm32_telemetry_line(line, line_number=messages + malformed_lines + 1)
                 _require_phase32a_bh1750_message(message)
-            except (Stm32TelemetryError, Stm32SerialCaptureError) as exc:
+            except (Stm32TelemetryError, Stm32SerialCaptureError):
                 malformed_lines += 1
+                consecutive_malformed_lines += 1
+                if consecutive_malformed_lines >= max_consecutive_malformed_lines:
+                    raise Stm32SerialCaptureError(
+                        "maximum consecutive malformed telemetry lines reached "
+                        f"({max_consecutive_malformed_lines})"
+                    )
                 continue
 
+            consecutive_malformed_lines = 0
             if telemetry_stream is not None:
                 telemetry_stream.write(encode_stm32_telemetry_message(message))
                 telemetry_stream.write("\n")
@@ -265,6 +279,9 @@ def capture_stm32_serial_telemetry(
         if telemetry_stream is not None:
             telemetry_stream.close()
         reader.close()
+
+    if messages == 0:
+        raise Stm32SerialCaptureError("capture ended without any valid telemetry messages")
 
     return Stm32SerialCaptureSummary(
         messages=messages,

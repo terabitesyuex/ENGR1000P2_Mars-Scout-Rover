@@ -9,11 +9,7 @@ Phase 3.2D adds an isolated MPU6050-only firmware target for bring-up on the Ope
 | Controller | OpenRF1 robot controller, STM32F103RCT6 | CONFIRMED by Phase 3.2A evidence |
 | Sensor ID | `mpu6050_1` | MANUAL_EVIDENCE_VERIFIED for isolated bring-up |
 | MPU6050 module count | x1 | CONFIRMED inventory |
-| Module supply | GY-521/MPU6050 VCC -> OpenRF1 H4 5 V | MANUAL_EVIDENCE_VERIFIED for isolated bring-up |
-| Ground | GY-521/MPU6050 GND -> OpenRF1 H4 GND | MANUAL_EVIDENCE_VERIFIED for isolated bring-up |
-| I2C SCL | PB1 / SCL | MANUAL_EVIDENCE_VERIFIED for isolated bring-up |
-| I2C SDA | PC3 / SDA | MANUAL_EVIDENCE_VERIFIED for isolated bring-up |
-| Address strap | AD0 measured at 0 V | MANUAL_EVIDENCE_VERIFIED for deterministic address `0x68` |
+| Isolated wiring report | VCC -> H4 5 V, GND -> H4 GND, SCL -> PB1/SCL, SDA -> PC3/SDA, AD0 -> GND | Reported by A; exact electrical measurements and connector orientation UNVERIFIED |
 | Unused pins | INT, XDA, XCL, FSYNC disconnected | PLANNED polling bring-up |
 | Address | `0x68` | MANUAL_EVIDENCE_VERIFIED for isolated bring-up |
 | WHO_AM_I register | `0x75` -> `0x68` | MANUAL_EVIDENCE_VERIFIED for isolated bring-up |
@@ -104,16 +100,16 @@ Future physical evidence must keep raw files sanitized and must not record concr
 
 ## Recorded Manual Evidence
 
-- Isolated firmware flashing and execution from Flash: MANUAL_EVIDENCE_VERIFIED.
-- H4 connector order, MPU6050 wiring, AD0 at 0 V, 5 V supply level, SCL/SDA idle level, and continuity checks: MANUAL_EVIDENCE_VERIFIED.
+- A reported the isolated VCC/GND/SCL/SDA/AD0 wiring; exact connector orientation, electrical measurements, continuity, and wiring safety remain UNVERIFIED.
 - I2C ACK at `0x68`, WHO_AM_I `0x68`, and isolated configuration readback: MANUAL_EVIDENCE_VERIFIED.
 - Live IMU JSON telemetry and approximately 10 Hz output: MANUAL_EVIDENCE_VERIFIED.
 - Startup dynamic gyro-bias calibration and `gyro_raw` / bias-corrected `gyro_dps` semantics: MANUAL_EVIDENCE_VERIFIED.
-- A's 15-second continuity test reported 151 frames, 15000 ms timestamp span, 100 ms median and maximum intervals, no sequence gaps greater than one, and largest sequence gap of one: MANUAL_EVIDENCE_VERIFIED.
+- A reported approximately 10 Hz output during a 15-second isolated test with no sequence loss: MANUAL_EVIDENCE_VERIFIED. Exact frame count and interval statistics remain UNVERIFIED.
 - Manual rotation/flip produced expected isolated axis response: MANUAL_EVIDENCE_VERIFIED.
 
 ## Remaining Limitations
 
+- Exact electrical measurements, continuity, delay-loop tuning, reproducible build/HEX metadata, exact timing statistics, and exact bias/noise statistics remain UNVERIFIED.
 - Absolute acceleration accuracy, absolute angular-rate accuracy, calibration-time movement detection, calibration motion rejection, long-duration thermal drift, accelerometer offsets, yaw drift, axis orientation relative to the rover, and temperature accuracy remain UNVERIFIED.
 - Shared-I2C operation with BH1750 and BMP280 remains UNVERIFIED.
 - Complete full-hardware operation remains UNVERIFIED.
