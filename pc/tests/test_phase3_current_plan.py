@@ -127,17 +127,17 @@ def test_phase32d_current_plan_documents_mpu6050_software_boundary():
             "README.md": [
                 "Phase 3.2D",
                 "OpenRF1_MPU6050_Bringup.uvprojx",
-                "I2C ACK at `0x68`, WHO_AM_I `0x68`",
+                "I2C ACK/address `0x68`, WHO_AM_I `0x68`",
                 "shared-I2C concurrency",
             ],
             "HARDWARE_LOCK.md": [
                 "Phase 3.2D MPU6050 Bring-Up Boundary Status",
                 "Objects_MPU6050_Bringup",
-                "ACK, physical address, WHO_AM_I",
+                "ACK/address, WHO_AM_I",
                 "MANUAL_EVIDENCE_VERIFIED",
             ],
             "docs/openrf1_mpu6050_bringup.md": [
-                "GY-521/MPU6050 VCC -> OpenRF1 H4 5 V",
+                "isolated VCC/GND/SCL/SDA/AD0 wiring",
                 "WHO_AM_I register",
                 "MANUAL_EVIDENCE_VERIFIED",
                 "Remaining Limitations",

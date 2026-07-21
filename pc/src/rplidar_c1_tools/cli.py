@@ -53,6 +53,7 @@ from .openrf1_bh1750 import generate_bh1750_telemetry_lines
 from .stm32_recording_bridge import record_stm32_telemetry_stream
 from .stm32_serial_capture import (
     DEFAULT_LINE_LENGTH_LIMIT_BYTES,
+    DEFAULT_MAX_CONSECUTIVE_MALFORMED_LINES,
     DEFAULT_STARTUP_GRACE_S,
     DEFAULT_STM32_SERIAL_BAUD,
     FileChunkSerialReader,
@@ -348,6 +349,11 @@ def main() -> int:
     capture_stm32.add_argument("--max-empty-reads", type=_positive_int, default=10)
     capture_stm32.add_argument("--startup-grace-s", type=float, default=DEFAULT_STARTUP_GRACE_S)
     capture_stm32.add_argument(
+        "--max-consecutive-malformed-lines",
+        type=_positive_int,
+        default=DEFAULT_MAX_CONSECUTIVE_MALFORMED_LINES,
+    )
+    capture_stm32.add_argument(
         "--line-length-limit",
         type=_positive_int,
         default=DEFAULT_LINE_LENGTH_LIMIT_BYTES,
@@ -540,6 +546,7 @@ def main() -> int:
                 read_chunk_size=args.read_chunk_size,
                 max_empty_reads=args.max_empty_reads,
                 startup_grace_s=args.startup_grace_s,
+                max_consecutive_malformed_lines=args.max_consecutive_malformed_lines,
                 line_length_limit_bytes=args.line_length_limit,
                 telemetry_output=args.telemetry_output,
                 recording_output=args.recording_output,
@@ -937,6 +944,7 @@ def capture_stm32_serial_file(
     read_chunk_size: int,
     max_empty_reads: int,
     startup_grace_s: float,
+    max_consecutive_malformed_lines: int,
     line_length_limit_bytes: int,
     telemetry_output: Path,
     recording_output: Path,
@@ -958,6 +966,7 @@ def capture_stm32_serial_file(
         read_chunk_size=read_chunk_size,
         max_empty_reads=max_empty_reads,
         startup_grace_s=startup_grace_s,
+        max_consecutive_malformed_lines=max_consecutive_malformed_lines,
         line_length_limit_bytes=line_length_limit_bytes,
         overwrite=overwrite,
     )

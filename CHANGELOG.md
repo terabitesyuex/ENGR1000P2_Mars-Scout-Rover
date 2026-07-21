@@ -9,6 +9,7 @@
 ## 2026-07-20 - Phase 3.2D Manual MPU6050 Evidence
 
 - Recorded sanitized Phase 3.2D isolated MPU6050 manual evidence for OpenRF1 wiring, ACK/address `0x68`, WHO_AM_I `0x68`, configuration readback, live IMU JSONL, startup gyro-bias semantics, A-reported approximately 10 Hz telemetry during a 15-second isolated test, no reported sequence loss, and isolated axis response.
+- Removed unsupported measured-voltage, continuity, delay-loop tuning, exact build/HEX, exact frame/timing, and exact bias/noise assertions from the Phase 3.2D evidence boundary.
 - Updated project status documentation and Phase 3.2D audit checks to distinguish isolated MANUAL_EVIDENCE_VERIFIED results from shared-I2C, final rover-frame orientation, absolute accuracy, full-hardware operation, ESP32/WiFi integration, and motor-vibration behavior that remain UNVERIFIED.
 
 ## 2026-07-20 - MPU6050 Bring-Up Parser Fixtures
@@ -17,7 +18,7 @@
 
 ## 2026-07-20 - STM32 Serial Capture Hardening
 
-- Updated the STM32 serial capture path to set DTR and RTS low before opening pyserial, add a configurable startup grace period, count malformed BH1750 telemetry lines without terminating the capture, and preserve session reset behavior for independent reconnects.
+- Updated the STM32 serial capture path to set DTR and RTS low before opening pyserial, add a configurable startup grace period, stop after a configurable consecutive-malformed threshold (default 5), fail captures that end without a valid message, and preserve session reset behavior for independent reconnects.
 
 ## 2026-07-19 - Single RPLIDAR C1 Inventory Rebaseline
 

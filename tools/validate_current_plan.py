@@ -82,7 +82,7 @@ REQUIRED_SNIPPETS = (
     RequiredSnippet("README.md", "Phase 3.2D", "Phase 3.2D status documented"),
     RequiredSnippet("README.md", "OpenRF1_MPU6050_Bringup.uvprojx", "Phase 3.2D Keil target documented"),
     RequiredSnippet("HARDWARE_LOCK.md", "Phase 3.2D MPU6050 Bring-Up Boundary Status", "Phase 3.2D hardware boundary documented"),
-    RequiredSnippet("HARDWARE_LOCK.md", "ACK, physical address, WHO_AM_I", "MPU6050 isolated evidence status documented"),
+    RequiredSnippet("HARDWARE_LOCK.md", "ACK/address, WHO_AM_I", "MPU6050 isolated evidence status documented"),
     RequiredSnippet("docs/openrf1_mpu6050_bringup.md", "MANUAL_EVIDENCE_VERIFIED", "MPU6050 manual evidence status documented"),
     RequiredSnippet("docs/openrf1_mpu6050_bringup.md", "Remaining Limitations", "MPU6050 remaining unverified status documented"),
     RequiredSnippet("docs/test_plan.md", "phase3.2d", "Phase 3.2D verifier documented"),

@@ -719,7 +719,7 @@
             ".verification/phase3.2d/software_audit.txt",
             ".verification/phase3.2d/manual_hardware_status.txt"
           ],
-          "warning": "Phase 3.2D has isolated sanitized manual evidence for MPU6050 ACK, WHO_AM_I, configuration readback, live IMU telemetry, and startup gyro-bias semantics. Axis orientation, absolute accuracy, shared-I2C concurrency, and full-hardware operation remain UNVERIFIED."
+          "warning": "Phase 3.2D has A-reported isolated sanitized manual evidence for MPU6050 ACK/address, WHO_AM_I, configuration readback, live IMU telemetry, startup gyro-bias semantics, approximately 10 Hz output during a 15-second test with no reported sequence loss, and isolated sensor-axis response. Electrical measurements, continuity, build/HEX identity, exact timing/bias statistics, rover-frame orientation, absolute accuracy, shared-I2C concurrency, and full-hardware operation remain UNVERIFIED."
         }
       ]
     },

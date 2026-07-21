@@ -53,6 +53,41 @@ WINDOWS_USER_PATH_RE = re.compile(r"[A-Za-z]:\\(?:Users|Documents and Settings)\
 DESKTOP_PATH_RE = re.compile(r"(?:[A-Za-z]:\\|\\\\)[^\r\n]*\\" + "Desktop" + r"\\")
 COM_PORT_RE = re.compile(r"\bCOM[0-9]{1,3}\b")
 
+OUT_OF_SCOPE_MANUAL_EVIDENCE_SNIPPETS = (
+    "Reported final HEX name",
+    "Reported final HEX size",
+    "Reported final HEX SHA-256",
+    "Reported Keil build result",
+    "Formal continuity-test frames",
+    "Formal continuity-test wall time",
+    "Formal timestamp span",
+    "Median / maximum interval",
+    "Sequence gaps greater than 1",
+    "approximately 4.77 V",
+    "approximately 4.78 V",
+    "approximately 3.31 V",
+    "Continuity checks found",
+    "ticks = 24u",
+    "ticks = 240u",
+    "151 frames",
+    "15000 ms",
+    "X mean approximately",
+    "Y mean approximately",
+    "Z mean approximately",
+    "std approximately",
+)
+
+MANUAL_EVIDENCE_BOUNDARY_FILES = (
+    "README.md",
+    "PROJECT_SPEC.md",
+    "HARDWARE_LOCK.md",
+    "docs/openrf1_mpu6050_bringup.md",
+    "docs/stm32_sensor_bringup.md",
+    "docs/stm32_sensor_protocol.md",
+    "evidence/phase3.2d/mpu6050_manual_evidence.md",
+    "tools/verification/phase_manifest.json",
+)
+
 
 def main() -> int:
     parser = argparse.ArgumentParser()
@@ -231,20 +266,41 @@ def _check_phase32d_manual_evidence(lines: list[str], failures: list[str]) -> No
     text = evidence_path.read_text(encoding="utf-8")
     required_snippets = (
         "MANUAL_EVIDENCE_VERIFIED",
+        "reported the isolated GY-521/MPU6050 wiring",
         "I2C ACK at address `0x68`",
         "WHO_AM_I register result `0x68`",
-        "configuration readback",
-        "Startup dynamic gyro-bias calibration",
+        "Isolated configuration readback",
+        "Live IMU JSON telemetry",
+        "Startup dynamic gyro-bias calibration semantics",
         "`gyro_raw` preserves raw register data",
         "`gyro_dps` subtracts the",
+        "approximately 10 Hz telemetry during a 15-second isolated test",
+        "with no sequence loss",
+        "isolated sensor-axis response",
+        "Exact connector orientation",
+        "Software-I2C delay-loop tuning",
+        "Exact gyro bias or standard-deviation values",
         "Shared-I2C concurrency",
         "Complete multisensor firmware operation",
-        "It did not flash hardware",
+        "did not build or flash firmware",
+        "C did not perform or repeat",
     )
     missing = [snippet for snippet in required_snippets if snippet not in text]
     lines.append(f"phase3_2d_manual_evidence_required_snippets_present: {not missing}")
     if missing:
         failures.append("missing manual evidence snippets: " + ", ".join(missing))
+
+    out_of_scope = [
+        f"{relative}: {snippet}"
+        for relative in MANUAL_EVIDENCE_BOUNDARY_FILES
+        for snippet in OUT_OF_SCOPE_MANUAL_EVIDENCE_SNIPPETS
+        if snippet in (REPO_ROOT / relative).read_text(encoding="utf-8")
+    ]
+    lines.append(f"phase3_2d_out_of_scope_evidence_present: {bool(out_of_scope)}")
+    if out_of_scope:
+        failures.append(
+            "out-of-scope manual evidence snippets present: " + ", ".join(out_of_scope)
+        )
 
 
 def _check_private_information(lines: list[str], failures: list[str]) -> None:
