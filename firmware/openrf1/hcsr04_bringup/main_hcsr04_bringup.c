@@ -19,7 +19,7 @@ static char g_telemetry_buffer[OPENRF1_HCSR04_TELEMETRY_BUFFER_BYTES];
 static void initialize_app(Hcsr04BringupApp *app);
 static void emit_identity_or_error(Hcsr04BringupApp *app, uint32_t now_ms);
 static void emit_measurement_attempt(Hcsr04BringupApp *app, uint32_t now_ms);
-static void emit_line(Hcsr04BringupTelemetryStatus status, Hcsr04BringupApp *app);
+static void emit_line(Hcsr04BringupTelemetryStatus status, Hcsr04BringupApp *app, uint32_t now_ms);
 
 int main(void) {
     Hcsr04BringupApp app = {0};
@@ -73,7 +73,7 @@ static void emit_identity_or_error(Hcsr04BringupApp *app, uint32_t now_ms) {
             app->driver_status
         );
     }
-    emit_line(status, app);
+    emit_line(status, app, now_ms);
 }
 
 static void emit_measurement_attempt(Hcsr04BringupApp *app, uint32_t now_ms) {
@@ -85,7 +85,7 @@ static void emit_measurement_attempt(Hcsr04BringupApp *app, uint32_t now_ms) {
             now_ms,
             app->driver_status
         );
-        emit_line(status, app);
+        emit_line(status, app, now_ms);
         return;
     }
 
@@ -109,12 +109,27 @@ static void emit_measurement_attempt(Hcsr04BringupApp *app, uint32_t now_ms) {
             code
         );
     }
-    emit_line(format_status, app);
+    emit_line(format_status, app, now_ms);
 }
 
-static void emit_line(Hcsr04BringupTelemetryStatus status, Hcsr04BringupApp *app) {
+static void emit_line(Hcsr04BringupTelemetryStatus status, Hcsr04BringupApp *app, uint32_t now_ms) {
+    if (status != HCSR04_BRINGUP_TELEMETRY_OK) {
+        status = hcsr04_bringup_format_error(
+            g_telemetry_buffer,
+            sizeof(g_telemetry_buffer),
+            app->sequence,
+            now_ms,
+            HCSR04_RESULT_TELEMETRY_FORMAT_FAILURE
+        );
+    }
     if (status == HCSR04_BRINGUP_TELEMETRY_OK) {
         openrf1_hcsr04_debug_write_bounded(g_telemetry_buffer, OPENRF1_HCSR04_TELEMETRY_BUFFER_BYTES);
         ++app->sequence;
+        return;
     }
+    openrf1_hcsr04_debug_write_bounded(
+        "HCSR04_TELEMETRY_FORMAT_FAILURE\n",
+        (uint16_t)(sizeof("HCSR04_TELEMETRY_FORMAT_FAILURE\n") - 1u)
+    );
+    ++app->sequence;
 }

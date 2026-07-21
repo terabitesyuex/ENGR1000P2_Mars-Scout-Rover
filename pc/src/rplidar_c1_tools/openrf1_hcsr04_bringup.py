@@ -4,7 +4,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import json
+from collections.abc import Iterable, Iterator
 from typing import Any
+
+from .stm32_sensor_models import Stm32TelemetryMessage, ULTRASONIC_SENSOR_IDS
+from .stm32_sensor_protocol import Stm32TelemetryFormatError, parse_stm32_telemetry_line
 
 
 HCSR04_SENSOR_ID = "ultrasonic_1"
@@ -39,6 +43,8 @@ HCSR04_ECHO_PULLDOWN_RESISTOR_OHM = 15_000
 HCSR04_ECHO_DIVIDER_TOLERANCE_PERCENT = 5
 HCSR04_BRINGUP_PROTOCOL = "mars_scout_stm32_sensor_telemetry"
 HCSR04_BRINGUP_VERSION = 1
+HCSR04_TELEMETRY_MAX_LINE_BYTES = 512
+HCSR04_FIRMWARE_BUFFER_BYTES = HCSR04_TELEMETRY_MAX_LINE_BYTES + 1
 
 HCSR04_ERROR_ECHO_NOT_LOW_BEFORE_TRIGGER = "echo_not_low_before_trigger"
 HCSR04_ERROR_ECHO_RISE_TIMEOUT = "echo_rise_timeout"
@@ -46,6 +52,7 @@ HCSR04_ERROR_ECHO_FALL_TIMEOUT = "echo_fall_timeout"
 HCSR04_ERROR_TIMER_CONFIGURATION_FAILURE = "timer_configuration_failure"
 HCSR04_ERROR_TIMER_MEASUREMENT_FAILURE = "timer_measurement_failure"
 HCSR04_ERROR_PULSE_WIDTH_OUT_OF_BOUNDS = "pulse_width_out_of_bounds"
+HCSR04_ERROR_TELEMETRY_FORMAT_FAILURE = "telemetry_format_failure"
 HCSR04_ERROR_INTERNAL_STATE_ERROR = "internal_state_error"
 HCSR04_ERROR_CODES = (
     HCSR04_ERROR_ECHO_NOT_LOW_BEFORE_TRIGGER,
@@ -54,12 +61,17 @@ HCSR04_ERROR_CODES = (
     HCSR04_ERROR_TIMER_CONFIGURATION_FAILURE,
     HCSR04_ERROR_TIMER_MEASUREMENT_FAILURE,
     HCSR04_ERROR_PULSE_WIDTH_OUT_OF_BOUNDS,
+    HCSR04_ERROR_TELEMETRY_FORMAT_FAILURE,
     HCSR04_ERROR_INTERNAL_STATE_ERROR,
 )
 
 
 class Hcsr04BringupError(ValueError):
     """Raised for invalid HC-SR04 bring-up inputs."""
+
+
+class Hcsr04WrongSensorError(Stm32TelemetryFormatError):
+    """Raised when a valid HC-SR04 frame uses a sensor ID outside the capture scope."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -116,29 +128,15 @@ def format_identity_telemetry(*, sequence: int, timestamp_ms: int) -> str:
     payload: dict[str, Any] = {
         "sensor": HCSR04_SENSOR_NAME,
         "connector": HCSR04_CONNECTOR,
-        "connector_part": HCSR04_CONNECTOR_PART,
-        "connector_pin_order": [
-            {"pin": pin, "signal": signal} for pin, signal in HCSR04_CONNECTOR_PIN_ORDER
-        ],
         "trigger_pin": HCSR04_TRIGGER_MCU_PIN,
-        "trigger_mode": HCSR04_TRIGGER_MODE,
         "echo_pin": HCSR04_ECHO_MCU_PIN,
-        "echo_mode": HCSR04_ECHO_MODE,
         "timer": HCSR04_TIMER,
-        "timer_prescaler": HCSR04_TIMER_PRESCALER,
-        "timer_period": HCSR04_TIMER_PERIOD,
         "timer_tick_hz": HCSR04_TIMER_TICK_HZ,
         "trigger_pulse_us": HCSR04_TRIGGER_PULSE_US,
         "echo_timeout_us": HCSR04_ECHO_TIMEOUT_US,
         "measurement_period_ms": HCSR04_MEASUREMENT_PERIOD_MS,
         "distance_unit": HCSR04_DISTANCE_UNIT,
         "distance_model": HCSR04_DISTANCE_MODEL,
-        "echo_protection": {
-            "direct_echo_to_cn6_pin4": "prohibited",
-            "series_resistor_ohm": HCSR04_ECHO_SERIES_RESISTOR_OHM,
-            "pulldown_resistor_ohm": HCSR04_ECHO_PULLDOWN_RESISTOR_OHM,
-            "tolerance_percent_or_better": HCSR04_ECHO_DIVIDER_TOLERANCE_PERCENT,
-        },
     }
     return _json_line(sequence, timestamp_ms, "sensor_identity", "ok", payload)
 
@@ -171,6 +169,10 @@ def format_error_telemetry(
 ) -> str:
     if error.code not in HCSR04_ERROR_CODES:
         raise Hcsr04BringupError(f"unknown HC-SR04 error code: {error.code}")
+    if not error.operation:
+        raise Hcsr04BringupError("error operation must be non-empty")
+    if error.timeout_us not in (None, HCSR04_ECHO_TIMEOUT_US):
+        raise Hcsr04BringupError("error timeout_us must match the 30000 us contract")
     payload: dict[str, Any] = {
         "echo_pulse_us": None,
         "distance_mm": None,
@@ -179,9 +181,8 @@ def format_error_telemetry(
     error_payload: dict[str, Any] = {
         "code": error.code,
         "operation": error.operation,
+        "timeout_us": HCSR04_ECHO_TIMEOUT_US if error.timeout_us is None else error.timeout_us,
     }
-    if error.timeout_us is not None:
-        error_payload["timeout_us"] = error.timeout_us
     return _json_line(
         sequence,
         timestamp_ms,
@@ -216,3 +217,75 @@ def _json_line(
     if error is not None:
         record["error"] = error
     return json.dumps(record, allow_nan=False, separators=(",", ":"), sort_keys=True) + "\n"
+
+
+def telemetry_line_bytes(line: str) -> int:
+    """Return the encoded line size including newline but excluding C string NUL."""
+    try:
+        encoded = line.encode("ascii")
+    except UnicodeEncodeError as exc:
+        raise Hcsr04BringupError("telemetry must be ASCII JSONL") from exc
+    if not encoded.endswith(b"\n"):
+        raise Hcsr04BringupError("telemetry line must end with newline")
+    return len(encoded)
+
+
+def validate_telemetry_buffer_capacity(line: str, buffer_bytes: int) -> None:
+    """Model snprintf exact-fit semantics, including newline and trailing NUL."""
+    if buffer_bytes <= 0:
+        raise Hcsr04BringupError("buffer_bytes must be positive")
+    required = telemetry_line_bytes(line) + 1
+    if buffer_bytes < required:
+        raise Hcsr04BringupError(
+            f"telemetry buffer requires {required} bytes including NUL"
+        )
+
+
+def parse_hcsr04_bringup_line(
+    line: str,
+    *,
+    allowed_sensor_ids: tuple[str, ...] = (HCSR04_SENSOR_ID,),
+    line_number: int | None = None,
+) -> Stm32TelemetryMessage:
+    """Parse a strict HC-SR04 identity, measurement, or error JSONL record."""
+    invalid_allowed = sorted(set(allowed_sensor_ids) - set(ULTRASONIC_SENSOR_IDS))
+    if not allowed_sensor_ids or invalid_allowed:
+        raise Hcsr04BringupError("allowed_sensor_ids must contain only neutral ultrasonic IDs")
+    message = parse_stm32_telemetry_line(line, line_number=line_number)
+    if message.message_type not in {"sensor_identity", "ultrasonic"}:
+        raise Stm32TelemetryFormatError(
+            "HC-SR04 stream supports only sensor_identity and ultrasonic messages",
+            line_number=line_number,
+        )
+    if message.sensor_id not in allowed_sensor_ids:
+        raise Hcsr04WrongSensorError(
+            "sensor_id is outside the selected HC-SR04 capture scope",
+            line_number=line_number,
+        )
+    return message
+
+
+def iter_hcsr04_bringup_telemetry(
+    lines: Iterable[str],
+    *,
+    allowed_sensor_ids: tuple[str, ...] = (HCSR04_SENSOR_ID,),
+) -> Iterator[Stm32TelemetryMessage]:
+    """Yield strict HC-SR04 records with increasing sequence and time."""
+    previous_sequence = -1
+    previous_timestamp_ms = 0
+    for line_number, line in enumerate(lines, start=1):
+        message = parse_hcsr04_bringup_line(
+            line,
+            allowed_sensor_ids=allowed_sensor_ids,
+            line_number=line_number,
+        )
+        if message.sequence <= previous_sequence:
+            raise Stm32TelemetryFormatError("sequence must increase", line_number=line_number)
+        if message.timestamp_ms < previous_timestamp_ms:
+            raise Stm32TelemetryFormatError(
+                "timestamp_ms must be nondecreasing",
+                line_number=line_number,
+            )
+        previous_sequence = message.sequence
+        previous_timestamp_ms = message.timestamp_ms
+        yield message

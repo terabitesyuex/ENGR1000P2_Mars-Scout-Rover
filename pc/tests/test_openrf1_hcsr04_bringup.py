@@ -19,6 +19,7 @@ from rplidar_c1_tools.openrf1_hcsr04_bringup import (
     HCSR04_ERROR_ECHO_FALL_TIMEOUT,
     HCSR04_ERROR_ECHO_NOT_LOW_BEFORE_TRIGGER,
     HCSR04_ERROR_ECHO_RISE_TIMEOUT,
+    HCSR04_FIRMWARE_BUFFER_BYTES,
     HCSR04_MEASUREMENT_PERIOD_MS,
     HCSR04_TIMER,
     HCSR04_TIMER_PERIOD,
@@ -28,6 +29,7 @@ from rplidar_c1_tools.openrf1_hcsr04_bringup import (
     HCSR04_TRIGGER_GPIO_PORT,
     HCSR04_TRIGGER_MCU_PIN,
     HCSR04_TRIGGER_PULSE_US,
+    HCSR04_TELEMETRY_MAX_LINE_BYTES,
     Hcsr04BringupError,
     Hcsr04ErrorRecord,
     Hcsr04Measurement,
@@ -38,6 +40,8 @@ from rplidar_c1_tools.openrf1_hcsr04_bringup import (
     format_identity_telemetry,
     format_measurement_telemetry,
     pulse_width_us,
+    telemetry_line_bytes,
+    validate_telemetry_buffer_capacity,
     validate_pulse_width_us,
 )
 
@@ -142,9 +146,19 @@ def test_hcsr04_jsonl_identity_measurement_and_error_schema():
     assert identity["payload"]["echo_timeout_us"] == 30_000
     assert identity["payload"]["measurement_period_ms"] == 100
     assert identity["payload"]["distance_model"] == "nominal_343_m_per_s_uncalibrated"
-    assert identity["payload"]["echo_protection"]["direct_echo_to_cn6_pin4"] == "prohibited"
-    assert identity["payload"]["echo_protection"]["series_resistor_ohm"] == 10_000
-    assert identity["payload"]["echo_protection"]["pulldown_resistor_ohm"] == 15_000
+    assert set(identity["payload"]) == {
+        "sensor",
+        "connector",
+        "trigger_pin",
+        "echo_pin",
+        "timer",
+        "timer_tick_hz",
+        "trigger_pulse_us",
+        "echo_timeout_us",
+        "measurement_period_ms",
+        "distance_unit",
+        "distance_model",
+    }
 
     assert measurement["message_type"] == "ultrasonic"
     assert measurement["status"] == "ok"
@@ -184,6 +198,50 @@ def test_error_telemetry_rejects_unknown_code_and_never_reuses_stale_distance():
         assert record["status"] == "error"
         assert record["payload"]["distance_mm"] is None
         assert record["payload"]["echo_pulse_us"] is None
+
+
+def test_every_firmware_line_shape_fits_the_shared_512_byte_jsonl_contract():
+    lines = [
+        format_identity_telemetry(sequence=4_294_967_295, timestamp_ms=4_294_967_295),
+        format_measurement_telemetry(
+            sequence=4_294_967_295,
+            timestamp_ms=4_294_967_295,
+            measurement=Hcsr04Measurement(echo_pulse_us=29_999),
+        ),
+    ]
+    lines.extend(
+        format_error_telemetry(
+            sequence=4_294_967_295,
+            timestamp_ms=4_294_967_295,
+            error=Hcsr04ErrorRecord(
+                code=code,
+                operation="wait_for_echo_falling_edge",
+                timeout_us=HCSR04_ECHO_TIMEOUT_US,
+            ),
+        )
+        for code in (
+            HCSR04_ERROR_ECHO_NOT_LOW_BEFORE_TRIGGER,
+            HCSR04_ERROR_ECHO_RISE_TIMEOUT,
+            HCSR04_ERROR_ECHO_FALL_TIMEOUT,
+            "timer_configuration_failure",
+            "timer_measurement_failure",
+            "pulse_width_out_of_bounds",
+            "telemetry_format_failure",
+            "internal_state_error",
+        )
+    )
+
+    for line in lines:
+        assert telemetry_line_bytes(line) <= HCSR04_TELEMETRY_MAX_LINE_BYTES
+        validate_telemetry_buffer_capacity(line, HCSR04_FIRMWARE_BUFFER_BYTES)
+        with pytest.raises(Hcsr04BringupError, match="including NUL"):
+            validate_telemetry_buffer_capacity(line, telemetry_line_bytes(line))
+
+    board = (BRINGUP_ROOT / "board_config.h").read_text(encoding="utf-8")
+    main = (BRINGUP_ROOT / "main_hcsr04_bringup.c").read_text(encoding="utf-8")
+    assert "OPENRF1_HCSR04_TELEMETRY_MAX_LINE_BYTES ((uint16_t)512u)" in board
+    assert "OPENRF1_HCSR04_TELEMETRY_BUFFER_BYTES ((uint16_t)513u)" in board
+    assert "HCSR04_TELEMETRY_FORMAT_FAILURE" in main
 
 
 def test_firmware_source_tree_is_isolated_to_hcsr04_bringup():

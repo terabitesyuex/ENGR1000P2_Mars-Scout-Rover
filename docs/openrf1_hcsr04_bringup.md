@@ -58,6 +58,12 @@ Soft materials and angled surfaces may produce weak or missing echoes. Very clos
 - Explicit JSONL startup identity, success, and error records.
 - Error records do not emit fake zero distance or stale distance.
 - Host-side tests and Phase 3.2E software audit.
+- Strict host parser and dedicated `capture-openrf1-hcsr04` mockable capture path.
+- Maximum serialized JSONL line contract: 512 ASCII bytes including newline and excluding the C-string NUL.
+- Firmware buffer contract: 513 bytes including the trailing NUL. This replaces the former 768-byte buffer and reduces static RAM use by 255 bytes.
+- Formatter failure is surfaced with `telemetry_format_failure`; it is not silently dropped.
+
+The bounded synchronous polling in this isolated diagnostic firmware can block one measurement attempt for up to the 30000 us timeout. It is intentionally retained for low-risk isolated bring-up and is not a non-blocking production runtime. Future full-hardware integration must use the existing non-blocking state-machine foundation; this phase does not implement three-sensor concurrent acquisition.
 
 ## UNVERIFIED
 
@@ -88,7 +94,7 @@ Soft materials and angled surfaces may produce weak or missing echoes. Very clos
 The firmware emits one identity record after successful local GPIO/timer initialization. It is software configuration only and does not claim the sensor replied.
 
 ```json
-{"protocol":"mars_scout_stm32_sensor_telemetry","version":1,"sequence":0,"timestamp_ms":0,"message_type":"sensor_identity","sensor_id":"ultrasonic_1","status":"ok","payload":{"sensor":"hc-sr04","connector":"CN6","connector_part":"B4B-PH-K-S(LF)(SN)","trigger_pin":"PA5","echo_pin":"PA4","timer":"TIM6","timer_tick_hz":1000000,"trigger_pulse_us":10,"echo_timeout_us":30000,"measurement_period_ms":100,"distance_unit":"mm","distance_model":"nominal_343_m_per_s_uncalibrated"}}
+{"protocol":"mars_scout_stm32_sensor_telemetry","version":1,"sequence":0,"timestamp_ms":0,"message_type":"sensor_identity","sensor_id":"ultrasonic_1","status":"ok","payload":{"sensor":"hc-sr04","connector":"CN6","trigger_pin":"PA5","echo_pin":"PA4","timer":"TIM6","timer_tick_hz":1000000,"trigger_pulse_us":10,"echo_timeout_us":30000,"measurement_period_ms":100,"distance_unit":"mm","distance_model":"nominal_343_m_per_s_uncalibrated"}}
 ```
 
 ## JSONL Success Record
@@ -111,7 +117,10 @@ Supported error codes:
 - `timer_configuration_failure`
 - `timer_measurement_failure`
 - `pulse_width_out_of_bounds`
+- `telemetry_format_failure`
 - `internal_state_error`
+
+The PC rejects an encoded line longer than 512 bytes, invalid UTF-8 input, unknown fields, inconsistent pulse/distance pairs, incorrect sensor IDs, non-increasing sequence values, and timestamp rollback. Firmware output remains ASCII-compatible JSON. The fixture-backed capture summary always retains `manual_review_required: true` and `physical_status: PHYSICAL_VERIFICATION_REQUIRED`.
 
 ## Future Physical Validation Checklist
 

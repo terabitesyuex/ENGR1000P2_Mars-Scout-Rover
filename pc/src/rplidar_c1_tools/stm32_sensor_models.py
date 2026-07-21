@@ -12,6 +12,7 @@ STM32_TELEMETRY_VERSION = 1
 
 TELEMETRY_STATUSES = (
     "ok",
+    "error",
     "timeout",
     "out_of_range",
     "invalid_reading",
@@ -23,6 +24,7 @@ TELEMETRY_STATUSES = (
 )
 
 MESSAGE_TYPES = (
+    "sensor_identity",
     "ultrasonic",
     "ground_edge",
     "hall_landmark",
@@ -45,6 +47,7 @@ MESSAGE_TYPES = (
 )
 
 ULTRASONIC_SENSOR_IDS = ("ultrasonic_1", "ultrasonic_2", "ultrasonic_3")
+SENSOR_IDENTITY_SENSOR_IDS = ULTRASONIC_SENSOR_IDS
 GROUND_EDGE_SENSOR_IDS = ("tcrt5000_1", "tcrt5000_2")
 HALL_SENSOR_IDS = ("hall_1",)
 ILLUMINANCE_SENSOR_IDS = ("bh1750_1",)
@@ -65,6 +68,7 @@ MOTION_SAFETY_STATE_SENSOR_IDS = ("motion_safety",)
 MOTION_CONTROL_SNAPSHOT_SENSOR_IDS = ("motion_control",)
 
 SENSOR_IDS_BY_MESSAGE_TYPE = {
+    "sensor_identity": SENSOR_IDENTITY_SENSOR_IDS,
     "ultrasonic": ULTRASONIC_SENSOR_IDS,
     "ground_edge": GROUND_EDGE_SENSOR_IDS,
     "hall_landmark": HALL_SENSOR_IDS,
@@ -96,16 +100,19 @@ class Stm32TelemetryMessage:
     message_type: str
     sensor_id: str
     payload: Mapping[str, Any]
+    error: Mapping[str, Any] | None = None
     status: str = "ok"
     protocol: str = STM32_TELEMETRY_PROTOCOL
     version: int = STM32_TELEMETRY_VERSION
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "payload", MappingProxyType(dict(self.payload)))
+        if self.error is not None:
+            object.__setattr__(self, "error", MappingProxyType(dict(self.error)))
 
     def to_json(self) -> dict[str, Any]:
         """Return the canonical JSON object for this message."""
-        return {
+        result = {
             "protocol": self.protocol,
             "version": self.version,
             "sequence": self.sequence,
@@ -115,4 +122,7 @@ class Stm32TelemetryMessage:
             "payload": dict(self.payload),
             "status": self.status,
         }
+        if self.error is not None:
+            result["error"] = dict(self.error)
+        return result
 
