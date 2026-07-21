@@ -33,6 +33,8 @@ from rplidar_c1_tools.openrf1_mpu6050_bringup import (
     format_imu_telemetry,
     gyro_raw_to_dps,
     initialization_write_sequence,
+    iter_mpu6050_bringup_telemetry,
+    parse_mpu6050_bringup_line,
     temperature_raw_to_c,
     validate_who_am_i,
 )
@@ -42,6 +44,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 BRINGUP_ROOT = REPO_ROOT / "firmware" / "openrf1" / "mpu6050_bringup"
 FULL_ROOT = REPO_ROOT / "firmware" / "openrf1" / "full_hardware"
 KEIL_PROJECT = REPO_ROOT / "firmware" / "openrf1" / "keil" / "OpenRF1_MPU6050_Bringup.uvprojx"
+FIXTURE_ROOT = REPO_ROOT / "data" / "test_vectors" / "phase3.2d"
 
 
 def test_mpu6050_registers_configuration_and_address_are_locked():
@@ -181,6 +184,116 @@ def test_mpu6050_telemetry_formats_identity_measurement_and_errors():
     assert error["payload"]["operation"] == "read_who_am_i"
     assert error["payload"]["register"] == "0x75"
     assert error["payload"]["error_code"] == "nack"
+
+
+def test_gyro_bias_changes_only_scaled_gyro_dps():
+    sample = Mpu6050RawSample(
+        accel_x_raw=0,
+        accel_y_raw=0,
+        accel_z_raw=16384,
+        temperature_raw=0,
+        gyro_x_raw=262,
+        gyro_y_raw=-262,
+        gyro_z_raw=131,
+    )
+
+    measurement = json.loads(
+        format_imu_telemetry(
+            sequence=1,
+            timestamp_ms=10100,
+            sample=sample,
+            gyro_bias_dps={"x": 0.5, "y": -0.25, "z": 0.125},
+        )
+    )
+
+    assert measurement["payload"]["gyro_raw"] == {"x": 262, "y": -262, "z": 131}
+    assert measurement["payload"]["gyro_dps"] == {"x": 1.5, "y": -1.75, "z": 0.875}
+    assert measurement["payload"]["accel_raw"] == {"x": 0, "y": 0, "z": 16384}
+    assert measurement["payload"]["accel_g"] == {"x": 0.0, "y": 0.0, "z": 1.0}
+
+
+def test_mpu6050_fixture_stream_covers_startup_grace_and_100ms_period():
+    lines = (FIXTURE_ROOT / "mpu6050_startup_grace_session.jsonl").read_text(encoding="utf-8").splitlines()
+    messages = list(iter_mpu6050_bringup_telemetry(lines))
+
+    assert [message["message_type"] for message in messages] == ["sensor_identity", "imu", "imu"]
+    assert messages[0]["sensor_id"] == "mpu6050_1"
+    assert messages[0]["timestamp_ms"] == 10_000
+    assert [messages[index + 1]["timestamp_ms"] - messages[index]["timestamp_ms"] for index in (0, 1)] == [100, 100]
+    assert messages[1]["payload"]["accel_raw"] == {"x": 0, "y": 0, "z": 16384}
+    assert messages[1]["payload"]["accel_g"] == {"x": 0.0, "y": 0.0, "z": 1.0}
+    assert messages[1]["payload"]["gyro_raw"] == {"x": 262, "y": -262, "z": 131}
+    assert messages[1]["payload"]["gyro_dps"] == {"x": 1.5, "y": -1.75, "z": 0.875}
+    assert messages[1]["payload"]["temperature_raw"] == 0
+    assert messages[1]["payload"]["temperature_c"] == 36.53
+
+
+def test_mpu6050_error_fixture_preserves_null_measurements():
+    [message] = list(
+        iter_mpu6050_bringup_telemetry(
+            (FIXTURE_ROOT / "mpu6050_error_session.jsonl").read_text(encoding="utf-8").splitlines()
+        )
+    )
+
+    assert message["message_type"] == "imu"
+    assert message["status"] == "nack"
+    assert message["payload"]["operation"] == "read_who_am_i"
+    for key in ("accel_raw", "accel_g", "gyro_raw", "gyro_dps", "temperature_raw", "temperature_c"):
+        assert message["payload"][key] is None
+
+
+def test_mpu6050_parser_rejects_malformed_wrong_sensor_gap_and_backwards_time():
+    valid = format_identity_telemetry(sequence=0, timestamp_ms=0, who_am_i=0x68)
+    with pytest.raises(Mpu6050BringupError, match="invalid JSON"):
+        parse_mpu6050_bringup_line("not-json")
+    with pytest.raises(Mpu6050BringupError, match="sensor_id"):
+        parse_mpu6050_bringup_line(valid.replace('"mpu6050_1"', '"bh1750_1"'))
+    with pytest.raises(Mpu6050BringupError, match="sequence"):
+        list(
+            iter_mpu6050_bringup_telemetry(
+                [
+                    valid,
+                    format_imu_telemetry(
+                        sequence=2,
+                        timestamp_ms=100,
+                        sample=Mpu6050RawSample(0, 0, 16384, 0, 0, 0, 0),
+                    ),
+                ]
+            )
+        )
+    with pytest.raises(Mpu6050BringupError, match="timestamp_ms"):
+        list(
+            iter_mpu6050_bringup_telemetry(
+                [
+                    valid.replace('"timestamp_ms":0', '"timestamp_ms":100'),
+                    format_imu_telemetry(
+                        sequence=1,
+                        timestamp_ms=99,
+                        sample=Mpu6050RawSample(0, 0, 16384, 0, 0, 0, 0),
+                    ),
+                ]
+            )
+        )
+
+
+def test_mpu6050_parser_resets_ordering_for_new_session():
+    first = list(
+        iter_mpu6050_bringup_telemetry(
+            [
+                format_identity_telemetry(sequence=7, timestamp_ms=10_000, who_am_i=0x68),
+            ]
+        )
+    )
+    second = list(
+        iter_mpu6050_bringup_telemetry(
+            [
+                format_identity_telemetry(sequence=0, timestamp_ms=0, who_am_i=0x68),
+            ]
+        )
+    )
+
+    assert first[0]["sequence"] == 7
+    assert second[0]["sequence"] == 0
 
 
 def test_mpu6050_jsonl_output_has_no_nonfinite_or_startup_prose():

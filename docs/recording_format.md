@@ -1,6 +1,6 @@
 # Recording Format
 
-Phase 2.4 implements a human-readable, streamable UTF-8 JSON Lines format. Phase 2.5 reuses the same schema for bounded PC-direct C1 captures. Phase 3.1 reuses the same schema for validated STM32 low-rate sensor telemetry converted by the PC bridge. Phase 3.2A reuses it for mocked or manually captured OpenRF1 BH1750 serial telemetry. Phase 3.2D adds isolated MPU6050 bring-up JSONL examples, but does not yet add a recording bridge for physical MPU6050 evidence.
+Phase 2.4 implements a human-readable, streamable UTF-8 JSON Lines format. Phase 2.5 reuses the same schema for bounded PC-direct C1 captures. Phase 3.1 reuses the same schema for validated STM32 low-rate sensor telemetry converted by the PC bridge. Phase 3.2A reuses it for mocked or manually captured OpenRF1 BH1750 serial telemetry. Phase 3.2D adds isolated MPU6050 bring-up JSONL examples and offline fixtures, but does not add a recording bridge for MPU6050 physical evidence.
 
 ## Rationale
 
@@ -316,7 +316,7 @@ python -m rplidar_c1_tools.cli render-recording .verification\phase2.4\synthetic
 
 ## Limitations
 
-- Phase 2.4 data is synthetic; Phase 2.5 can write PC-direct C1 records only when fixture bytes or an explicit user-verified serial port are provided; Phase 3.1 can write STM32 telemetry records only from deterministic files or injected streams; Phase 3.2A can write BH1750 records from mock input or a future explicit user-selected COM port; Phase 3.2B can write deterministic raw-IMU and transport-status records from software fixtures only; Phase 3.2D MPU6050 bring-up JSONL is for isolated future manual evidence; Phase 4A adds deterministic software-only wheel/odometry records; Phase 4B adds deterministic software-only command/control/safety/synthetic-plant records.
+- Phase 2.4 data is synthetic; Phase 2.5 can write PC-direct C1 records only when fixture bytes or an explicit user-verified serial port are provided; Phase 3.1 can write STM32 telemetry records only from deterministic files or injected streams; Phase 3.2A can write BH1750 records from mock input or an explicit user-selected COM port; Phase 3.2B can write deterministic raw-IMU and transport-status records from software fixtures only; Phase 3.2D MPU6050 bring-up JSONL is isolated evidence/fixture data and is not a multisensor recording bridge; Phase 4A adds deterministic software-only wheel/odometry records; Phase 4B adds deterministic software-only command/control/safety/synthetic-plant records.
 - No WiFi, live Phase 4 encoder firmware, motor control, physical wheel odometry, mapping, SLAM, navigation, or obstacle avoidance is implemented.
 - No mounting transforms are recorded or applied.
 - No sensor calibration is implied.

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib.util
 import json
 from pathlib import Path
 import subprocess
@@ -103,3 +104,60 @@ def test_phase4a_audit_reports_privacy_artifact_and_hardware_boundaries(tmp_path
     assert "hardware_access_by_automation: none" in audit
     assert "physical_odometry_accuracy: UNVERIFIED" in status
     assert "manual_action_performed_by_verifier: none" in status
+
+
+def test_phase4a_firmware_diff_audit_is_scoped_and_still_rejects_phase_firmware_changes(monkeypatch):
+    audit_module = _load_audit_module("audit_phase4a_scoped", REPO_ROOT / "tools/audit_phase4a.py")
+
+    def fake_run_git(*args: str) -> subprocess.CompletedProcess[str]:
+        if args[:2] == ("log", "--format=%H"):
+            assert "--" in args
+            assert "tools/audit_phase4a.py" in args
+            return subprocess.CompletedProcess(["git", *args], 0, stdout="phasecommit\n", stderr="")
+        if args[:4] == ("diff-tree", "--no-commit-id", "--name-only", "-r"):
+            return subprocess.CompletedProcess(
+                ["git", *args],
+                0,
+                stdout="docs/phase4a_mecanum_kinematics_odometry_foundation.md\nfirmware/openrf1/app/unexpected.c\n",
+                stderr="",
+            )
+        raise AssertionError(f"unexpected git call: {args}")
+
+    monkeypatch.setattr(audit_module, "_run_git", fake_run_git)
+    lines: list[str] = []
+    failures: list[str] = []
+
+    audit_module._check_software_only_diff(lines, failures)
+
+    assert "firmware_files_changed: True" in lines
+    assert failures == [
+        "software-only phase-scoped commit changed firmware: firmware/openrf1/app/unexpected.c"
+    ]
+
+
+def test_phase4a_firmware_diff_audit_ignores_later_unrelated_firmware_commits(monkeypatch):
+    audit_module = _load_audit_module("audit_phase4a_unrelated", REPO_ROOT / "tools/audit_phase4a.py")
+
+    def fake_run_git(*args: str) -> subprocess.CompletedProcess[str]:
+        if args[:2] == ("log", "--format=%H"):
+            assert "--" in args
+            return subprocess.CompletedProcess(["git", *args], 0, stdout="", stderr="")
+        raise AssertionError(f"unexpected git call: {args}")
+
+    monkeypatch.setattr(audit_module, "_run_git", fake_run_git)
+    lines: list[str] = []
+    failures: list[str] = []
+
+    audit_module._check_software_only_diff(lines, failures)
+
+    assert "firmware_files_changed: False" in lines
+    assert failures == []
+
+
+def _load_audit_module(name: str, path: Path):
+    spec = importlib.util.spec_from_file_location(name, path)
+    assert spec is not None
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    return module

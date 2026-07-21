@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable, Iterator, Mapping
 from dataclasses import dataclass
 import json
+import math
 from typing import Any
 
 
@@ -30,6 +32,16 @@ MPU6050_SAMPLE_PERIOD_MS = 100
 MPU6050_BURST_SAMPLE_BYTES = 14
 MPU6050_BRINGUP_PROTOCOL = "mars_scout_stm32_sensor_telemetry"
 MPU6050_BRINGUP_VERSION = 1
+MPU6050_BRINGUP_MESSAGE_TYPES = ("sensor_identity", "imu")
+MPU6050_BRINGUP_STATUSES = (
+    "ok",
+    "nack",
+    "timeout",
+    "invalid_reading",
+    "not_initialized",
+    "stale",
+    "hardware_fault",
+)
 
 
 class Mpu6050BringupError(ValueError):
@@ -158,8 +170,15 @@ def format_imu_telemetry(
     sequence: int,
     timestamp_ms: int,
     sample: Mpu6050RawSample,
+    gyro_bias_dps: Mapping[str, float] | None = None,
 ) -> str:
     converted = convert_sample(sample)
+    gyro_dps = dict(converted.gyro_dps)
+    if gyro_bias_dps is not None:
+        gyro_dps = {
+            axis: round(gyro_dps[axis] - _require_finite_bias(gyro_bias_dps, axis), 3)
+            for axis in ("x", "y", "z")
+        }
     return _json_line(
         sequence,
         timestamp_ms,
@@ -178,7 +197,7 @@ def format_imu_telemetry(
             },
             "temperature_raw": sample.temperature_raw,
             "accel_g": converted.accel_g,
-            "gyro_dps": converted.gyro_dps,
+            "gyro_dps": gyro_dps,
             "temperature_c": converted.temperature_c,
         },
     )
@@ -210,6 +229,74 @@ def format_error_telemetry(
     return _json_line(sequence, timestamp_ms, "imu", status, payload)
 
 
+def parse_mpu6050_bringup_line(
+    line: str,
+    *,
+    line_number: int | None = None,
+) -> dict[str, Any]:
+    """Parse and validate one isolated Phase 3.2D MPU6050 JSONL line."""
+    if line.strip() == "":
+        raise Mpu6050BringupError(_with_line("blank telemetry line", line_number))
+    try:
+        message = json.loads(line)
+    except json.JSONDecodeError as exc:
+        raise Mpu6050BringupError(_with_line(f"invalid JSON: {exc.msg}", line_number)) from exc
+    if not isinstance(message, dict):
+        raise Mpu6050BringupError(_with_line("telemetry line must be a JSON object", line_number))
+    required = {
+        "protocol",
+        "version",
+        "sequence",
+        "timestamp_ms",
+        "message_type",
+        "sensor_id",
+        "status",
+        "payload",
+    }
+    unknown = sorted(set(message) - required)
+    if unknown:
+        raise Mpu6050BringupError(_with_line("unknown top-level field: " + ", ".join(unknown), line_number))
+    missing = sorted(required - set(message))
+    if missing:
+        raise Mpu6050BringupError(_with_line("missing required field: " + ", ".join(missing), line_number))
+    if message["protocol"] != MPU6050_BRINGUP_PROTOCOL:
+        raise Mpu6050BringupError(_with_line("unsupported protocol", line_number))
+    if message["version"] != MPU6050_BRINGUP_VERSION:
+        raise Mpu6050BringupError(_with_line("unsupported version", line_number))
+    _require_non_negative_int(message["sequence"], "sequence")
+    _require_non_negative_int(message["timestamp_ms"], "timestamp_ms")
+    if message["message_type"] not in MPU6050_BRINGUP_MESSAGE_TYPES:
+        raise Mpu6050BringupError(_with_line("unsupported message_type", line_number))
+    if message["sensor_id"] != MPU6050_SENSOR_ID:
+        raise Mpu6050BringupError(_with_line("sensor_id must be mpu6050_1", line_number))
+    if message["status"] not in MPU6050_BRINGUP_STATUSES:
+        raise Mpu6050BringupError(_with_line("unsupported status", line_number))
+    if not isinstance(message["payload"], dict):
+        raise Mpu6050BringupError(_with_line("payload must be an object", line_number))
+    if message["message_type"] == "sensor_identity":
+        _validate_identity_payload(message["payload"], message["status"], line_number)
+    else:
+        _validate_imu_payload(message["payload"], message["status"], line_number)
+    return message
+
+
+def iter_mpu6050_bringup_telemetry(lines: Iterable[str]) -> Iterator[dict[str, Any]]:
+    """Yield validated MPU6050 bring-up messages with contiguous sequencing."""
+    previous_sequence: int | None = None
+    previous_timestamp_ms = 0
+    for line_number, line in enumerate(lines, start=1):
+        message = parse_mpu6050_bringup_line(line, line_number=line_number)
+        sequence = int(message["sequence"])
+        timestamp_ms = int(message["timestamp_ms"])
+        if previous_sequence is not None and sequence != previous_sequence + 1:
+            raise Mpu6050BringupError(_with_line("sequence must increase by exactly 1", line_number))
+        if timestamp_ms < previous_timestamp_ms:
+            raise Mpu6050BringupError(_with_line("timestamp_ms must be nondecreasing", line_number))
+        previous_sequence = sequence
+        previous_timestamp_ms = timestamp_ms
+        yield message
+
+
 def _json_line(
     sequence: int,
     timestamp_ms: int,
@@ -237,6 +324,152 @@ def _json_line(
         )
         + "\n"
     )
+
+
+def _validate_identity_payload(
+    payload: dict[str, Any],
+    status: str,
+    line_number: int | None,
+) -> None:
+    if status != "ok":
+        raise Mpu6050BringupError(_with_line("sensor_identity status must be ok", line_number))
+    required = {
+        "sensor",
+        "configured_address",
+        "expected_who_am_i",
+        "who_am_i",
+        "initialization_stage",
+        "error_code",
+        "pwr_mgmt_1",
+        "smplrt_div",
+        "config",
+        "gyro_config",
+        "accel_config",
+        "accel_range_g",
+        "gyro_range_dps",
+        "telemetry_period_ms",
+    }
+    _require_exact_payload_fields(payload, required, line_number)
+    expected_values = {
+        "sensor": "mpu6050",
+        "configured_address": "0x68",
+        "expected_who_am_i": "0x68",
+        "who_am_i": "0x68",
+        "pwr_mgmt_1": "0x01",
+        "smplrt_div": "0x09",
+        "config": "0x03",
+        "gyro_config": "0x00",
+        "accel_config": "0x00",
+        "accel_range_g": MPU6050_ACCEL_RANGE_G,
+        "gyro_range_dps": MPU6050_GYRO_RANGE_DPS,
+        "telemetry_period_ms": MPU6050_SAMPLE_PERIOD_MS,
+    }
+    for key, value in expected_values.items():
+        if payload.get(key) != value:
+            raise Mpu6050BringupError(_with_line(f"payload.{key} is invalid", line_number))
+    if payload.get("error_code") is not None:
+        raise Mpu6050BringupError(_with_line("payload.error_code must be null for identity ok", line_number))
+    if not isinstance(payload.get("initialization_stage"), str) or not payload["initialization_stage"]:
+        raise Mpu6050BringupError(_with_line("payload.initialization_stage must be a non-empty string", line_number))
+
+
+def _validate_imu_payload(
+    payload: dict[str, Any],
+    status: str,
+    line_number: int | None,
+) -> None:
+    measurement_fields = {
+        "accel_raw",
+        "gyro_raw",
+        "temperature_raw",
+        "accel_g",
+        "gyro_dps",
+        "temperature_c",
+    }
+    if status == "ok":
+        _require_exact_payload_fields(payload, measurement_fields, line_number)
+        _validate_axis_object(payload["accel_raw"], "payload.accel_raw", int, line_number)
+        _validate_axis_object(payload["gyro_raw"], "payload.gyro_raw", int, line_number)
+        _require_int(payload["temperature_raw"], "payload.temperature_raw")
+        _validate_axis_object(payload["accel_g"], "payload.accel_g", float, line_number)
+        _validate_axis_object(payload["gyro_dps"], "payload.gyro_dps", float, line_number)
+        _require_finite_number(payload["temperature_c"], "payload.temperature_c")
+        return
+
+    required = {
+        *measurement_fields,
+        "initialization_stage",
+        "operation",
+        "register",
+        "error_code",
+    }
+    _require_exact_payload_fields(payload, required, line_number)
+    for key in measurement_fields:
+        if payload.get(key) is not None:
+            raise Mpu6050BringupError(_with_line(f"payload.{key} must be null for error telemetry", line_number))
+    for key in ("initialization_stage", "operation", "error_code"):
+        if not isinstance(payload.get(key), str) or not payload[key]:
+            raise Mpu6050BringupError(_with_line(f"payload.{key} must be a non-empty string", line_number))
+    register = payload.get("register")
+    if register is not None and (not isinstance(register, str) or not register.startswith("0x")):
+        raise Mpu6050BringupError(_with_line("payload.register must be null or a hex string", line_number))
+
+
+def _require_exact_payload_fields(
+    payload: dict[str, Any],
+    required: set[str],
+    line_number: int | None,
+) -> None:
+    unknown = sorted(set(payload) - required)
+    if unknown:
+        raise Mpu6050BringupError(_with_line("unknown payload field: " + ", ".join(unknown), line_number))
+    missing = sorted(required - set(payload))
+    if missing:
+        raise Mpu6050BringupError(_with_line("missing payload field: " + ", ".join(missing), line_number))
+
+
+def _validate_axis_object(
+    value: object,
+    name: str,
+    numeric_type: type,
+    line_number: int | None,
+) -> None:
+    if not isinstance(value, dict):
+        raise Mpu6050BringupError(_with_line(f"{name} must be an object", line_number))
+    _require_exact_payload_fields(value, {"x", "y", "z"}, line_number)
+    for axis in ("x", "y", "z"):
+        if numeric_type is int:
+            _require_int(value[axis], f"{name}.{axis}")
+        else:
+            _require_finite_number(value[axis], f"{name}.{axis}")
+
+
+def _require_finite_bias(values: Mapping[str, float], axis: str) -> float:
+    if axis not in values:
+        raise Mpu6050BringupError(f"gyro_bias_dps.{axis} is required")
+    value = values[axis]
+    _require_finite_number(value, f"gyro_bias_dps.{axis}")
+    return float(value)
+
+
+def _require_int(value: object, name: str) -> None:
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise Mpu6050BringupError(f"{name} must be an integer")
+
+
+def _require_non_negative_int(value: object, name: str) -> None:
+    _require_int(value, name)
+    if int(value) < 0:
+        raise Mpu6050BringupError(f"{name} must be non-negative")
+
+
+def _require_finite_number(value: object, name: str) -> None:
+    if isinstance(value, bool) or not isinstance(value, int | float) or not math.isfinite(float(value)):
+        raise Mpu6050BringupError(f"{name} must be finite")
+
+
+def _with_line(message: str, line_number: int | None) -> str:
+    return f"line {line_number}: {message}" if line_number is not None else message
 
 
 def _s16_be(raw: bytes) -> int:

@@ -80,9 +80,9 @@ Absolute temperature accuracy, absolute pressure accuracy, environmental-referen
 
 Phase 3.2D adds the isolated MPU6050-only target `OpenRF1_MPU6050_Bringup.uvprojx` and source under `firmware/openrf1/mpu6050_bringup/`. It is for one GY-521/MPU6050 module on PB1/SCL and PC3/SDA only, with USART1 JSONL debug telemetry at 115200 8N1. It does not run BH1750, BMP280, HC-SR04, TCRT5000, Hall, RPLIDAR, ESP32, motors, or encoders.
 
-The software target uses planned address `0x68` with AD0 grounded, expects WHO_AM_I `0x68`, writes and reads back `PWR_MGMT_1 = 0x01`, `SMPLRT_DIV = 0x09`, `CONFIG = 0x03`, `GYRO_CONFIG = 0x00`, and `ACCEL_CONFIG = 0x00`, then reads 14-byte IMU bursts from `ACCEL_XOUT_H = 0x3B` at a 100 ms telemetry period.
+The isolated manual evidence records GY-521/MPU6050 VCC on the OpenRF1 5 V rail, common GND, SCL on PB1/B1, SDA on PC3/C3, AD0 tied to GND, ACK/address `0x68`, WHO_AM_I `0x68`, and configuration readback for `PWR_MGMT_1 = 0x01`, `SMPLRT_DIV = 0x09`, `CONFIG = 0x03`, `GYRO_CONFIG = 0x00`, and `ACCEL_CONFIG = 0x00`. The target waits through startup warmup, samples a startup gyro bias while stationary, preserves raw gyro counts, and reports bias-corrected `gyro_dps` at a 100 ms telemetry period.
 
-MPU6050 ACK, WHO_AM_I, configuration readback, live acceleration/angular-rate/temperature telemetry, absolute accuracy, gyro bias, accelerometer offsets, yaw drift, axis orientation, full multi-device shared-I2C concurrency, and complete full-hardware operation remain UNVERIFIED.
+Manual isolated evidence is limited to A's report of the isolated wiring, ACK/address, WHO_AM_I, configuration readback, live acceleration/angular-rate/temperature JSONL, startup gyro-bias semantics, approximately 10 Hz telemetry with no reported sequence loss during a 15-second test, and isolated sensor-axis response. Exact electrical measurements, continuity, delay-loop tuning, reproducible build/HEX metadata, exact timing statistics, and exact bias/noise statistics remain UNVERIFIED, together with absolute accuracy, accelerometer offsets, yaw drift, final rover-frame axis orientation, full multi-device shared-I2C concurrency, and complete full-hardware operation.
 
 ## Phase 3.2E OpenRF1 HC-SR04 Update
 

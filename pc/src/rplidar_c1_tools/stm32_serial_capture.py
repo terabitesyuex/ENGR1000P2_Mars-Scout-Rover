@@ -23,6 +23,8 @@ from .stm32_sensor_protocol import (
 
 DEFAULT_STM32_SERIAL_BAUD = 115200
 DEFAULT_STM32_SERIAL_TIMEOUT_S = 1.0
+DEFAULT_STARTUP_GRACE_S = 12.0
+DEFAULT_MAX_CONSECUTIVE_MALFORMED_LINES = 5
 DEFAULT_LINE_LENGTH_LIMIT_BYTES = 512
 
 
@@ -131,14 +133,17 @@ class PySerialLineReader:
                 "install it in the repository venv with: "
                 "pc\\.venv\\Scripts\\python.exe -m pip install pyserial"
             ) from exc
-        self._serial = serial.Serial(
-            port=port,
-            baudrate=baud,
-            bytesize=8,
-            parity="N",
-            stopbits=1,
-            timeout=timeout_s,
-        )
+        serial_port = serial.Serial()
+        serial_port.port = port
+        serial_port.baudrate = baud
+        serial_port.bytesize = 8
+        serial_port.parity = "N"
+        serial_port.stopbits = 1
+        serial_port.timeout = timeout_s
+        serial_port.dtr = False
+        serial_port.rts = False
+        serial_port.open()
+        self._serial = serial_port
 
     def read(self, size: int) -> bytes:
         return bytes(self._serial.read(size))
@@ -156,6 +161,8 @@ def capture_stm32_serial_telemetry(
     max_messages: int | None = None,
     read_chunk_size: int = 64,
     max_empty_reads: int = 10,
+    startup_grace_s: float = DEFAULT_STARTUP_GRACE_S,
+    max_consecutive_malformed_lines: int = DEFAULT_MAX_CONSECUTIVE_MALFORMED_LINES,
     line_length_limit_bytes: int = DEFAULT_LINE_LENGTH_LIMIT_BYTES,
     overwrite: bool = False,
     clock: Callable[[], float] = time.monotonic,
@@ -172,6 +179,12 @@ def capture_stm32_serial_telemetry(
             raise Stm32SerialCaptureError("read_chunk_size must be positive")
         if max_empty_reads <= 0:
             raise Stm32SerialCaptureError("max_empty_reads must be positive")
+        if startup_grace_s < 0.0:
+            raise Stm32SerialCaptureError("startup_grace_s must be non-negative")
+        if max_consecutive_malformed_lines <= 0:
+            raise Stm32SerialCaptureError(
+                "max_consecutive_malformed_lines must be positive"
+            )
         if line_length_limit_bytes <= 0:
             raise Stm32SerialCaptureError("line_length_limit_bytes must be positive")
 
@@ -189,6 +202,7 @@ def capture_stm32_serial_telemetry(
     last_timestamp_ms: int | None = None
     messages = 0
     malformed_lines = 0
+    consecutive_malformed_lines = 0
     start_s = clock()
 
     telemetry_stream = None
@@ -219,6 +233,7 @@ def capture_stm32_serial_telemetry(
             reader=reader,
             read_chunk_size=read_chunk_size,
             max_empty_reads=max_empty_reads,
+            startup_grace_s=startup_grace_s,
             line_length_limit_bytes=line_length_limit_bytes,
             duration_s=duration_s,
             start_s=start_s,
@@ -227,10 +242,17 @@ def capture_stm32_serial_telemetry(
             try:
                 message = parse_stm32_telemetry_line(line, line_number=messages + malformed_lines + 1)
                 _require_phase32a_bh1750_message(message)
-            except (Stm32TelemetryError, Stm32SerialCaptureError) as exc:
+            except (Stm32TelemetryError, Stm32SerialCaptureError):
                 malformed_lines += 1
-                raise Stm32SerialCaptureError(str(exc)) from exc
+                consecutive_malformed_lines += 1
+                if consecutive_malformed_lines >= max_consecutive_malformed_lines:
+                    raise Stm32SerialCaptureError(
+                        "maximum consecutive malformed telemetry lines reached "
+                        f"({max_consecutive_malformed_lines})"
+                    )
+                continue
 
+            consecutive_malformed_lines = 0
             if telemetry_stream is not None:
                 telemetry_stream.write(encode_stm32_telemetry_message(message))
                 telemetry_stream.write("\n")
@@ -258,6 +280,9 @@ def capture_stm32_serial_telemetry(
             telemetry_stream.close()
         reader.close()
 
+    if messages == 0:
+        raise Stm32SerialCaptureError("capture ended without any valid telemetry messages")
+
     return Stm32SerialCaptureSummary(
         messages=messages,
         malformed_lines=malformed_lines,
@@ -277,6 +302,7 @@ def _iter_serial_lines(
     reader: SerialByteReader,
     read_chunk_size: int,
     max_empty_reads: int,
+    startup_grace_s: float,
     line_length_limit_bytes: int,
     duration_s: float | None,
     start_s: float,
@@ -284,6 +310,7 @@ def _iter_serial_lines(
 ):
     buffer = bytearray()
     empty_reads = 0
+    first_line_seen = False
     while True:
         if duration_s is not None and clock() - start_s >= duration_s and not buffer:
             return
@@ -294,6 +321,8 @@ def _iter_serial_lines(
                     raise Stm32SerialCaptureError("unterminated telemetry line at EOF")
                 return
             empty_reads += 1
+            if not first_line_seen and clock() - start_s < startup_grace_s:
+                continue
             if empty_reads >= max_empty_reads:
                 raise Stm32SerialCaptureError("serial read timeout")
             continue
@@ -308,6 +337,7 @@ def _iter_serial_lines(
             raw_line = bytes(buffer[:newline_index]).rstrip(b"\r")
             del buffer[: newline_index + 1]
             try:
+                first_line_seen = True
                 yield raw_line.decode("ascii")
             except UnicodeDecodeError as exc:
                 raise Stm32SerialCaptureError("telemetry line is not ASCII/UTF-8 JSON") from exc
