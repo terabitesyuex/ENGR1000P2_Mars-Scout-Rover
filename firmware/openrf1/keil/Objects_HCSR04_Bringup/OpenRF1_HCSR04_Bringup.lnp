@@ -1,0 +1,16 @@
+--cpu Cortex-M3
+".\objects_hcsr04_bringup\hcsr04.o"
+".\objects_hcsr04_bringup\main_hcsr04_bringup.o"
+".\objects_hcsr04_bringup\openrf1_status.o"
+".\objects_hcsr04_bringup\platform_hcsr04_bringup.o"
+".\objects_hcsr04_bringup\telemetry_hcsr04_bringup.o"
+".\objects_hcsr04_bringup\misc.o"
+".\objects_hcsr04_bringup\stm32f10x_gpio.o"
+".\objects_hcsr04_bringup\stm32f10x_rcc.o"
+".\objects_hcsr04_bringup\stm32f10x_tim.o"
+".\objects_hcsr04_bringup\stm32f10x_usart.o"
+".\objects_hcsr04_bringup\startup_stm32f10x_hd.o"
+".\objects_hcsr04_bringup\system_stm32f10x.o"
+--ro-base 0x08000000 --entry 0x08000000 --rw-base 0x20000000 --entry Reset_Handler --first __Vectors --strict --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list ".\Listings\OpenRF1_HCSR04_Bringup.map" -o .\Objects_HCSR04_Bringup\OpenRF1_HCSR04_Bringup.axf
