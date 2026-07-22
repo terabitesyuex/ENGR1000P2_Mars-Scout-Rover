@@ -2,6 +2,8 @@
 
 Phase 3.2E implements the isolated HC-SR04 software bring-up path for one sensor on the OpenRF1 STM32F103RCT6 controller. The physical inventory contains three HC-SR04 modules, but the current authoritative hardware path supports only one module at a time on CN6. No physical HC-SR04 response, pulse, distance, or timeout verification has yet occurred.
 
+For this isolated test, only HC-SR04 should be connected to CN6. No physical verification has yet occurred.
+
 ## Current Inventory And Scope
 
 CONFIRMED:
