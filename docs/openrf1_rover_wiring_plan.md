@@ -4,6 +4,10 @@ This is the master harness plan for the STM32F103RCT6 OpenRF1 rover. It combines
 the OpenRF1 schematic dated 2024-07-01, the vendor motor/encoder examples, the
 verified C1 harness profile, and the existing isolated sensor bring-up plans.
 
+For on-vehicle assembly, use the Chinese field checklist
+[`openrf1_rover_wiring_plan_zh.md`](openrf1_rover_wiring_plan_zh.md) together
+with this engineering source of truth.
+
 This document is build-ready. The user has approved the seller-documented
 11.1 V Li-ion pack as the direct OpenRF1 VIN source on the basis that the
 installed components are wide-voltage parts. Battery polarity, BMS current

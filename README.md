@@ -14,6 +14,10 @@ Major enhancements are encoder/IMU-assisted pose estimation, short-range accumul
 - `pc_direct/`: operator-driven direct C1 diagnostics and the official SDK probe.
 - `docs/`, `evidence/`, and `tools/`: current hardware guidance, recorded evidence, and deterministic verification.
 
+装车使用 [`docs/openrf1_rover_wiring_plan_zh.md`](docs/openrf1_rover_wiring_plan_zh.md)；
+工程依据和状态边界使用
+[`docs/openrf1_rover_wiring_plan.md`](docs/openrf1_rover_wiring_plan.md)。
+
 The repository root is the single source of truth. Historical nested repository copies and README-only future-module placeholders are intentionally excluded.
 
 ## Current Phase

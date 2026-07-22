@@ -68,3 +68,14 @@ def test_validation_rejects_lost_battery_safety_boundary() -> None:
     errors = validator.validate_text_contents(contents, firmware_sources)
 
     assert any("battery advertised-rate safety boundary" in error for error in errors)
+
+
+def test_validation_rejects_lost_chinese_assembly_stop_rule() -> None:
+    validator, contents, firmware_sources = loaded_repository_texts()
+    contents["docs/openrf1_rover_wiring_plan_zh.md"] = contents[
+        "docs/openrf1_rover_wiring_plan_zh.md"
+    ].replace("禁止未知极性直接插电池", "允许未知极性直接插电池")
+
+    errors = validator.validate_text_contents(contents, firmware_sources)
+
+    assert any("Chinese assembly battery stop rule" in error for error in errors)

@@ -9,6 +9,10 @@ three-HC-SR04 allocation, power distribution, level protection, and the staged
 pre-power procedure. Historical phase sections below preserve the evidence
 boundary that existed when each isolated bring-up was prepared.
 
+装车现场按中文施工清单
+[`openrf1_rover_wiring_plan_zh.md`](openrf1_rover_wiring_plan_zh.md) 逐项接线和
+验线；工程状态与依据仍以英文总计划为准。
+
 ## Confirmed RPLIDAR C1 Wire Functions
 
 | LiDAR wire | Function | Destination rule |

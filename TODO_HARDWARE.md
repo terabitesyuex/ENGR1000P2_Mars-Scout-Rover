@@ -7,6 +7,8 @@ authoritative board evidence or controlled physical validation.
 authoritative_vendor_documented and vendor_software_documented record resolved
 board/source facts without claiming physical operation. design_locked records a
 project wiring choice that still requires the named firmware or manual checks.
+Use `docs/openrf1_rover_wiring_plan_zh.md` as the on-vehicle assembly checklist;
+items below remain stop conditions where that checklist requires measurement.
 
 | Item | Status | Information needed |
 |---|---|---|

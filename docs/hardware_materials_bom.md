@@ -1,5 +1,9 @@
 # Hardware Materials And Connector BOM
 
+For installation order and point-to-point destinations, use
+[`openrf1_rover_wiring_plan_zh.md`](openrf1_rover_wiring_plan_zh.md). This BOM
+retains procurement quantities, evidence boundaries, and acceptance checks.
+
 This document is the current purchasing and bench-preparation baseline for the Mars Scout Rover. It separates confirmed inventory from materials that may be purchased now and interfaces that still require measurement. Do not substitute a connector family only because the pin count looks correct.
 
 ## Locked Physical Inventory

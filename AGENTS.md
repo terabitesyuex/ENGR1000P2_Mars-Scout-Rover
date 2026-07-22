@@ -19,9 +19,9 @@ This repository is the ENGR1000P2 Mars Scout Rover software and documentation ba
 - Whenever the user supplies new hardware material, archive source evidence when
   redistribution is appropriate and reconcile every affected current source of
   truth: this file, `HARDWARE_LOCK.md`, `TODO_HARDWARE.md`, the assembly wiring
-  plan, BOM/checklists, README/project specification, validators, tests, and
-  changelog. Preserve historical phase evidence as historical rather than
-  silently rewriting it.
+  plan, Chinese field wiring checklist, BOM/checklists, README/project
+  specification, validators, tests, and changelog. Preserve historical phase
+  evidence as historical rather than silently rewriting it.
 - Stop at the requested phase.
 
 ## Current Scope

@@ -2,6 +2,9 @@
 
 ## 2026-07-23 - OpenRF1 Assembly Wiring Plan
 
+- Added a Chinese vehicle-assembly field checklist with a single end-to-end
+  topology, exact point-to-point tables, harness labels, build order, power-off
+  continuity checklist, staged power-on sequence, and explicit stop conditions.
 - Added a build-ready master harness plan covering the battery branches, four
   motor/encoder connectors, shared I2C devices, three ultrasonic paths,
   TCRT5000/Hall inputs, RPLIDAR C1 USART2, and ESP32 USART3.

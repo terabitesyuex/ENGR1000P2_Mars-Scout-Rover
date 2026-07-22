@@ -83,6 +83,21 @@ REQUIRED_TEXTS: tuple[RequiredText, ...] = (
         "DC 5.5 x 2.5 mm male barrel",
         "battery connector size",
     ),
+    RequiredText(
+        "docs/openrf1_rover_wiring_plan_zh.md",
+        "CN2 | PC7 / PA11 | PA6、PA7 / TIM3",
+        "Chinese assembly front-left motor mapping",
+    ),
+    RequiredText(
+        "docs/openrf1_rover_wiring_plan_zh.md",
+        "H5-4 PA3/RX2",
+        "Chinese assembly C1 receive mapping",
+    ),
+    RequiredText(
+        "docs/openrf1_rover_wiring_plan_zh.md",
+        "禁止未知极性直接插电池",
+        "Chinese assembly battery stop rule",
+    ),
     RequiredText("HARDWARE_LOCK.md", "USER-CONFIRMED PLANNED CONNECTION", "planned STM32 ground connector status"),
     RequiredText("HARDWARE_LOCK.md", "HC-SR04 ECHO voltage compatibility", "HC-SR04 ECHO status"),
     RequiredText("HARDWARE_LOCK.md", "TCRT5000 and Hall output polarity remains UNVERIFIED", "digital polarity status"),
