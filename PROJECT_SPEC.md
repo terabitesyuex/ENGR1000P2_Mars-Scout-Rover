@@ -61,7 +61,10 @@ Controllers and chassis:
 
 - STM32 controller board x1.
 - ESP32 board x1.
-- Battery/power system.
+- Li-ion battery pack x1: seller-documented 11.1 V, 7800 mAh, 5C, 12.6 V fully
+  charged, 70 x 55 x 23 mm, DC 5.5 x 2.5 mm male connector.
+- Battery charger x1: seller-documented 12.6 V/1 A with DC 5.5 x 2.5 mm female
+  connector; charging requires the pack to be disconnected from the rover.
 - Four encoded motors.
 - Four mecanum wheels.
 - Existing rover chassis.
@@ -110,14 +113,19 @@ These facts do not verify the wiring, mounting, serial identifier, revision, or 
 - C1 revision.
 - Complete operational acceptance of the physical C1 beyond the recorded PC-direct acquisition evidence.
 - Final C1 placement and orientation.
-- ESP32 module UART pins have CONFIRMED_MODULE_EVIDENCE for GPIO21 TX and GPIO20 RX; OpenRF1 USART3 connector-to-MCU mapping remains UNVERIFIED.
-- Exact UART assignment.
-- Exact STM32-ESP32 connector.
+- ESP32 module UART pins have CONFIRMED_MODULE_EVIDENCE for GPIO21 TX and GPIO20 RX; physical link operation remains UNVERIFIED.
+- OpenRF1 USART2 PA2/PA3 and USART3 PB10/PB11 mappings are
+  AUTHORITATIVE_VENDOR_DOCUMENTED; installed harness operation remains
+  UNVERIFIED.
+- STM32-ESP32 H6/USART3 is DESIGN_LOCKED; installed operation remains
+  UNVERIFIED.
 - HC-SR04 Phase 3.2E isolated CN6 pin order, PA5 TRIG, PA4 ECHO, TIM6, and required external 10 kOhm / 15 kOhm ECHO divider are AUTHORITATIVE_VENDOR_DOCUMENTED. Physical installation, voltages, pulses, and distance data remain UNVERIFIED.
 - Ground-sensor Phase 3.2F isolated tracking-connector mappings are AUTHORITATIVE_VENDOR_DOCUMENTED: signal 1 / X1 / PC4, signal 2 / X2 / PC5, signal 3 / X3 / PB0, connector pin 1: GND, pin 2: X4 / schematic PC14, pin 3: X3 / PB0, pin 4: X2 / PC5, pin 5: X1 / PC4, pin 6: VCC_5V. The old example maps X4 to PB1, so signal 4 / X4 remains unused. Installed PC4/PC5 TCRT connections, live response, and exact 50 ms steady-state capture timing are MANUAL_EVIDENCE_VERIFIED. Rail/output voltages, polarity semantics, black/white/drop classification, Hall behavior, final mounting, and full-rover operation remain UNVERIFIED.
 - BH1750 communication at configured address `0x23` is MANUAL_EVIDENCE_VERIFIED for the recorded Phase 3.2A run. BMP280 ACK/address `0x76`, chip ID `0x58`, configuration readback, compensated live temperature/pressure telemetry, and 500 ms periodicity are PHYSICAL_EVIDENCE_VERIFIED for the isolated Phase 3.2C capture. MPU6050 ACK/address `0x68`, WHO_AM_I `0x68`, isolated configuration readback, live IMU JSON telemetry, startup gyro-bias calibration, approximately 10 Hz output, 15-second no-sequence-loss capture, and isolated axis response are MANUAL_EVIDENCE_VERIFIED for the isolated Phase 3.2D bring-up. BMP280/MPU6050 shared-I2C concurrency, MPU6050 absolute accuracy, final rover-frame alignment, and complete full-hardware operation remain UNVERIFIED.
 - Physical TCRT5000 and Hall active polarity.
-- Battery voltage and capacity unless measured.
+- Battery advertised values are seller-documented; actual voltage/capacity,
+  connector polarity, BMS limits, charger behavior, and installed power
+  performance remain unverified.
 - Final power-distribution topology.
 - Final sensor mounting offsets.
 

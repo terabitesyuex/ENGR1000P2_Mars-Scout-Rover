@@ -15,7 +15,8 @@ CONFIRMED:
 - BMP280: 1 physical unit.
 - OpenRF1 STM32 controller: 1 physical unit.
 - ESP32 board: 1 physical unit.
-- Four encoded motors, four mecanum wheels, chassis, and the existing battery/power hardware.
+- Four encoded motors, four mecanum wheels, chassis, seller-documented 11.1 V
+  7800 mAh 5C Li-ion pack, and seller-documented 12.6 V/1 A charger.
 
 There is no second physical C1. Do not buy or plan around a second C1 unless the inventory is deliberately changed later.
 
@@ -165,15 +166,26 @@ Do not add an external C1 motor PWM wire. C1 motor control is internal to the un
 
 ### Whole Rover
 
-The final whole-rover regulator rating, wire gauge, fuse value, and battery distribution cannot be locked until battery specifications and motor stall current are measured. Useful purchases after those measurements include:
+The battery product page documents 11.1 V nominal, 7800 mAh, 5C, 12.6 V fully
+charged, 70 x 55 x 23 mm, and a DC 5.5 x 2.5 mm male connector. Its matching
+charger is advertised as 12.6 V/1 A with a DC 5.5 x 2.5 mm female connector.
+These facts resolve the advertised voltage, capacity, rate, dimensions, and
+connector size, but not polarity or BMS continuous/peak current. The final
+whole-rover wire gauge, fuse value, and distribution remain blocked on those
+values and controlled motor-current measurements. Useful purchases after those
+checks include:
 
 - Main power switch or emergency disconnect.
 - Replaceable fuse holder and correctly sized fuse.
 - Separate fused logic/sensor power branch.
 - Proper power distribution block.
+- DC 5.5 x 2.5 mm female battery adapter with sufficient current rating and a
+  rover-side plug selected only after measuring the actual OpenRF1 jack.
 - Bulk and local decoupling selected from measured transients and ripple, not guesswork.
 
 Do not choose the final fuse from nominal motor current alone.
+Do not charge while the battery is connected to the rover, and do not use the
+12.6 V/1 A charger as the rover operating supply.
 
 ### ESP32
 
@@ -212,7 +224,8 @@ MANUAL_ACTION_REQUIRED:
 1. Identify schematic-safe GPIO, connector, and timer resources for HC-SR04 units 2 and 3.
 2. Measure and identify the exact family, pitch, keying, and pinout of the four lower motor/encoder connectors.
 3. Confirm the mechanical connector and electrical mapping for USART2 and USART3.
-4. Record battery chemistry, nominal/full voltage, capacity, continuous/discharge rating, connector, and polarity.
+4. Measure battery and charger barrel polarity and pack full-charge voltage;
+   obtain the BMS continuous/peak current and overcurrent-trip specification.
 5. Measure each motor's stall current using a controlled method before selecting final wire gauge, regulator, fuse, or connector.
 6. Confirm the ESP32 board model and USB connector type.
 7. Measure all sensor-module header pitches and mounting-hole diameters.
@@ -231,7 +244,8 @@ Until these measurements are recorded, use `UNVERIFIED` rather than a guessed co
 - Three CN6 cables on the assumption that CN6 accepts three HC-SR04 modules simultaneously.
 - External I2C pull-ups or a level shifter without measuring the existing bus/module topology first.
 - A generic I2C hub that ties every module VCC together.
-- A final rover fuse, regulator, or motor-wire gauge before battery and stall-current measurements.
+- A final rover fuse or motor-wire gauge before BMS limits and controlled
+  motor-current measurements are recorded.
 - An external C1 motor-control/PWM cable.
 - Permanent loose Dupont wiring for vehicle power, motor, or vibration-exposed connections.
 

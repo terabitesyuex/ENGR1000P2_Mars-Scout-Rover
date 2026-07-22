@@ -311,17 +311,20 @@ def test_motion_core_has_no_stm32_gpio_timer_uart_or_dynamic_allocation():
         assert forbidden not in combined
 
 
-def test_hardware_todo_covers_required_unknowns_and_preserves_electrical_cautions():
+def test_hardware_todo_locks_documented_mappings_and_required_unknowns():
     todo = _text(TODO_HARDWARE)
     for required in (
-        "| Motor PWM GPIO | unknown |",
-        "| Encoder A GPIO for all four wheels | unknown |",
-        "| Encoder B GPIO for all four wheels | unknown |",
-        "| RPLIDAR C1 STM32 UART and pins | unknown |",
-        "| ESP32 STM32 UART and pins | unknown |",
+        "| Motor PWM GPIO | authoritative_vendor_documented | PC6, PC7, PC8, PC9 |",
+        "| Encoder A GPIO for all four wheels | authoritative_vendor_documented | CN1 PA0, CN2 PA6, CN3 PA15, CN4 PB6 |",
+        "| Encoder B GPIO for all four wheels | authoritative_vendor_documented | CN1 PA1, CN2 PA7, CN3 PB3, CN4 PB7 |",
+        "| RPLIDAR C1 STM32 UART and pins | authoritative_vendor_documented | H5 pin 3 PA2/TX2, pin 4 PA3/RX2; physical C1 link still unverified |",
+        "| ESP32 STM32 UART and pins | authoritative_vendor_documented | H6 pin 3 PB11/RX3, pin 4 PB10/TX3; physical ESP32 link still unverified |",
         "| Wheel radius | unknown |",
         "| Half wheelbase | unknown |",
         "| Half track width | unknown |",
+        "| Battery advertised electrical values | seller_documented | Li-ion, 11.1 V nominal, 7800 mAh, 5C, 12.6 V fully charged; source images and hashes archived |",
+        "| Battery BMS current limits | unverified |",
+        "| Battery charger | seller_documented; physical validation required |",
         "| Battery voltage/current telemetry ADC path | unknown |",
     ):
         assert required in todo

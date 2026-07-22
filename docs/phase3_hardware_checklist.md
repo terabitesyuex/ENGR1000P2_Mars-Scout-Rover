@@ -27,6 +27,20 @@ Evidence table fields:
 - Redact unnecessary device identifiers in public evidence.
 - Review [`hardware_materials_bom.md`](hardware_materials_bom.md) before buying or adapting connector, power, divider, or vehicle-installation parts.
 
+## Battery And Main Power
+
+- Seller evidence documents a Li-ion pack advertised as 11.1 V, 7800 mAh, 5C,
+  12.6 V fully charged, 70 x 55 x 23 mm, with a DC 5.5 x 2.5 mm male connector.
+- Seller evidence documents a 12.6 V/1 A charger with DC 5.5 x 2.5 mm female
+  connector; it is not a rover power supply.
+- Disconnect the battery from the rover before charging.
+- Meter battery and charger centre/sleeve polarity before making any adapter.
+- Measure pack no-load and fully charged voltage.
+- Obtain the BMS continuous/peak and overcurrent-trip ratings; do not substitute
+  the calculated 39 A advertised-rate value for a BMS specification.
+- Select the main fuse and motor wire only after BMS and controlled motor-current
+  data are available.
+
 ## HC-SR04
 
 - Confirm the physical inventory is three HC-SR04 modules.

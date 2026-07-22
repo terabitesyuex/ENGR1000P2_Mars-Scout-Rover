@@ -2,6 +2,13 @@
 
 Electrical safety is the first project priority. Do not connect live hardware until voltage, polarity, connector orientation, and common ground are verified.
 
+The current assembly-level source of truth is
+[`openrf1_rover_wiring_plan.md`](openrf1_rover_wiring_plan.md). It includes the
+four motor/encoder connectors, exact USART2/USART3 connector pins, a selected
+three-HC-SR04 allocation, power distribution, level protection, and the staged
+pre-power procedure. Historical phase sections below preserve the evidence
+boundary that existed when each isolated bring-up was prepared.
+
 ## Confirmed RPLIDAR C1 Wire Functions
 
 | LiDAR wire | Function | Destination rule |
@@ -25,7 +32,9 @@ These wire functions preserve the verified C1 harness profile. They do not prove
 - Hall sensor module x1.
 - STM32 controller board x1.
 - ESP32 board x1.
-- Battery/power system.
+- Li-ion battery pack x1: seller-documented 11.1 V, 7800 mAh, 5C, 12.6 V fully
+  charged, DC 5.5 x 2.5 mm male; polarity and BMS limits remain UNVERIFIED.
+- Battery charger x1: seller-documented 12.6 V/1 A, DC 5.5 x 2.5 mm female.
 - Four encoded motors.
 - Four mecanum wheels.
 
@@ -38,8 +47,8 @@ These wire functions preserve the verified C1 harness profile. They do not prove
 - Do not connect LiDAR TX to TX or LiDAR RX to RX.
 - Do not drive LiDAR RX from a USB adapter and ESP32 at the same time.
 - Future second-C1 ESP32 wiring is NOT CURRENT SCOPE and remains UNVERIFIED.
-- ESP32-C3 GPIO21/GPIO20 are CONFIRMED_MODULE_EVIDENCE for the proposed module-side UART pins; OpenRF1 USART3 connector-to-MCU mapping remains UNVERIFIED.
-- Exact UART assignment is UNVERIFIED.
+- ESP32-C3 GPIO21/GPIO20 are CONFIRMED_MODULE_EVIDENCE for the proposed module-side UART pins. The OpenRF1 schematic documents H6 pin 3 as PB11/RX3 and pin 4 as PB10/TX3; the installed harness and real USART3 link remain UNVERIFIED.
+- Physical USART2/USART3 operation remains UNVERIFIED.
 
 ## Power Rules
 
@@ -47,8 +56,15 @@ These wire functions preserve the verified C1 harness profile. They do not prove
 - Preserve the verified C1 supply range of 4.8 V to 5.2 V.
 - Keep specified supply ripple below 150 mV.
 - Keep motor power wiring away from UART and low-level sensor wiring.
-- Final power-distribution topology is UNVERIFIED.
-- Battery voltage and capacity are UNVERIFIED unless measured.
+- The seller-documented pack is Li-ion, 11.1 V nominal, 7800 mAh, 5C advertised,
+  12.6 V fully charged, with a DC 5.5 x 2.5 mm male barrel connector. These are
+  product-page values, not measurements; barrel polarity and BMS current limits
+  remain UNVERIFIED.
+- The seller-documented charger is 12.6 V/1 A with a DC 5.5 x 2.5 mm female
+  connector. Disconnect the battery from the rover before charging and never
+  use the charger as the rover operating supply.
+- Final power-distribution topology is DESIGN_LOCKED in the assembly plan;
+  installed wiring and load validation remain UNVERIFIED.
 
 ## STM32 Sensor Wiring Status
 

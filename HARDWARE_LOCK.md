@@ -33,9 +33,31 @@ Environment:
 Controllers and chassis:
 
 - STM32 controller board x1.
-- ESP32 board x1. Existing authoritative files previously use ESP32-C3 SuperMini language; do not silently change the model.
-- Battery/power system.
-- Four encoded motors.
+- ESP32 board x1: user-confirmed ESP32-C3 SuperMini. GPIO21 TX and GPIO20 RX are
+  user-confirmed as stable UART pins for the STM32 link. The exact installed LDO
+  part and thermally sustainable output current remain UNVERIFIED.
+- Battery/power system: SELLER_DOCUMENTED Li-ion battery advertised as 11.1 V
+  nominal, 7800 mAh, 5C, 12.6 V fully charged, 70 x 55 x 23 mm, with a
+  DC 5.5 x 2.5 mm male barrel connector. This implies approximately 86.6 Wh
+  nominal energy and 39 A at the advertised 5C rate; neither calculated value
+  is a measured result, and 39 A is not a confirmed BMS continuous/peak rating.
+  Barrel polarity, BMS thresholds, actual voltage, capacity, and condition
+  remain UNVERIFIED. Evidence is hash-recorded in
+  `evidence/hardware/battery/battery_evidence.md`.
+- Matching charger: SELLER_DOCUMENTED as 110-240 VAC 50/60 Hz input, 12.6 V/1 A
+  output, DC 5.5 x 2.5 mm female connector, and 100 cm cable. It is charge-only,
+  is not the rover power source, and may be used only with the battery
+  disconnected from the rover. Charger polarity and regulation remain
+  UNVERIFIED.
+- The user approves this pack as the direct OpenRF1 VIN source and reports that
+  the installed components are wide-voltage parts. This is a USER_APPROVED_DESIGN
+  topology, not measured electrical evidence. Main fuse selection, wire gauge,
+  BMS current, motor stall current, polarity, and transient behavior remain
+  MANUAL_ACTION_REQUIRED.
+- Four JGB37-520 motors with Hall AB encoders. User-reported values: 6-12 V,
+  0.36 A no-load current, 3.2 A stall current, 30:1 reduction, and 330 rpm
+  no-load output speed. Four motors imply 1.44 A combined no-load current and
+  12.8 A theoretical simultaneous stall current before board limiting.
 - Four mecanum wheels.
 - Existing rover chassis.
 
@@ -53,6 +75,42 @@ Neutral planned sensor IDs:
 - `hall_1`
 
 ## USER-CONFIRMED PLANNED CONNECTIONS
+
+OpenRF1 motor, encoder, and UART evidence added from the board schematic dated
+2024-07-01 and the supplied vendor motor examples:
+
+- CN1 through CN4 are XH2.54-6P motor/encoder connectors. Their electrical pin
+  order is pin 1 OUT2, pin 2 encoder 5 V, pin 3 encoder A, pin 4 encoder B, pin
+  5 GND, and pin 6 OUT1.
+- CN1 uses PC6/TIM8_CH1 with PA8 direction and PA0/PA1/TIM5 encoder inputs.
+- CN2 uses PC7/TIM8_CH2 with PA11 direction and PA6/PA7/TIM3 encoder inputs.
+- CN3 uses PC8/TIM8_CH3 with PA12 direction and PA15/PB3/TIM2 encoder inputs.
+- CN4 uses PC9/TIM8_CH4 with PC10 direction and PB6/PB7/TIM4 encoder inputs.
+- Vendor software maps A/L1 to CN2, B/R1 to CN4, C/L2 to CN1, and D/R2 to
+  CN3. Mapping L1/R1/L2/R2 to installed FL/FR/RL/RR remains a controlled
+  wheels-off-ground validation.
+- Vendor software configures TIM8 PWM1 active high at approximately 17.99 kHz
+  from a 72 MHz clock, prescaler 1, and period 2000. A separate production
+  brake/coast/emergency-stop policy is still required.
+- Encoder user evidence defines 11 A-phase cycles and 11 B-phase cycles per
+  motor-shaft revolution. Nominal output-shaft values are 330 A cycles at x1 or
+  1320 quadrature counts at x4 for the 30:1 reduction. One-output-revolution
+  physical validation and gearbox tolerance remain UNVERIFIED.
+- Encoder VCC accepts 3.3-5 V and signal-high level follows VCC. Output topology
+  is unknown. The assembly design therefore leaves each motor connector pin 2
+  5 V cavity unpopulated, powers all four blue encoder wires from CN5 3.3 V,
+  and adds 10 kOhm pull-ups to 3.3 V on all eight A/B inputs.
+- H5 USART2 pin order is pin 1 5 V, pin 2 GND, pin 3 PA2/TX2, and pin 4
+  PA3/RX2.
+- H6 USART3 pin order is pin 1 5 V, pin 2 GND, pin 3 PB11/RX3, and pin 4
+  PB10/TX3.
+- The assembly wiring design assigns ultrasonic 2 to H3 PB9/TRIG and PB8/ECHO,
+  and ultrasonic 3 to H3 PD2/TRIG and PC11/ECHO. These are DESIGN_LOCKED
+  project allocations, not vendor ultrasonic ports; each ECHO requires its own
+  10 kOhm / 15 kOhm divider and firmware support.
+
+The complete assembly harness and pre-power procedure are recorded in
+`docs/openrf1_rover_wiring_plan.md`.
 
 Ground and landmark connector plan, supplied by the user and checked against OpenRF1 vendor material for Phase 3.2F:
 
@@ -104,14 +162,24 @@ GY-302 module-specific electrical evidence:
 
 Phase 3.2B proposed full-hardware connection plan, supplied for software preparation only:
 
-- ESP32-C3 SuperMini proposed link: GPIO21 TX -> OpenRF1 RX3, GPIO20 RX <- OpenRF1 TX3, with common ground and 5 V supply from the OpenRF1 Bluetooth UART header during non-USB operation. ESP32 external 5 V power and USB power must not be connected simultaneously.
-- RPLIDAR C1 proposed link: C1 TX -> OpenRF1 RX2, C1 RX <- OpenRF1 TX2, VCC -> OpenRF1 user UART 5 V, GND -> user UART GND.
+- ESP32-C3 SuperMini link: GPIO21 TX -> OpenRF1 RX3 and GPIO20 RX <- OpenRF1 TX3,
+  with common ground. The assembly plan supersedes H6 power: H6 pin 1 remains
+  disconnected and an independent 5 V buck feeds ESP32 through a removable
+  jumper. ESP32 external 5 V and USB power must not be connected simultaneously.
+- RPLIDAR C1 link: C1 TX -> OpenRF1 RX2 and C1 RX <- OpenRF1 TX2, with common
+  ground. The assembly plan supersedes H5 power: H5 pin 1 remains disconnected
+  and an independent regulated 5 V buck feeds C1.
 - Shared I2C signal proposal: BH1750, MPU6050, and BMP280 share PB1/SCL and PC3/SDA, but their VCC rails are not tied together.
 - Proposed I2C power and straps: BH1750 VCC -> 5 V and ADDR -> GND for `0x23`; MPU6050 VCC -> 5 V and AD0 -> GND for `0x68`; BMP280 VCC -> 3.3 V, CSB -> 3.3 V, and SDO -> GND for `0x76`.
 - HC-SR04 Phase 3.2E isolated baseline: OpenRF1 vendor control-board package, ultrasonic sensor example, and OpenRF1 schematic revision dated 2024-07-01 lock CN6 B4B-PH-K-S(LF)(SN) pin 1: VCC_5V, pin 2: GND, pin 3: PA5_TRIG, pin 4: PA4_ECHO as AUTHORITATIVE_VENDOR_DOCUMENTED. TRIG: PA5. ECHO: PA4. TIM6 provides the isolated timer resource. Do not connect HC-SR04 ECHO directly to CN6 pin 4.
 - TCRT5000/Hall logical proposal: `tcrt5000_1` -> line input signal 1 and `tcrt5000_2` -> signal 2 at 3.3 V module power; `hall_1` -> signal 3 only after Hall `S` voltage is measured, with Hall module power at 5 V.
 
-This entire Phase 3.2B connection plan is UNVERIFIED physical evidence. It does not confirm connector orientation, exact MCU pins, timer channels, DMA channels, voltage safety, level shifting, I2C ACKs, UART operation, sensor polarity, RPLIDAR operation, ESP32 operation, or real sensor data.
+This Phase 3.2B connection plan remains UNVERIFIED physical evidence. Later
+schematic review confirms the H5/H6 UART pins and motor/encoder mappings listed
+above, but it does not confirm installed connector orientation, cable
+orientation, DMA operation, voltage measurements, I2C concurrency, UART
+operation, sensor polarity, RPLIDAR operation, ESP32 operation, or real
+full-system sensor data.
 
 Phase 3.2D isolated MPU6050 bring-up plan, supplied for software preparation only:
 
@@ -127,6 +195,11 @@ Phase 3.2B module-specific electrical evidence:
 - GY-521/MPU6050 module: CONFIRMED_MODULE_EVIDENCE for 3.3 V or 5 V VCC, onboard 3.3 V regulator, SCL/SDA pull-ups to onboard 3.3 V, AD0 onboard pull-down, floating AD0 default `0x68`, optional INT, and unused XDA/XCL. Use explicit AD0 -> GND for deterministic address `0x68`; no external I2C level shifter is required for this exact module.
 - BMP280-3.3 module: CONFIRMED_MODULE_EVIDENCE for approximately 1.71 V to 3.6 V operation and no evidence of onboard 5 V regulation or bidirectional level conversion. BMP280 VCC must connect to OpenRF1 3.3 V and must not connect to the I2C connector 5 V pin.
 - ESP32-C3 SuperMini: CONFIRMED_MODULE_EVIDENCE for external power through the 5 V pin, approximately 3.3 V to 6 V external input, 3.3 V UART logic, GPIO21 TX, and GPIO20 RX. No STM32-to-ESP32 UART level shifter is required, but external 5 V and USB power must not be connected simultaneously.
+- ESP32-C3 chip-level evidence confirms two hardware UARTs and GPIO-matrix
+  routing. GPIO2, GPIO8, and GPIO9 are strapping pins. The user reports an
+  AMS1117-class 500 mA nominal LDO expectation with a 250-300 mA continuous
+  thermal target, but the exact SuperMini LDO part is UNVERIFIED until the
+  physical board or its schematic identifies it.
 - Wide-voltage HC-SR04 modules: CONFIRMED_MODULE_EVIDENCE for approximately 2.8 V to 5.5 V operation, approximately 3 mA current, and nominal 2 cm to 450 cm range. Echo VOH is not authoritatively specified. For the OpenRF1 CN6 path, the schematic supplies VCC_5V and connects PA4_ECHO directly to PA4 with no onboard level shifter; direct ECHO-to-CN6-pin-4 wiring is prohibited for controlled bring-up. The external protection scheme is AUTHORITATIVE_VENDOR_DOCUMENTED by project design lock: HC-SR04 ECHO -> 10 kOhm series resistor -> protected PA4 / CN6-pin-4 node; protected PA4 node -> 15 kOhm resistor -> GND; use 5 percent tolerance or better.
 - TCRT5000 modules: CONFIRMED_MODULE_EVIDENCE for 3.3 V to 5 V operation, digital switching output, and module logic conditioning. Use 3.3 V for first integration.
 - Hall module: CONFIRMED_MODULE_EVIDENCE for approximately 4.5 V to 24 V supply, so use 5 V. Output topology remains insufficiently proven; measure `S` voltage in both magnetic states before STM32 connection.
@@ -155,6 +228,13 @@ Verified RPLIDAR C1 facts from earlier hardware lock work:
 - UART baud rate: 460800.
 - UART format: 8 data bits, no parity, 1 stop bit.
 - External motor PWM conductor: VERIFIED not present and not allowed.
+- The official SLAMTEC SDK repository lists C1 as supported in SDK v2.1.0.
+- Startup sequence is DESIGN_LOCKED as transport setup -> GET_HEALTH -> SCAN
+  (`0xA5 0x20`) -> descriptor validation -> sample stream. RESET is reserved for
+  recovery and is not required before every normal scan.
+- The user-provided 300 mA supply recommendation is not used for rover power
+  sizing because the preserved C1 startup planning value is approximately
+  800 mA.
 
 Verified RPLIDAR C1 wire functions:
 
@@ -211,11 +291,11 @@ PC planned responsibilities:
 - Final C1 placement and orientation: UNVERIFIED.
 - Dual-C1 integration: NOT CURRENT SCOPE.
 - exact ESP32 module UART GPIOs: CONFIRMED_MODULE_EVIDENCE for GPIO21 TX and GPIO20 RX; physical link UNVERIFIED.
-- exact OpenRF1 UART assignment: UNVERIFIED.
-- exact STM32-ESP32 connector: UNVERIFIED.
-- exact USART2 user-UART MCU pins: UNVERIFIED.
-- exact USART3 Bluetooth-UART MCU pins: UNVERIFIED.
-- exact PWM channel 0 through 5 MCU pins/timers for any multi-HC-SR04 full-system allocation beyond CN6: UNVERIFIED.
+- OpenRF1 UART assignment: AUTHORITATIVE_VENDOR_DOCUMENTED as H5/USART2 and H6/USART3; physical operation remains UNVERIFIED.
+- STM32-ESP32 connector: DESIGN_LOCKED as H6/USART3; installed harness and operation remain UNVERIFIED.
+- USART2 user-UART MCU pins: AUTHORITATIVE_VENDOR_DOCUMENTED as PA2/TX2 and PA3/RX2.
+- USART3 Bluetooth-UART MCU pins: AUTHORITATIVE_VENDOR_DOCUMENTED as PB10/TX3 and PB11/RX3.
+- Additional HC-SR04 paths are DESIGN_LOCKED on H3 PB9/PB8 and PD2/PC11; firmware support, installed dividers, timing, and physical operation remain UNVERIFIED.
 - tracking connector signal 1 / X1 -> PC4, signal 2 / X2 -> PC5, signal 3 / X3 -> PB0, and connector pin order: AUTHORITATIVE_VENDOR_DOCUMENTED.
 - installed line-input wiring, cable orientation, TCRT output voltages, Hall divider values, Hall divided voltage, and active polarity: UNVERIFIED.
 - HC-SR04 CN6 pin order, PA5 TRIG, PA4 ECHO, TIM6, and external 10 kOhm / 15 kOhm ECHO divider requirement: AUTHORITATIVE_VENDOR_DOCUMENTED.
@@ -235,8 +315,17 @@ PC planned responsibilities:
 - TCRT5000 and Hall output polarity remains UNVERIFIED.
 - physical TCRT5000 active polarity: UNVERIFIED.
 - physical Hall active polarity: UNVERIFIED.
-- battery voltage and capacity: UNVERIFIED unless measured.
-- final power-distribution topology: UNVERIFIED.
+- battery product-page values: SELLER_DOCUMENTED as Li-ion, 11.1 V nominal,
+  7800 mAh, 5C, 12.6 V fully charged, 70 x 55 x 23 mm, and DC 5.5 x 2.5 mm male;
+  actual voltage/capacity, connector polarity, condition, and BMS continuous/
+  peak current remain UNVERIFIED.
+- battery charger product-page values: SELLER_DOCUMENTED as 12.6 V/1 A with
+  110-240 VAC 50/60 Hz input and DC 5.5 x 2.5 mm female connector; measured
+  polarity, regulation, cutoff behavior, and charging operation remain
+  UNVERIFIED.
+- final power-distribution topology: DESIGN_LOCKED in
+  `docs/openrf1_rover_wiring_plan.md`; installed wiring and load validation
+  remain UNVERIFIED.
 - final sensor mounting offsets: UNVERIFIED.
 - Physical wiring verification date: UNVERIFIED.
 - Successful PC-direct evidence date for `c1_1`: MANUAL_EVIDENCE_VERIFIED on 2026-07-22.

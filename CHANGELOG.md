@@ -1,5 +1,36 @@
 # Changelog
 
+## 2026-07-23 - OpenRF1 Assembly Wiring Plan
+
+- Added a build-ready master harness plan covering the battery branches, four
+  motor/encoder connectors, shared I2C devices, three ultrasonic paths,
+  TCRT5000/Hall inputs, RPLIDAR C1 USART2, and ESP32 USART3.
+- Locked vendor-documented motor PWM/direction/encoder mappings and exact H5/H6
+  UART pin orders from the OpenRF1 schematic and supplied vendor examples.
+- Selected spare H3 pins for ultrasonic 2/3 while keeping those paths explicitly
+  firmware-required and physically unverified.
+- Recorded the seller-documented 11.1 V, 7800 mAh, 5C Li-ion pack, its
+  calculated 86.58 Wh nominal energy, and its advertised 12.6 V full-charge
+  boundary.
+- Archived hash-locked seller images for the exact advertised 11.1 V, 7800 mAh,
+  5C pack and 12.6 V/1 A charger; promoted 12.6 V full charge, 70 x 55 x 23 mm,
+  and DC 5.5 x 2.5 mm connector sizes from inference/unknown to
+  SELLER_DOCUMENTED while retaining polarity and BMS current as UNVERIFIED.
+- Updated all current battery guidance and locked charging to a battery-detached
+  workflow; the charger is explicitly prohibited as an operating rover supply.
+- Recorded user approval for direct battery-to-OpenRF1 VIN wiring based on the
+  installed wide-voltage components while retaining current, fuse, polarity,
+  and transient checks as manual gates.
+- Locked the user-provided JGB37-520 current, speed, reduction, wire-colour, and
+  11-PPR/x4-count definitions; changed the assembly harness to 3.3 V encoder
+  power with eight A/B pull-ups because output topology remains unknown.
+- Confirmed the ESP32-C3 SuperMini model and GPIO20/21 UART assignment while
+  retaining the exact clone LDO as unverified, and recorded the C1 SDK/protocol
+  startup contract without weakening the 800 mA startup power allowance.
+- Preserved battery charge-limit/BMS data, stall current, fuse/wire sizing,
+  connector orientation, divider voltages, wheel signs, shared-bus operation,
+  and full-rover power-on as manual gates; no hardware was accessed.
+
 ## 2026-07-22 - Phase 2.5 Physical C1 Evidence
 
 - Added eight hash-locked physical `c1_1` JSONL captures containing 102 scan records and 36,720 decoded points.

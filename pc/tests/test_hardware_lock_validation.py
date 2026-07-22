@@ -46,13 +46,25 @@ def test_validation_reports_missing_required_hardware_fact() -> None:
     assert any("exact LiDAR model" in error for error in errors)
 
 
-def test_validation_rejects_concrete_unverified_gpio() -> None:
+def test_validation_rejects_invented_uart_gpio() -> None:
     validator, contents, firmware_sources = loaded_repository_texts()
     contents["HARDWARE_LOCK.md"] = contents["HARDWARE_LOCK.md"].replace(
-        "exact OpenRF1 UART assignment: UNVERIFIED",
-        "exact OpenRF1 UART assignment: USART3 pins invented",
+        "USART2 user-UART MCU pins: AUTHORITATIVE_VENDOR_DOCUMENTED as PA2/TX2 and PA3/RX2",
+        "USART2 user-UART MCU pins: PA8/TX2 and PA9/RX2 invented",
     )
 
     errors = validator.validate_text_contents(contents, firmware_sources)
 
-    assert any("unverified OpenRF1 UART assignment" in error for error in errors)
+    assert any("documented OpenRF1 USART2 assignment" in error for error in errors)
+
+
+def test_validation_rejects_lost_battery_safety_boundary() -> None:
+    validator, contents, firmware_sources = loaded_repository_texts()
+    contents["HARDWARE_LOCK.md"] = contents["HARDWARE_LOCK.md"].replace(
+        "39 A is not a confirmed BMS continuous/peak rating",
+        "39 A is confirmed for all wiring and protection",
+    )
+
+    errors = validator.validate_text_contents(contents, firmware_sources)
+
+    assert any("battery advertised-rate safety boundary" in error for error in errors)

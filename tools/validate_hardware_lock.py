@@ -39,11 +39,50 @@ REQUIRED_TEXTS: tuple[RequiredText, ...] = (
     RequiredText("HARDWARE_LOCK.md", "460800", "UART baud rate"),
     RequiredText("HARDWARE_LOCK.md", "8 data bits, no parity, 1 stop bit", "UART format"),
     RequiredText("HARDWARE_LOCK.md", "exact ESP32 module UART GPIOs: CONFIRMED_MODULE_EVIDENCE", "ESP32 module GPIO evidence"),
-    RequiredText("HARDWARE_LOCK.md", "exact OpenRF1 UART assignment: UNVERIFIED", "unverified OpenRF1 UART assignment"),
+    RequiredText(
+        "HARDWARE_LOCK.md",
+        "USART2 user-UART MCU pins: AUTHORITATIVE_VENDOR_DOCUMENTED as PA2/TX2 and PA3/RX2",
+        "documented OpenRF1 USART2 assignment",
+    ),
+    RequiredText(
+        "HARDWARE_LOCK.md",
+        "USART3 Bluetooth-UART MCU pins: AUTHORITATIVE_VENDOR_DOCUMENTED as PB10/TX3 and PB11/RX3",
+        "documented OpenRF1 USART3 assignment",
+    ),
+    RequiredText(
+        "HARDWARE_LOCK.md",
+        "physical operation remains UNVERIFIED",
+        "unverified OpenRF1 UART physical operation",
+    ),
     RequiredText("HARDWARE_LOCK.md", "External motor PWM conductor: VERIFIED not present", "motor PWM absence"),
     RequiredText("HARDWARE_LOCK.md", "RPLIDAR C1M1-R2 x1", "single C1 inventory"),
     RequiredText("HARDWARE_LOCK.md", "BH1750 x1", "BH1750 inventory"),
     RequiredText("HARDWARE_LOCK.md", "BMP280 x1", "BMP280 inventory"),
+    RequiredText(
+        "HARDWARE_LOCK.md",
+        "Battery/power system: SELLER_DOCUMENTED Li-ion battery advertised as 11.1 V",
+        "seller-documented battery baseline",
+    ),
+    RequiredText(
+        "HARDWARE_LOCK.md",
+        "39 A is not a confirmed BMS continuous/peak rating",
+        "battery advertised-rate safety boundary",
+    ),
+    RequiredText(
+        "evidence/hardware/battery/battery_evidence.md",
+        "907E21846D85E6D0B023D40B91DEEF6E9BC1DE6B1251C1810CE1E0AD6E1F0637",
+        "battery seller-evidence hash",
+    ),
+    RequiredText(
+        "docs/openrf1_rover_wiring_plan.md",
+        "Disconnect the battery from the rover before charging",
+        "battery-detached charging rule",
+    ),
+    RequiredText(
+        "docs/openrf1_rover_wiring_plan.md",
+        "DC 5.5 x 2.5 mm male barrel",
+        "battery connector size",
+    ),
     RequiredText("HARDWARE_LOCK.md", "USER-CONFIRMED PLANNED CONNECTION", "planned STM32 ground connector status"),
     RequiredText("HARDWARE_LOCK.md", "HC-SR04 ECHO voltage compatibility", "HC-SR04 ECHO status"),
     RequiredText("HARDWARE_LOCK.md", "TCRT5000 and Hall output polarity remains UNVERIFIED", "digital polarity status"),
@@ -68,6 +107,16 @@ REQUIRED_TEXTS: tuple[RequiredText, ...] = (
     RequiredText("firmware/include/hardware_profile.h", "#ifndef RPLIDAR_C1_LIDAR_RX_PIN", "RX compile-time guard"),
     RequiredText("firmware/include/hardware_profile.h", "#ifndef RPLIDAR_C1_LIDAR_TX_PIN", "TX compile-time guard"),
     RequiredText("firmware/include/hardware_profile.h", "kHasExternalMotorPwm = false", "no external motor PWM"),
+    RequiredText(
+        "docs/openrf1_rover_wiring_plan.md",
+        "H5 | USART2 user port | 1 5V, 2 GND, 3 PA2/TX2, 4 PA3/RX2",
+        "assembly USART2 connector pinout",
+    ),
+    RequiredText(
+        "docs/openrf1_rover_wiring_plan.md",
+        "H6 | USART3 Bluetooth port | 1 5V, 2 GND, 3 PB11/RX3, 4 PB10/TX3",
+        "assembly USART3 connector pinout",
+    ),
 )
 
 

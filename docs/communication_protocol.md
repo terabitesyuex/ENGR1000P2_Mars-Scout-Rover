@@ -139,9 +139,11 @@ The following remain UNVERIFIED:
 
 - ESP32-C3 module-side GPIO21 TX and GPIO20 RX have CONFIRMED_MODULE_EVIDENCE for the proposed link.
 - Exact OpenRF1 UART connector-to-MCU assignment.
-- Exact STM32 GPIO, timer, UART, and I2C peripheral assignments outside the Phase 3.2A BH1750 OpenRF1 path.
+- Physical validation of documented/design-locked STM32 GPIO, timer, UART, and
+  I2C assignments outside isolated bring-up paths.
 - Absolute BH1750 lux calibration.
-- Exact STM32-ESP32 connector.
+- STM32-ESP32 H6/USART3 is DESIGN_LOCKED with OpenRF1 PB10/TX3 and PB11/RX3;
+  installed harness and link operation remain UNVERIFIED.
 - Exact packet field widths.
 - Exact checksum polynomial.
 - Exact bandwidth budget.

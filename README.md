@@ -91,7 +91,11 @@ Controllers and chassis:
 
 - STM32 controller board x1.
 - ESP32 board x1.
-- Battery/power system.
+- Li-ion battery pack x1: seller-documented 11.1 V, 7800 mAh, 5C, 12.6 V fully
+  charged, 70 x 55 x 23 mm, DC 5.5 x 2.5 mm male connector; polarity and BMS
+  current limits remain UNVERIFIED.
+- Battery charger x1: seller-documented 12.6 V/1 A, DC 5.5 x 2.5 mm female;
+  charge only while the pack is disconnected from the rover.
 - Four encoded motors.
 - Four mecanum wheels.
 - Existing rover chassis.

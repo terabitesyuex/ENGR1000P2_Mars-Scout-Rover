@@ -7,7 +7,7 @@ This repository is the ENGR1000P2 Mars Scout Rover software and documentation ba
 - Work only inside this repository.
 - Inspect `git status`, this file, and any nested guidance before editing.
 - Preserve working code and verified hardware facts.
-- Distinguish `CONFIRMED`, `CONFIRMED_MODULE_EVIDENCE`, `PLANNED`, `SOFTWARE_VERIFIED`, `MANUAL_EVIDENCE_VERIFIED`, `MANUAL_ACTION_REQUIRED`, `UNVERIFIED`, and `BLOCKED`; do not invent hardware values.
+- Distinguish `CONFIRMED`, `CONFIRMED_MODULE_EVIDENCE`, `SELLER_DOCUMENTED`, `SELLER_FAMILY_DOCUMENTED`, `PLANNED`, `SOFTWARE_VERIFIED`, `MANUAL_EVIDENCE_VERIFIED`, `MANUAL_ACTION_REQUIRED`, `UNVERIFIED`, and `BLOCKED`; do not invent hardware values.
 - Keep hardware access separate from algorithms.
 - Keep modules small and single-purpose.
 - Use explicit measurement units in names.
@@ -16,6 +16,12 @@ This repository is the ENGR1000P2 Mars Scout Rover software and documentation ba
 - Do not claim tests passed unless they were actually run.
 - Do not commit or push unless explicitly requested.
 - Update relevant documentation and `CHANGELOG.md` when interfaces change.
+- Whenever the user supplies new hardware material, archive source evidence when
+  redistribution is appropriate and reconcile every affected current source of
+  truth: this file, `HARDWARE_LOCK.md`, `TODO_HARDWARE.md`, the assembly wiring
+  plan, BOM/checklists, README/project specification, validators, tests, and
+  changelog. Preserve historical phase evidence as historical rather than
+  silently rewriting it.
 - Stop at the requested phase.
 
 ## Current Scope
@@ -40,7 +46,12 @@ This repository is the ENGR1000P2 Mars Scout Rover software and documentation ba
 - Motion and pose: four wheel encoders and MPU6050 x1.
 - Ground and landmark: TCRT5000 x2 for edge/drop detection and Hall sensor module x1 for magnetic landmark/checkpoint detection.
 - Environment: BH1750 x1 for illuminance in lux and BMP280 x1 for temperature and atmospheric pressure.
-- Controllers and chassis: STM32 controller board x1, ESP32 board x1, battery/power system, four encoded motors, four mecanum wheels, and existing rover chassis.
+- Controllers and chassis: STM32 controller board x1, ESP32 board x1, one
+  seller-documented Li-ion pack advertised as 11.1 V, 7800 mAh, 5C, 12.6 V
+  fully charged, 70 x 55 x 23 mm, with a DC 5.5 x 2.5 mm male connector; one
+  seller-documented 12.6 V/1 A charger with a mating female connector; four
+  encoded motors; four mecanum wheels; and the existing rover chassis. Barrel
+  polarity and BMS continuous/peak current remain UNVERIFIED.
 - Phase 3.2A controller target for BH1750 bring-up: OpenRF1 robot controller with STM32F103RCT6, software I2C on PB1/SCL and PC3/SDA, and USART1 PA9/PA10 at 115200 8N1.
 
 Use neutral sensor IDs until mounting is physically verified: `c1_1`, `ultrasonic_1`, `ultrasonic_2`, `ultrasonic_3`, `tcrt5000_1`, `tcrt5000_2`, `bh1750_1`, `bmp280_1`, `mpu6050_1`, and `hall_1`. Historical version-1 recordings and explicitly synthetic compatibility fixtures may still contain `c1_2`.
