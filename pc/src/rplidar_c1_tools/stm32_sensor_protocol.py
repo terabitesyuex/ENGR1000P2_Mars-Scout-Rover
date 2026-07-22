@@ -20,6 +20,7 @@ from .stm32_sensor_models import (
     MOTION_CONTROL_SNAPSHOT_SENSOR_IDS,
     MOTION_SAFETY_STATE_SENSOR_IDS,
     MESSAGE_TYPES,
+    SENSOR_IDENTITY_SENSOR_IDS,
     SENSOR_IDS_BY_MESSAGE_TYPE,
     STM32_TELEMETRY_PROTOCOL,
     STM32_TELEMETRY_VERSION,
@@ -49,7 +50,7 @@ class Stm32TelemetryFormatError(Stm32TelemetryError):
         super().__init__(f"{prefix}{message}")
 
 
-TOP_LEVEL_FIELDS = {
+REQUIRED_TOP_LEVEL_FIELDS = {
     "protocol",
     "version",
     "sequence",
@@ -59,6 +60,7 @@ TOP_LEVEL_FIELDS = {
     "payload",
     "status",
 }
+TOP_LEVEL_FIELDS = REQUIRED_TOP_LEVEL_FIELDS | {"error"}
 
 
 def encode_stm32_telemetry_message(message: Stm32TelemetryMessage) -> str:
@@ -96,7 +98,7 @@ def parse_stm32_telemetry_line(
             f"unknown top-level field: {', '.join(unknown)}",
             line_number=line_number,
         )
-    missing = sorted(TOP_LEVEL_FIELDS - set(payload))
+    missing = sorted(REQUIRED_TOP_LEVEL_FIELDS - set(payload))
     if missing:
         raise Stm32TelemetryFormatError(
             f"missing required field: {', '.join(missing)}",
@@ -111,6 +113,7 @@ def parse_stm32_telemetry_line(
         sensor_id=_require_string(payload, "sensor_id", line_number),
         status=_require_string(payload, "status", line_number),
         payload=_require_object(payload, "payload", line_number),
+        error=_require_optional_object(payload, "error", line_number),
     )
     validate_stm32_telemetry_message(message, line_number=line_number)
     return message
@@ -149,15 +152,29 @@ def validate_stm32_telemetry_message(
         raise Stm32TelemetryFormatError("unknown message_type", line_number=line_number)
     if message.status not in TELEMETRY_STATUSES:
         raise Stm32TelemetryFormatError("invalid status", line_number=line_number)
+    if message.status == "error" and message.message_type != "ultrasonic":
+        raise Stm32TelemetryFormatError(
+            "status error is reserved for the HC-SR04 ultrasonic subtype",
+            line_number=line_number,
+        )
     if message.sensor_id not in SENSOR_IDS_BY_MESSAGE_TYPE[message.message_type]:
         raise Stm32TelemetryFormatError("sensor_id does not match message_type", line_number=line_number)
     if not isinstance(message.payload, Mapping):
         raise Stm32TelemetryFormatError("payload must be an object", line_number=line_number)
+    if message.error is not None and not isinstance(message.error, Mapping):
+        raise Stm32TelemetryFormatError("error must be an object", line_number=line_number)
+    if message.error is not None and message.message_type not in {"sensor_identity", "ultrasonic"}:
+        raise Stm32TelemetryFormatError(
+            "error is not supported for this message_type",
+            line_number=line_number,
+        )
     _validate_payload(message, line_number)
 
 
 def _validate_payload(message: Stm32TelemetryMessage, line_number: int | None) -> None:
-    if message.message_type == "ultrasonic":
+    if message.message_type == "sensor_identity":
+        _validate_sensor_identity(message, line_number)
+    elif message.message_type == "ultrasonic":
         _validate_ultrasonic(message, line_number)
     elif message.message_type == "ground_edge":
         _validate_ground_edge(message, line_number)
@@ -202,6 +219,19 @@ def _validate_payload(message: Stm32TelemetryMessage, line_number: int | None) -
 def _validate_ultrasonic(message: Stm32TelemetryMessage, line_number: int | None) -> None:
     _require_sensor_id(message.sensor_id, ULTRASONIC_SENSOR_IDS, line_number)
     payload = dict(message.payload)
+    if set(payload) == {"echo_pulse_us", "distance_mm", "distance_model"}:
+        _validate_hcsr04_bringup_ultrasonic(message, line_number)
+        return
+    if message.status == "error":
+        raise Stm32TelemetryFormatError(
+            "status error requires the HC-SR04 ultrasonic payload subtype",
+            line_number=line_number,
+        )
+    if message.error is not None:
+        raise Stm32TelemetryFormatError(
+            "standard ultrasonic telemetry must not include error",
+            line_number=line_number,
+        )
     _require_allowed_fields(payload, {"distance_mm", "raw_echo_us", "valid"}, line_number)
     if "valid" in payload and not isinstance(payload["valid"], bool):
         raise Stm32TelemetryFormatError("payload.valid must be a boolean", line_number=line_number)
@@ -223,6 +253,103 @@ def _validate_ultrasonic(message: Stm32TelemetryMessage, line_number: int | None
             )
         if payload.get("valid", False) is not False:
             raise Stm32TelemetryFormatError("invalid ultrasonic status requires payload.valid false", line_number=line_number)
+
+
+def _validate_sensor_identity(message: Stm32TelemetryMessage, line_number: int | None) -> None:
+    _require_sensor_id(message.sensor_id, SENSOR_IDENTITY_SENSOR_IDS, line_number)
+    if message.status != "ok" or message.error is not None:
+        raise Stm32TelemetryFormatError(
+            "HC-SR04 identity requires status ok and no error",
+            line_number=line_number,
+        )
+    payload = dict(message.payload)
+    expected = {
+        "sensor": "hc-sr04",
+        "connector": "CN6",
+        "trigger_pin": "PA5",
+        "echo_pin": "PA4",
+        "timer": "TIM6",
+        "timer_tick_hz": 1_000_000,
+        "trigger_pulse_us": 10,
+        "echo_timeout_us": 30_000,
+        "measurement_period_ms": 100,
+        "distance_unit": "mm",
+        "distance_model": "nominal_343_m_per_s_uncalibrated",
+    }
+    _require_exact_fields(payload, set(expected), line_number)
+    for key, value in expected.items():
+        if payload.get(key) != value or isinstance(payload.get(key), bool):
+            raise Stm32TelemetryFormatError(
+                f"payload.{key} does not match the HC-SR04 identity contract",
+                line_number=line_number,
+            )
+
+
+def _validate_hcsr04_bringup_ultrasonic(
+    message: Stm32TelemetryMessage,
+    line_number: int | None,
+) -> None:
+    payload = dict(message.payload)
+    if payload.get("distance_model") != "nominal_343_m_per_s_uncalibrated":
+        raise Stm32TelemetryFormatError(
+            "payload.distance_model does not match the HC-SR04 diagnostic model",
+            line_number=line_number,
+        )
+    pulse = payload.get("echo_pulse_us")
+    distance = payload.get("distance_mm")
+    if message.status == "ok":
+        if message.error is not None:
+            raise Stm32TelemetryFormatError(
+                "successful HC-SR04 telemetry must not include error",
+                line_number=line_number,
+            )
+        _validate_positive_int(pulse, "payload.echo_pulse_us", line_number)
+        if pulse >= 30_000:
+            raise Stm32TelemetryFormatError(
+                "payload.echo_pulse_us must be below the timeout boundary",
+                line_number=line_number,
+            )
+        _validate_non_negative_int(distance, "payload.distance_mm", line_number)
+        expected_distance = (pulse * 343 + 1000) // 2000
+        if distance != expected_distance:
+            raise Stm32TelemetryFormatError(
+                "payload.distance_mm is inconsistent with echo_pulse_us",
+                line_number=line_number,
+            )
+        return
+    if message.status != "error":
+        raise Stm32TelemetryFormatError(
+            "HC-SR04 diagnostic telemetry status must be ok or error",
+            line_number=line_number,
+        )
+    if pulse is not None or distance is not None:
+        raise Stm32TelemetryFormatError(
+            "HC-SR04 error telemetry requires null pulse and distance",
+            line_number=line_number,
+        )
+    if message.error is None:
+        raise Stm32TelemetryFormatError(
+            "HC-SR04 error telemetry requires error details",
+            line_number=line_number,
+        )
+    error = dict(message.error)
+    _require_exact_fields(error, {"code", "operation", "timeout_us"}, line_number, prefix="error")
+    allowed_codes = {
+        "echo_not_low_before_trigger",
+        "echo_rise_timeout",
+        "echo_fall_timeout",
+        "timer_configuration_failure",
+        "timer_measurement_failure",
+        "pulse_width_out_of_bounds",
+        "telemetry_format_failure",
+        "internal_state_error",
+    }
+    if error.get("code") not in allowed_codes:
+        raise Stm32TelemetryFormatError("error.code is unsupported", line_number=line_number)
+    if not isinstance(error.get("operation"), str) or not error["operation"]:
+        raise Stm32TelemetryFormatError("error.operation must be a non-empty string", line_number=line_number)
+    if error.get("timeout_us") != 30_000 or isinstance(error.get("timeout_us"), bool):
+        raise Stm32TelemetryFormatError("error.timeout_us must be 30000", line_number=line_number)
 
 
 def _validate_ground_edge(message: Stm32TelemetryMessage, line_number: int | None) -> None:
@@ -731,6 +858,22 @@ def _require_allowed_fields(
         )
 
 
+def _require_exact_fields(
+    payload: dict[str, Any],
+    expected: set[str],
+    line_number: int | None,
+    *,
+    prefix: str = "payload",
+) -> None:
+    _require_allowed_fields(payload, expected, line_number)
+    missing = sorted(expected - set(payload))
+    if missing:
+        raise Stm32TelemetryFormatError(
+            f"missing {prefix} field: {', '.join(missing)}",
+            line_number=line_number,
+        )
+
+
 def _require_sensor_id(sensor_id: str, allowed: tuple[str, ...], line_number: int | None) -> None:
     if sensor_id not in allowed:
         raise Stm32TelemetryFormatError("sensor_id does not match message_type", line_number=line_number)
@@ -754,6 +897,16 @@ def _require_object(payload: dict[str, Any], key: str, line_number: int | None) 
     if not isinstance(value, dict):
         raise Stm32TelemetryFormatError(f"{key} must be an object", line_number=line_number)
     return value
+
+
+def _require_optional_object(
+    payload: dict[str, Any],
+    key: str,
+    line_number: int | None,
+) -> dict[str, Any] | None:
+    if key not in payload:
+        return None
+    return _require_object(payload, key, line_number)
 
 
 def _validate_non_negative_int(value: object, name: str, line_number: int | None) -> None:

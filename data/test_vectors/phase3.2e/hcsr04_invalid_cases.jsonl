@@ -1,0 +1,5 @@
+not-json
+{"protocol":"mars_scout_stm32_sensor_telemetry","version":1,"sequence":0,"timestamp_ms":0,"message_type":"ultrasonic","sensor_id":"front","status":"ok","payload":{"echo_pulse_us":1000,"distance_mm":172,"distance_model":"nominal_343_m_per_s_uncalibrated"}}
+{"protocol":"mars_scout_stm32_sensor_telemetry","version":1,"sequence":1,"timestamp_ms":100,"message_type":"ultrasonic","sensor_id":"ultrasonic_1","status":"ok","payload":{"echo_pulse_us":1000,"distance_mm":999,"distance_model":"nominal_343_m_per_s_uncalibrated"}}
+{"protocol":"mars_scout_stm32_sensor_telemetry","version":1,"sequence":2,"timestamp_ms":200,"message_type":"ultrasonic","sensor_id":"ultrasonic_1","status":"error","payload":{"echo_pulse_us":0,"distance_mm":0,"distance_model":"nominal_343_m_per_s_uncalibrated"}}
+{"protocol":"mars_scout_stm32_sensor_telemetry","version":1,"sequence":3,"timestamp_ms":300,"message_type":"ultrasonic","sensor_id":"ultrasonic_1","status":"timeout","payload":{"echo_pulse_us":1000,"distance_mm":172,"distance_model":"nominal_343_m_per_s_uncalibrated"}}

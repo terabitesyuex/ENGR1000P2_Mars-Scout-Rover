@@ -118,6 +118,8 @@ const char *hcsr04_result_code_to_text(Hcsr04ResultCode code) {
             return "timer_measurement_failure";
         case HCSR04_RESULT_PULSE_WIDTH_OUT_OF_BOUNDS:
             return "pulse_width_out_of_bounds";
+        case HCSR04_RESULT_TELEMETRY_FORMAT_FAILURE:
+            return "telemetry_format_failure";
         case HCSR04_RESULT_INTERNAL_STATE_ERROR:
         default:
             return "internal_state_error";
@@ -138,6 +140,8 @@ const char *hcsr04_result_operation_to_text(Hcsr04ResultCode code) {
             return "timer_measurement";
         case HCSR04_RESULT_PULSE_WIDTH_OUT_OF_BOUNDS:
             return "pulse_width_validation";
+        case HCSR04_RESULT_TELEMETRY_FORMAT_FAILURE:
+            return "telemetry_format";
         case HCSR04_RESULT_OK:
             return "measurement";
         case HCSR04_RESULT_INTERNAL_STATE_ERROR:

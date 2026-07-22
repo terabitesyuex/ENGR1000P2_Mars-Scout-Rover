@@ -27,40 +27,24 @@ Hcsr04BringupTelemetryStatus hcsr04_bringup_format_identity(
         "{\"protocol\":\"mars_scout_stm32_sensor_telemetry\",\"version\":1,"
         "\"sequence\":%lu,\"timestamp_ms\":%lu,\"message_type\":\"sensor_identity\","
         "\"sensor_id\":\"%s\",\"status\":\"ok\","
-        "\"payload\":{\"sensor\":\"%s\",\"connector\":\"%s\",\"connector_part\":\"%s\","
-        "\"connector_pin_order\":[{\"pin\":1,\"signal\":\"%s\"},{\"pin\":2,\"signal\":\"%s\"},"
-        "{\"pin\":3,\"signal\":\"%s\"},{\"pin\":4,\"signal\":\"%s\"}],"
-        "\"trigger_pin\":\"%s\",\"trigger_mode\":\"push_pull_output\","
-        "\"echo_pin\":\"%s\",\"echo_mode\":\"floating_input\","
-        "\"timer\":\"%s\",\"timer_prescaler\":%u,\"timer_period\":%u,\"timer_tick_hz\":%lu,"
+        "\"payload\":{\"sensor\":\"%s\",\"connector\":\"%s\","
+        "\"trigger_pin\":\"%s\",\"echo_pin\":\"%s\","
+        "\"timer\":\"%s\",\"timer_tick_hz\":%lu,"
         "\"trigger_pulse_us\":%u,\"echo_timeout_us\":%lu,\"measurement_period_ms\":%lu,"
-        "\"distance_unit\":\"mm\",\"distance_model\":\"%s\","
-        "\"echo_protection\":{\"direct_echo_to_cn6_pin4\":\"prohibited\","
-        "\"series_resistor_ohm\":%u,\"pulldown_resistor_ohm\":%u,"
-        "\"tolerance_percent_or_better\":%u}}}\n",
+        "\"distance_unit\":\"mm\",\"distance_model\":\"%s\"}}\n",
         (unsigned long)sequence,
         (unsigned long)timestamp_ms,
         OPENRF1_HCSR04_SENSOR_ID,
         OPENRF1_HCSR04_SENSOR_NAME,
         OPENRF1_HCSR04_CONNECTOR,
-        OPENRF1_HCSR04_CONNECTOR_PART,
-        OPENRF1_HCSR04_CONNECTOR_PIN1,
-        OPENRF1_HCSR04_CONNECTOR_PIN2,
-        OPENRF1_HCSR04_CONNECTOR_PIN3,
-        OPENRF1_HCSR04_CONNECTOR_PIN4,
         OPENRF1_HCSR04_TRIGGER_PIN_TEXT,
         OPENRF1_HCSR04_ECHO_PIN_TEXT,
         OPENRF1_HCSR04_TIMER_TEXT,
-        (unsigned int)OPENRF1_HCSR04_TIMER_PRESCALER,
-        (unsigned int)OPENRF1_HCSR04_TIMER_PERIOD,
         (unsigned long)OPENRF1_HCSR04_TIMER_TICK_HZ,
         (unsigned int)OPENRF1_HCSR04_TRIGGER_PULSE_US,
         (unsigned long)OPENRF1_HCSR04_ECHO_TIMEOUT_US,
         (unsigned long)OPENRF1_HCSR04_MEASUREMENT_PERIOD_MS,
-        OPENRF1_HCSR04_DISTANCE_MODEL,
-        (unsigned int)OPENRF1_HCSR04_ECHO_SERIES_RESISTOR_OHM,
-        (unsigned int)OPENRF1_HCSR04_ECHO_PULLDOWN_RESISTOR_OHM,
-        (unsigned int)OPENRF1_HCSR04_ECHO_DIVIDER_TOLERANCE_PERCENT
+        OPENRF1_HCSR04_DISTANCE_MODEL
     );
     return map_snprintf_result(written, buffer_size);
 }

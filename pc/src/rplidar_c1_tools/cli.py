@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
 import sys
 
@@ -50,6 +51,11 @@ from .recording_models import (
 )
 from .replay import RecordingFormatError, inspect_recording, last_lidar_scan_by_sensor, replay_lidar_scans
 from .openrf1_bh1750 import generate_bh1750_telemetry_lines
+from .openrf1_hcsr04_bringup import HCSR04_SENSOR_ID
+from .openrf1_hcsr04_capture import (
+    Hcsr04CaptureError,
+    capture_hcsr04_telemetry,
+)
 from .stm32_recording_bridge import record_stm32_telemetry_stream
 from .stm32_serial_capture import (
     DEFAULT_LINE_LENGTH_LIMIT_BYTES,
@@ -362,6 +368,46 @@ def main() -> int:
     capture_stm32.add_argument("--recording-output", type=Path, required=True)
     capture_stm32.add_argument("--overwrite", action="store_true")
 
+    capture_hcsr04 = subparsers.add_parser(
+        "capture-openrf1-hcsr04",
+        help="Capture isolated HC-SR04 raw JSONL plus sanitized validation statistics.",
+    )
+    hcsr04_source = capture_hcsr04.add_mutually_exclusive_group(required=True)
+    hcsr04_source.add_argument(
+        "--port",
+        help="Explicit user-verified COM port for manual capture.",
+    )
+    hcsr04_source.add_argument(
+        "--mock-input",
+        type=Path,
+        help="File-backed byte source for tests and verifier smoke runs.",
+    )
+    capture_hcsr04.add_argument(
+        "--sensor-id",
+        choices=("ultrasonic_1", "ultrasonic_2", "ultrasonic_3"),
+        default=HCSR04_SENSOR_ID,
+    )
+    capture_hcsr04.add_argument("--baud", type=_positive_int, default=DEFAULT_STM32_SERIAL_BAUD)
+    capture_hcsr04.add_argument("--duration", type=float, default=30.0)
+    capture_hcsr04.add_argument("--max-lines", type=_positive_int)
+    capture_hcsr04.add_argument("--timeout-s", type=float, default=1.0)
+    capture_hcsr04.add_argument("--read-chunk-size", type=_positive_int, default=64)
+    capture_hcsr04.add_argument("--max-empty-reads", type=_positive_int, default=10)
+    capture_hcsr04.add_argument("--startup-grace-s", type=float, default=DEFAULT_STARTUP_GRACE_S)
+    capture_hcsr04.add_argument(
+        "--max-consecutive-malformed-lines",
+        type=_positive_int,
+        default=DEFAULT_MAX_CONSECUTIVE_MALFORMED_LINES,
+    )
+    capture_hcsr04.add_argument(
+        "--line-length-limit",
+        type=_positive_int,
+        default=DEFAULT_LINE_LENGTH_LIMIT_BYTES,
+    )
+    capture_hcsr04.add_argument("--raw-output", type=Path, required=True)
+    capture_hcsr04.add_argument("--summary-output", type=Path, required=True)
+    capture_hcsr04.add_argument("--overwrite", action="store_true")
+
     args = parser.parse_args()
     try:
         if args.command == "synthetic-room":
@@ -554,6 +600,26 @@ def main() -> int:
             )
             print(text, end="")
             return 0
+        if args.command == "capture-openrf1-hcsr04":
+            text = capture_openrf1_hcsr04_file(
+                port=args.port,
+                mock_input=args.mock_input,
+                sensor_id=args.sensor_id,
+                baud=args.baud,
+                duration_s=args.duration,
+                max_lines=args.max_lines,
+                timeout_s=args.timeout_s,
+                read_chunk_size=args.read_chunk_size,
+                max_empty_reads=args.max_empty_reads,
+                startup_grace_s=args.startup_grace_s,
+                max_consecutive_malformed_lines=args.max_consecutive_malformed_lines,
+                line_length_limit_bytes=args.line_length_limit,
+                raw_output=args.raw_output,
+                summary_output=args.summary_output,
+                overwrite=args.overwrite,
+            )
+            print(text, end="")
+            return 0
     except (
         OSError,
         ValueError,
@@ -561,6 +627,7 @@ def main() -> int:
         C1DriverError,
         Stm32TelemetryError,
         Stm32SerialCaptureError,
+        Hcsr04CaptureError,
     ) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
@@ -971,6 +1038,48 @@ def capture_stm32_serial_file(
         overwrite=overwrite,
     )
     return summary.to_text()
+
+
+def capture_openrf1_hcsr04_file(
+    *,
+    port: str | None,
+    mock_input: Path | None,
+    sensor_id: str,
+    baud: int,
+    duration_s: float,
+    max_lines: int | None,
+    timeout_s: float,
+    read_chunk_size: int,
+    max_empty_reads: int,
+    startup_grace_s: float,
+    max_consecutive_malformed_lines: int,
+    line_length_limit_bytes: int,
+    raw_output: Path,
+    summary_output: Path,
+    overwrite: bool,
+) -> str:
+    """Capture isolated HC-SR04 telemetry without exposing port/path in output."""
+    if mock_input is not None:
+        reader = FileChunkSerialReader(mock_input, chunk_size=max(1, read_chunk_size // 2))
+    elif port is not None:
+        reader = PySerialLineReader(port=port, baud=baud, timeout_s=timeout_s)
+    else:
+        raise ValueError("provide either --port or --mock-input")
+    summary = capture_hcsr04_telemetry(
+        reader=reader,
+        raw_output=raw_output,
+        summary_output=summary_output,
+        sensor_id=sensor_id,
+        duration_s=duration_s,
+        max_lines=max_lines,
+        read_chunk_size=read_chunk_size,
+        max_empty_reads=max_empty_reads,
+        startup_grace_s=startup_grace_s,
+        max_consecutive_malformed_lines=max_consecutive_malformed_lines,
+        line_length_limit_bytes=line_length_limit_bytes,
+        overwrite=overwrite,
+    )
+    return json.dumps(summary.to_json(), sort_keys=True) + "\n"
 
 
 def _selected_scenes(scene: str) -> tuple[str, ...]:

@@ -224,6 +224,9 @@ Phase 3.2D automated tests do not open real COM ports, USB devices, GPIO, I2C, f
 Targeted:
 
 - `pc/tests/test_openrf1_hcsr04_bringup.py`
+- `pc/tests/test_openrf1_hcsr04_protocol.py`
+- `pc/tests/test_openrf1_hcsr04_capture.py`
+- `pc/tests/test_phase32e_evidence.py`
 
 Regression:
 
@@ -239,12 +242,15 @@ Smoke workflow:
 - Audit required HC-SR04 bring-up files.
 - Confirm CN6 pin order, PA5 TRIG, PA4 ECHO, TIM6, and the external 10 kOhm / 15 kOhm divider requirement.
 - Confirm bounded trigger/echo timeout contracts, timer-wrap subtraction, nominal integer distance conversion, and JSONL identity/success/error records.
+- Confirm the 512-byte JSONL / 513-byte C-buffer framing boundary, explicit formatting failures, and complete startup identity emission.
+- Replay deterministic identity, pulse-boundary, timeout/recovery, malformed, sensor-ID, and session-order cases through the strict parser and dedicated mocked capture.
+- Confirm evidence templates are not evidence and future sanitized candidates receive structural validation without automatic physical certification.
 - Confirm the isolated Keil target and output directory.
 - Confirm previous Phase 3.2A and Phase 3.2C raw evidence file hashes are unchanged.
 - Confirm generated Keil artifacts are not tracked.
 - Report HC-SR04 local Keil build evidence when a local build has been run.
 
-Phase 3.2E automated tests do not open real COM ports, USB devices, GPIO, timer peripherals, I2C, flash tools, network sockets, motors, or real sensors. Physical wiring, trigger/echo pulses, real distance data, timeout behavior, timer accuracy, and absolute distance accuracy remain UNVERIFIED.
+Phase 3.2E automated tests do not open real COM ports, USB devices, GPIO, timer peripherals, I2C, flash tools, network sockets, motors, or real sensors. The dedicated capture uses a file-backed mock in automation. Physical wiring, trigger/echo pulses, real distance data, timeout behavior, timer accuracy, and absolute distance accuracy remain UNVERIFIED / PHYSICAL_VERIFICATION_REQUIRED.
 
 ## Revised Phase Sequence
 

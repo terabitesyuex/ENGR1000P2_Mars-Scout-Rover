@@ -21,6 +21,13 @@
 - Updated repository guidance to the current inventory of exactly one physical RPLIDAR C1M1-R2 (`c1_1` only); historical or synthetic `c1_2` artifacts remain compatibility data, not current hardware.
 - Kept actual rail/output voltages, output topology, semantic polarity, black/white/drop classification, Hall behavior, long-duration operation, shared-bus behavior, and full-rover operation UNVERIFIED.
 
+## 2026-07-21 - Phase 3.2E HC-SR04 Validation Readiness
+
+- Made isolated HC-SR04 startup identity emission fit a shared 512-byte JSONL contract with a 513-byte C buffer, explicit formatter-failure reporting, and worst-case boundary tests.
+- Extended the shared STM32 envelope additively for strict HC-SR04 identity, success, and error/null telemetry without changing legacy ultrasonic semantics.
+- Added a mockable dedicated HC-SR04 capture command, session/order diagnostics, sanitized statistics, deterministic fixtures, evidence-candidate structural validation, and A/B handoff documents.
+- Retained bounded synchronous polling only for isolated diagnostics and kept all physical HC-SR04 claims `PHYSICAL_VERIFICATION_REQUIRED`.
+
 ## 2026-07-20 - Phase 4 Historical Firmware Audit Scope
 
 - Scoped Phase 4A and Phase 4B software-only firmware-diff audits to commits that touch their phase files, so later unrelated firmware follow-up commits do not break historical phase verification.

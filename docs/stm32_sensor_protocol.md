@@ -17,6 +17,8 @@ Each line is one JSON object with:
 - `payload`
 - `status`
 
+An optional top-level `error` object is permitted only for message types whose strict subtype contract defines it. Existing messages without `error` remain unchanged.
+
 Sequences must increase within a stream. Timestamps must be nondecreasing. NaN, Infinity, booleans substituted for integers, missing required fields, unknown top-level fields, unknown message types, and sensor/message mismatches are rejected.
 
 ## Status Values
@@ -24,6 +26,7 @@ Sequences must increase within a stream. Timestamps must be nondecreasing. NaN, 
 Supported statuses:
 
 - `ok`
+- `error`
 - `timeout`
 - `out_of_range`
 - `invalid_reading`
@@ -36,6 +39,10 @@ Supported statuses:
 Not every sensor is expected to use every status. Phase 4A uses `simulated` for synthetic raw encoder deltas and `software_derived` for values calculated from those deltas. Neither status is physical evidence.
 
 ## Message Types
+
+### `sensor_identity`
+
+Phase 3.2E uses this type for the isolated HC-SR04 startup configuration record. Its sensor ID is one of the neutral `ultrasonic_1` through `ultrasonic_3` IDs; isolated capture defaults to `ultrasonic_1`. The strict payload records `hc-sr04`, CN6, PA5, PA4, TIM6, nominal timing, `mm`, and `nominal_343_m_per_s_uncalibrated`. It describes software configuration, not proof that a sensor responded.
 
 ### `ultrasonic`
 
@@ -52,6 +59,8 @@ Payload:
 - `valid`
 
 Ultrasonic timeout must not be represented as a valid zero-distance obstacle. Timeout uses status `timeout`, `valid: false`, and no valid `distance_mm`.
+
+The Phase 3.2E isolated subtype instead preserves `echo_pulse_us`, `distance_mm`, and `distance_model`. A successful pulse is in the inclusive range 1 through 29999 us and its rounded distance must match the fixed 343 m/s integer model. A 1 us pulse legitimately rounds to 0 mm and remains distinguishable from failure by `status: ok` and its non-null raw pulse. Diagnostic failure uses `status: error`, null pulse and distance, plus strict `code`, `operation`, and `timeout_us` metadata. This additive subtype does not change the original Phase 3.1 ultrasonic shape.
 
 ### `ground_edge`
 
