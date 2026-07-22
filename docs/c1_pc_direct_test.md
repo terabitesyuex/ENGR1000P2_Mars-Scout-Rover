@@ -1,6 +1,6 @@
 # C1 PC-Direct Test Plan
 
-Phase 2.5 adds the PC-side software boundary for direct RPLIDAR C1 acquisition. Automated tests use mocked byte streams. They do not open serial ports and do not prove either physical unit works.
+Phase 2.5 adds the PC-side software boundary for direct RPLIDAR C1 acquisition. Automated tests use mocked byte streams. They do not open serial ports and do not prove the physical C1 works.
 
 ## Scope
 
@@ -23,31 +23,31 @@ Not implemented:
 - SLAM.
 - Navigation.
 - Obstacle avoidance.
-- Dual-C1 simultaneous operation.
+- Additional physical C1 hardware or simultaneous dual-C1 operation.
 - Automated access to real serial ports.
 
 ## Hardware Assumptions
 
 CONFIRMED:
 
-- RPLIDAR C1 x2 are available.
+- One physical RPLIDAR C1 is available.
 - Verified C1 UART value is 460800 baud, 8N1, 3.3 V TTL.
 - Verified C1 supply range is 4.8 V to 5.2 V.
 - Verified C1 wire functions are preserved in `HARDWARE_LOCK.md`.
 
 PLANNED:
 
-- Test `c1_1` and `c1_2` independently by PC-direct methods.
-- Use one stable C1 as the Phase 2.5 baseline.
+- Test the physical unit as `c1_1` by PC-direct methods.
+- Use `c1_1` as the Phase 2.5 and later integration baseline.
 - Use captured `ScanFrame` data with existing recording, replay, and visualization tools.
 
 UNVERIFIED:
 
-- Individual C1 serial IDs.
-- Individual C1 hardware revisions.
-- Operational status of either physical C1.
+- The physical C1 serial ID.
+- The physical C1 hardware revision.
+- Operational status of the physical C1.
 - Final mounting position or orientation.
-- Simultaneous dual-C1 operation.
+- Any additional physical C1 or simultaneous dual-C1 operation.
 - Any COM port name.
 - Any ESP32 GPIO or UART assignment.
 
@@ -97,9 +97,7 @@ python -m rplidar_c1_tools.cli replay-recording data\raw\c1_1_pc_direct.jsonl --
 python -m rplidar_c1_tools.cli render-recording data\raw\c1_1_pc_direct.jsonl --sensor-id c1_1 --output-dir data\decoded\c1_1_pc_direct
 ```
 
-8. Repeat independently for `c1_2`.
-
-Do not connect or run both units simultaneously in Phase 2.5.
+8. Preserve the recording under the physical ID `c1_1`; use `c1_2` only for fixture/replay compatibility tests.
 
 ## Acceptance Evidence
 

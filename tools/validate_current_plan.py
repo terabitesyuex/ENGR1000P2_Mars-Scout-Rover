@@ -33,15 +33,29 @@ class RequiredSnippet:
 
 
 REQUIRED_SNIPPETS = (
-    RequiredSnippet("README.md", "RPLIDAR C1 x2", "two C1 units documented"),
-    RequiredSnippet("README.md", "one stable C1", "one-C1 baseline documented"),
-    RequiredSnippet("README.md", "simultaneous dual-C1", "dual-C1 optional status documented"),
+    RequiredSnippet("AGENTS.md", "RPLIDAR C1 x1", "single physical C1 inventory documented"),
+    RequiredSnippet("AGENTS.md", "HC-SR04 x3", "three HC-SR04 units documented"),
+    RequiredSnippet("README.md", "RPLIDAR C1 x1", "single physical C1 inventory documented"),
+    RequiredSnippet("README.md", "HC-SR04 ultrasonic sensor x3", "three HC-SR04 units documented"),
+    RequiredSnippet(
+        "README.md",
+        "The legacy `c1_2` ID remains valid only in synthetic recordings and software compatibility tests",
+        "c1_2 fixture-only boundary documented",
+    ),
+    RequiredSnippet("README.md", "One C1 physically exists", "one-C1 baseline documented"),
     RequiredSnippet("README.md", "WiFi", "WiFi baseline documented"),
     RequiredSnippet("README.md", "ROS and a vehicle-mounted Linux computer are not required", "ROS/Linux non-goal documented"),
     RequiredSnippet("PROJECT_SPEC.md", "mandatory requirements", "authoritative requirements section"),
     RequiredSnippet("PROJECT_SPEC.md", "environmental-change indication", "environmental wording documented"),
     RequiredSnippet("PROJECT_SPEC.md", "Reliable real-world dust-storm detection is not claimed", "dust-storm honesty documented"),
     RequiredSnippet("HARDWARE_LOCK.md", "CONFIRMED INVENTORY", "inventory section documented"),
+    RequiredSnippet("HARDWARE_LOCK.md", "RPLIDAR C1 x1", "single physical C1 hardware lock"),
+    RequiredSnippet("HARDWARE_LOCK.md", "HC-SR04 ultrasonic sensor x3", "three HC-SR04 hardware lock"),
+    RequiredSnippet(
+        "HARDWARE_LOCK.md",
+        "`c1_2` is synthetic compatibility coverage only",
+        "hardware-lock c1_2 fixture-only boundary",
+    ),
     RequiredSnippet("HARDWARE_LOCK.md", "BH1750 x1", "BH1750 documented"),
     RequiredSnippet("HARDWARE_LOCK.md", "BMP280 x1", "BMP280 documented"),
     RequiredSnippet("HARDWARE_LOCK.md", "exact ESP32 module UART GPIOs: CONFIRMED_MODULE_EVIDENCE", "ESP32 module GPIO evidence documented"),

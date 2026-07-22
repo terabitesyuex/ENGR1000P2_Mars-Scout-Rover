@@ -211,7 +211,7 @@ def record_stm32_telemetry_stream(
     output = Path(output_path)
     with MultiSensorRecorder(
         output,
-        sensor_inventory=default_sensor_inventory(lidar_count=2, include_auxiliary=True),
+        sensor_inventory=default_sensor_inventory(lidar_count=1, include_auxiliary=True),
         metadata={
             "generator": "rplidar_c1_tools.cli record-stm32-telemetry",
             "source": "stm32_sensor_telemetry_simulated_or_forwarded",

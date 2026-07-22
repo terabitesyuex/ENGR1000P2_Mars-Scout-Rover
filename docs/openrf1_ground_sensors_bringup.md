@@ -2,6 +2,8 @@
 
 Phase 3.2F implements the isolated software bring-up path for two TCRT5000 digital reflective modules and one HW-477/A3144 Hall module on the OpenRF1 STM32F103RCT6 controller. No physical verification has yet occurred.
 
+组员执行 Hall 隔离实机测试时，使用 `docs/hall_sensor_step_by_step_test.md` 的逐步清单；每次只执行一个编号步骤。
+
 ## Source Status
 
 AUTHORITATIVE_VENDOR_DOCUMENTED:
@@ -88,7 +90,7 @@ Only these modules should be connected during isolated validation. Signal 4 rema
 
 The TCRT5000 modules are three-pin digital modules labelled OUT, VCC, and GND. The module PCB appears to contain digital conditioning logic, but the exact logic-chip identity, threshold, output topology, active polarity, black/white behavior, and edge/open-space behavior are UNVERIFIED.
 
-The physical Hall module is marked HW-477 V0.2 and the sensor is marked 3144. The A3144 sensor-level datasheet establishes that the sensor output is open collector, needs a pull-up path, and is active-low for the appropriate magnetic pole. The HW-477 module-level pull-up and LED circuit are not authoritatively documented, so Hall S voltage before and after the divider remains UNVERIFIED. The user currently does not have a multimeter.
+The physical Hall module is marked HW-477 V0.2 and the sensor is marked 3144. The A3144 sensor-level datasheet establishes that the sensor output is open collector, needs a pull-up path, and is active-low for the appropriate magnetic pole. The HW-477 module-level pull-up and LED circuit are not authoritatively documented, so Hall S voltage before and after the divider remains UNVERIFIED. A multimeter is now available, but no Hall voltage evidence has yet been recorded.
 
 ## IMPLEMENTED / SOFTWARE_READY
 

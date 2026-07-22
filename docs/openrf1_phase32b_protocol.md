@@ -51,7 +51,7 @@ Payload fields:
 
 ### `lidar_transport_stats`
 
-Sensor ID: `c1_1` or `c1_2`.
+Sensor ID: physical baseline `c1_1`, or `c1_2` only for schema/backward-compatibility fixtures. The current inventory contains no second physical C1.
 
 Payload fields:
 

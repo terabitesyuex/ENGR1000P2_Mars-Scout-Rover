@@ -166,7 +166,7 @@ Phase 3.2B uses this for the STM32-side USART3 foundation. It is not proof that 
 Sensor IDs:
 
 - `c1_1`
-- `c1_2`
+- `c1_2` (schema/backward-compatibility fixtures only; no second physical C1)
 
 Payload:
 

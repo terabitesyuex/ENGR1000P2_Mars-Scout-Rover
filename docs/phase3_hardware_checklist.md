@@ -25,19 +25,24 @@ Evidence table fields:
 - Connect one sensor at a time.
 - Record photos and measured values.
 - Redact unnecessary device identifiers in public evidence.
+- Review [`hardware_materials_bom.md`](hardware_materials_bom.md) before buying or adapting connector, power, divider, or vehicle-installation parts.
 
 ## HC-SR04
 
+- Confirm the physical inventory is three HC-SR04 modules.
 - Verify VCC requirement.
 - Verify TRIG input compatibility.
 - Measure ECHO high voltage before and after the required divider.
 - Confirm the external 10 kOhm / 15 kOhm divider is installed before PA4 receives ECHO.
 - Do not connect HC-SR04 ECHO directly to CN6 pin 4.
 - For Phase 3.2E, use the vendor-documented CN6 path only after installing the required external 10 kOhm / 15 kOhm ECHO divider. Do not connect HC-SR04 ECHO directly to CN6 pin 4.
-- Test one unit before three.
+- Use the keyed JST PH 2.0 mm `PHR-4` cable. Do not force 2.54 mm Dupont leads into CN6.
+- Test the three physical modules sequentially, one at a time, on the single CN6 baseline and label every module/capture.
+- Keep GPIO, connector, and timer resources for the other two simultaneous paths UNVERIFIED until separately designed.
+- Provide one independent 10 kOhm / 15 kOhm divider per HC-SR04 ECHO in final simultaneous wiring. Do not share divider midpoints.
 - Test timeout behavior.
 - Test minimum and maximum useful distance.
-- Test cross-talk with multiple units.
+- Test cross-talk only after three separate safe paths and staggered triggering have been implemented and reviewed.
 - Record physical mounting direction.
 
 ## TCRT5000
@@ -98,7 +103,7 @@ Do not mark these items complete automatically.
 33. [ ] Save raw JSONL without modification.
 34. [ ] Hash raw evidence before integration.
 
-When a multimeter later becomes available, also leave these incomplete until measured: 3.3 V rail measurement, 5 V rail measurement, left TCRT OUT high and low voltage, right TCRT OUT high and low voltage, Hall S voltage before divider without magnet, Hall S voltage before divider with magnet, PB0 voltage after divider without magnet, PB0 voltage after divider with magnet, and actual divider resistor values when practical.
+The multimeter is now available. Leave these incomplete until the readings are captured and recorded: 3.3 V rail measurement, 5 V rail measurement, left TCRT OUT high and low voltage, right TCRT OUT high and low voltage, Hall S voltage before divider without magnet, Hall S voltage before divider with magnet, PB0 voltage after divider without magnet, PB0 voltage after divider with magnet, and actual installed divider resistor values.
 
 Phase 3.2F uses vendor-documented signal 1 / X1 / PC4, signal 2 / X2 / PC5, and signal 3 / X3 / PB0 mappings. Signal 4 / X4 remains unused because the schematic says PC14 while the old example maps X4 to PB1. Do not power the TCRT modules from the connector's 5 V pin. Do not connect Hall S directly to PB0. Do not share one VCC rail across all three modules. Raw GPIO values are not semantic detection states, and semantic polarity remains unverified.
 
@@ -184,8 +189,8 @@ Do not mark these items complete automatically.
 4. Validate all three I2C devices together without tying their VCC rails together.
 5. Validate TCRT5000 raw inputs at 3.3 V.
 6. Measure Hall `S` voltage in both magnetic states before STM32 input connection.
-7. Validate one HC-SR04 on the Phase 3.2E CN6 PA5/PA4 path only after installing and measuring the required external ECHO divider.
-8. Validate all three HC-SR04 modules with staggered triggering.
+7. Validate each of the three HC-SR04 specimens sequentially on the single Phase 3.2E CN6 PA5/PA4 path, one at a time, only after installing and measuring the required external ECHO divider.
+8. Keep simultaneous three-HC-SR04 integration blocked until the GPIO, connector, timer, independent-divider, trigger-staggering, power, and cross-talk plan for the other two paths is implemented and reviewed.
 9. Validate USART2 electrical idle and loopback where safe.
 10. Validate one C1 unit on USART2.
 11. Validate USART3 loopback.

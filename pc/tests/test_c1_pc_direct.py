@@ -127,7 +127,14 @@ def test_capture_session_writes_phase24_jsonl_and_replays(tmp_path):
     header = read_recording_header(output)
     assert header["metadata"]["source"] == "pc_direct_c1"
     assert header["metadata"]["captured_sensor_id"] == "c1_1"
-    assert header["metadata"]["dual_c1_simultaneous"] == "not_attempted"
+    assert header["metadata"]["physical_c1_inventory_count"] == 1
+    assert header["metadata"]["c1_2_role"] == "synthetic_backward_compatibility_only"
+    lidar_sensor_ids = [
+        sensor["sensor_id"]
+        for sensor in header["sensor_inventory"]
+        if sensor["sensor_type"] == "rplidar_c1"
+    ]
+    assert lidar_sensor_ids == ["c1_1"]
     [record] = list(iter_lidar_scans(output))
     assert record.sensor_id == "c1_1"
     assert record.scan_frame.source == "pc_direct_c1"

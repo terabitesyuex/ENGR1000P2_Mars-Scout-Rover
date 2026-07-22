@@ -347,7 +347,10 @@ def capture_c1_session(
     if config.sensor_id != driver.sensor_id:
         raise ValueError("config sensor_id must match driver sensor_id")
     output = Path(output_path)
-    sensor_inventory = default_sensor_inventory(lidar_count=2, include_auxiliary=False)
+    compatibility_inventory = default_sensor_inventory(lidar_count=2, include_auxiliary=False)
+    sensor_inventory = tuple(
+        sensor for sensor in compatibility_inventory if sensor.sensor_id == config.sensor_id
+    )
     with MultiSensorRecorder(
         output,
         sensor_inventory=sensor_inventory,
@@ -356,7 +359,8 @@ def capture_c1_session(
             "source": "pc_direct_c1",
             "captured_sensor_id": config.sensor_id,
             "hardware_validation": "manual_required",
-            "dual_c1_simultaneous": "not_attempted",
+            "physical_c1_inventory_count": 1,
+            "c1_2_role": "synthetic_backward_compatibility_only",
         },
         overwrite=overwrite,
     ) as recorder:

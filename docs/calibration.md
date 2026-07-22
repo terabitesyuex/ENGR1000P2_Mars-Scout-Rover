@@ -5,7 +5,7 @@ No physical calibration is completed by Phase 3.1 automation. This file records 
 ## RPLIDAR C1
 
 - Calibrate `c1_1` independently.
-- Calibrate `c1_2` independently.
+- Do not schedule a physical `c1_2` calibration; that ID is fixture-only compatibility coverage.
 - Use Phase 2.5 PC-direct captures as input evidence only after the manual hardware procedure is actually run.
 - Confirm forward direction relative to rover chassis.
 - Confirm native zero-angle direction.

@@ -100,7 +100,13 @@ def main() -> int:
     record.add_argument("--scene", choices=("circle", "room"), default="room")
     record.add_argument("--output", type=Path, required=True)
     record.add_argument("--frames", type=_positive_int, default=3)
-    record.add_argument("--lidar-count", type=int, choices=(1, 2), default=2)
+    record.add_argument(
+        "--lidar-count",
+        type=int,
+        choices=(1, 2),
+        default=1,
+        help="Synthetic LiDAR IDs to emit; 2 is compatibility coverage, not physical inventory.",
+    )
     record.add_argument("--point-count", type=_positive_int, default=360)
     record.add_argument("--include-aux", action="store_true")
     record.add_argument("--overwrite", action="store_true")
@@ -431,6 +437,8 @@ def record_synthetic_session(
             "generator": "rplidar_c1_tools.cli record-synthetic",
             "scene": scene,
             "hardware_access": "none",
+            "physical_c1_inventory_count": 1,
+            "c1_2_role": "synthetic_backward_compatibility_only",
         },
         overwrite=overwrite,
     ) as recorder:

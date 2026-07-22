@@ -2,15 +2,15 @@
 
 This file records hardware facts that must not drift silently. Unknown values remain explicit until physically verified.
 
-## 2026-07-15 Inventory Update
+## 2026-07-22 Inventory Correction
 
-The project inventory was rebaselined for Phase 2.4. This update adds newly confirmed available sensors and controller/chassis hardware while preserving earlier verified RPLIDAR C1 electrical facts.
+The project inventory was rebaselined for Phase 2.4 on 2026-07-15. The current correction records the user-confirmed physical inventory as one RPLIDAR C1 and three HC-SR04 modules while preserving earlier verified RPLIDAR C1 electrical facts. Earlier references to two physical C1 units are superseded.
 
 ## CONFIRMED INVENTORY
 
 Ranging:
 
-- RPLIDAR C1 x2.
+- RPLIDAR C1 x1.
 - HC-SR04 ultrasonic sensor x3.
 
 Motion and pose:
@@ -42,7 +42,6 @@ Controllers and chassis:
 Neutral planned sensor IDs:
 
 - `c1_1`
-- `c1_2`
 - `ultrasonic_1`
 - `ultrasonic_2`
 - `ultrasonic_3`
@@ -52,6 +51,10 @@ Neutral planned sensor IDs:
 - `bmp280_1`
 - `mpu6050_1`
 - `hall_1`
+
+`c1_2` remains available only as a deterministic software fixture/backward-compatibility ID. It is not part of the confirmed physical inventory and must not be used as physical hardware evidence.
+
+All three HC-SR04 modules are physical inventory. The Phase 3.2E PA5/PA4/CN6 path is an isolated one-module baseline only, neutrally assigned to `ultrasonic_1`. Final simultaneous GPIO and connector paths for `ultrasonic_2` and `ultrasonic_3` remain UNVERIFIED.
 
 ## USER-CONFIRMED PLANNED CONNECTIONS
 
@@ -167,7 +170,7 @@ Verified RPLIDAR C1 wire functions:
 | Black | GND | Common ground with controller and power supply |
 | Unused position | None | Leave unused |
 
-These wire facts are preserved from the verified C1 harness profile. They do not prove that either physical C1 is currently wired, powered, mounted, or operational.
+These wire facts are preserved from the verified C1 harness profile. They do not prove that the physical `c1_1` is currently wired, powered, mounted, or operational.
 
 ## PLANNED RESPONSIBILITIES
 
@@ -192,7 +195,7 @@ ESP32 planned responsibilities:
 - Receive STM32 rover and sensor information.
 - Package and transmit data.
 - Receive limited configuration/control messages.
-- Interface with at least one RPLIDAR C1 in a later phase.
+- Interface with the physical `c1_1` in a later phase.
 
 PC planned responsibilities:
 
@@ -206,11 +209,10 @@ PC planned responsibilities:
 
 ## UNVERIFIED VALUES
 
-- Individual C1 serial IDs: UNVERIFIED.
-- Individual C1 revisions: UNVERIFIED.
-- Both C1 units' operational status: UNVERIFIED.
+- Physical C1 serial ID: UNVERIFIED.
+- Physical C1 revision: UNVERIFIED.
+- The physical `c1_1` unit's operational status: UNVERIFIED.
 - Final C1 placement and orientation: UNVERIFIED.
-- Simultaneous dual-C1 architecture: UNVERIFIED and optional.
 - exact ESP32 module UART GPIOs: CONFIRMED_MODULE_EVIDENCE for GPIO21 TX and GPIO20 RX; physical link UNVERIFIED.
 - exact OpenRF1 UART assignment: UNVERIFIED.
 - exact STM32-ESP32 connector: UNVERIFIED.
@@ -240,13 +242,13 @@ PC planned responsibilities:
 - final power-distribution topology: UNVERIFIED.
 - final sensor mounting offsets: UNVERIFIED.
 - Physical wiring verification date: UNVERIFIED.
-- Successful PC-direct test date for either C1: NOT RUN.
+- Successful PC-direct test date for physical `c1_1`: NOT RUN.
 
 ## FUTURE TESTS
 
 - Test `c1_1` PC-direct through the supplied adapter.
-- Test `c1_2` PC-direct through the supplied adapter.
-- Record device information with only redacted serial identifiers.
+- Keep `c1_2` tests fixture-only; do not present them as physical acceptance.
+- Record device information with only a redacted serial identifier.
 - Measure distance and orientation against known references.
 - Verify supply voltage, polarity, current margin, ripple, and common ground before controller wiring.
 - Verify ESP32 GPIO and UART assignment before live integration.
@@ -258,7 +260,7 @@ PC planned responsibilities:
 - PC-direct capture software can consume a user-provided serial port or a test fixture byte stream.
 - Automated Phase 2.5 tests use fixture bytes only and do not open serial ports.
 - No physical PC-direct capture has been run by repository automation.
-- `c1_1` and `c1_2` operational status remain UNVERIFIED until independent manual tests are documented.
+- Physical `c1_1` operational status remains UNVERIFIED until its manual test is documented. `c1_2` is synthetic compatibility coverage only and has no physical operational status.
 - No COM port, mounting orientation, serial identifier, or hardware revision is inferred by software.
 
 ## Phase 3.1 Software Boundary Status

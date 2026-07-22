@@ -40,7 +40,7 @@ Example:
 Neutral IDs are used until mounting is physically verified:
 
 - `c1_1`
-- `c1_2`
+- `c1_2` (synthetic/backward-compatibility fixtures only; no second physical C1)
 - `ultrasonic_1`
 - `ultrasonic_2`
 - `ultrasonic_3`
@@ -84,7 +84,7 @@ All non-header records include:
 
 Fields:
 
-- `sensor_id`: `c1_1` or `c1_2`.
+- `sensor_id`: physical baseline `c1_1`, or `c1_2` only in synthetic/backward-compatible data.
 - `frame_id`
 - `source`
 - `metadata`
@@ -257,7 +257,7 @@ New record types may be added in a later schema version. Phase 2.4 readers rejec
 
 ## CLI Examples
 
-Create a deterministic two-C1 room session with auxiliary streams:
+Create an explicit deterministic two-ID compatibility fixture with auxiliary streams. This does not represent the physical inventory:
 
 ```powershell
 python -m rplidar_c1_tools.cli record-synthetic --scene room --frames 3 --lidar-count 2 --include-aux --output .verification\phase2.4\synthetic_multisensor_room.jsonl

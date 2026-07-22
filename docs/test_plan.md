@@ -66,10 +66,10 @@ Regression:
 
 Smoke workflow:
 
-- Generate deterministic two-LiDAR room session with auxiliary streams.
+- Generate a deterministic synthetic two-LiDAR room session with auxiliary streams; `c1_2` is fixture-only and does not imply a second physical C1.
 - Inspect the JSONL recording.
 - Replay immediately.
-- Render final frames for `c1_1` and `c1_2`.
+- Render final frames for synthetic fixture IDs `c1_1` and `c1_2`; neither artifact proves physical C1 operation.
 - Verify artifacts under `.verification/phase2.4/`.
 
 Phase 2.4 does not perform bench hardware tests, stationary physical tests, moving-rover tests, or real safety tests.
@@ -93,8 +93,8 @@ Regression:
 
 Smoke workflow:
 
-- Capture `c1_1` from fixture standard scan bytes.
-- Capture `c1_2` from fixture standard scan bytes independently.
+- Capture fixture ID `c1_1` from synthetic standard scan bytes; this is not hardware evidence.
+- Capture synthetic `c1_2` from fixture standard scan bytes as backward-compatibility coverage only.
 - Inspect and replay captured JSONL.
 - Render final replayed frame images.
 - Verify artifacts under `.verification/phase2.5/`.
@@ -254,7 +254,7 @@ Phase 2.4:
 Phase 2.5:
 
 - Automated software tests: PC-direct driver boundary, standard scan-node parser fixtures, mocked timeout/error handling, captured JSONL replay, visualization regression.
-- Bench hardware tests: test both `c1_1` and `c1_2` independently with the supplied adapter.
+- Bench hardware tests: test the single physical C1 as `c1_1` with the supplied adapter; do not treat fixture-only `c1_2` coverage as hardware evidence.
 - Stationary physical tests: distance/orientation checks against known walls and targets.
 - Moving-rover tests: not required.
 - Safety tests: power, polarity, common ground, cable strain, serial-port release.
@@ -336,12 +336,12 @@ Phase 8:
 
 RPLIDAR:
 
-- Distance error for `c1_1`.
-- Distance error for `c1_2`.
-- Orientation correctness.
-- Scan rate.
-- Dropped/corrupt scan rate.
-- Continuous runtime.
+- Distance error for physical `c1_1`.
+- Orientation correctness for physical `c1_1`.
+- Scan rate for physical `c1_1`.
+- Dropped/corrupt scan rate for physical `c1_1`.
+- Continuous runtime for physical `c1_1`.
+- Synthetic parser/replay compatibility for fixture-only `c1_2`; no physical metric claim.
 
 Ultrasonic:
 
@@ -402,7 +402,7 @@ System:
 
 ## Current Plan Consistency Validator
 
-`tools/validate_current_plan.py` checks explicit text anchors in authoritative current-plan files. It verifies selected facts such as two C1 units, BH1750/BMP280 presence, STM32/ESP32/PC roles, WiFi baseline, ROS/Linux non-goal status, dual-C1 optional status, and the revised phase order.
+`tools/validate_current_plan.py` checks explicit text anchors in authoritative current-plan files. It verifies selected facts such as one physical C1, three HC-SR04 modules, BH1750/BMP280 presence, STM32/ESP32/PC roles, WiFi baseline, ROS/Linux non-goal status, the single-C1 Phase 5 baseline, and the revised phase order.
 
 Limit: the validator checks literal text snippets only; it is not semantic AI analysis and does not validate historical documents unless they are treated as current-plan authorities.
 

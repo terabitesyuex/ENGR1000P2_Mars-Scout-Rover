@@ -20,7 +20,6 @@ Build a low-cost Mars Scout Rover using an STM32 mecanum-wheel chassis, an ESP32
 
 - Encoder/IMU-assisted rover pose estimation.
 - Short-range accumulated 2D environment mapping.
-- Use of two RPLIDAR C1 units if hardware feasibility is verified.
 - Environmental-change indication using illuminance, temperature, and atmospheric-pressure measurements.
 
 ## Optional Future Extensions
@@ -32,14 +31,14 @@ These are not baseline requirements: reusable global SLAM mapping, loop closure,
 - Reliable real-world dust-storm detection is not claimed.
 - ROS and a vehicle-mounted Linux computer are not required.
 - Reusable global SLAM mapping is not mandatory.
-- Simultaneous dual-C1 operation is not required until feasibility is proven.
+- Dual-C1 operation is outside the current physical inventory and baseline scope.
 - Final GPIO, UART, I2C address, connector order, voltage-interface, polarity, and mounting-offset values are not invented.
 
 ## Confirmed Inventory
 
 Ranging:
 
-- RPLIDAR C1 x2.
+- RPLIDAR C1 x1.
 - HC-SR04 ultrasonic sensor x3.
 
 Motion and pose:
@@ -80,20 +79,21 @@ Preserved verified RPLIDAR C1 facts:
 - Maximum specified supply ripple: 150 mV.
 - External motor PWM conductor: not present.
 
-These facts do not verify the wiring, mounting, serial identifiers, revisions, or operation of either physical C1 unit.
+These facts do not verify the wiring, mounting, serial identifier, revision, or operation of the physical C1 unit.
 
 ## Planned Architecture
 
 - STM32 planned responsibilities: existing four-mecanum-wheel motor control, wheel encoder acquisition, low-level motor safety, command-timeout stop, MPU6050 acquisition, HC-SR04 acquisition, TCRT5000 edge/drop detection, Hall landmark detection, BH1750 and BMP280 acquisition unless later interface testing requires a different assignment, low-rate sensor preprocessing, basic odometry support, and local stop/turn obstacle-avoidance state machine.
-- ESP32 planned responsibilities: WiFi communication with the computer, receive STM32 rover and sensor information, package and transmit data, receive limited configuration/control messages, and interface with at least one RPLIDAR C1 in a later phase.
+- ESP32 planned responsibilities: WiFi communication with the computer, receive STM32 rover and sensor information, package and transmit data, receive limited configuration/control messages, and interface with the physical `c1_1` in a later phase.
 - PC responsibilities: real-time polar visualization, real-time Cartesian visualization, recording, replay, experiment inspection, later short-range accumulated mapping, and data/figure export.
 
-## Two-C1 Policy
+## C1 Policy
 
-- Sensor IDs remain neutral: `c1_1` and `c1_2`.
-- Both C1 units must be tested independently in Phase 2.5.
-- One stable C1 is required for the baseline integration target.
-- Simultaneous dual-C1 operation is optional pending UART, GPIO, bandwidth, buffering, timing, and power feasibility.
+- The one physical C1 uses the neutral ID `c1_1` until mounting is verified.
+- Phase 2.5 physical acceptance tests only `c1_1`.
+- `c1_1` is the Phase 5 integration target.
+- `c1_2` remains a synthetic/backward-compatibility fixture ID only and does not represent physical hardware.
+- Dual-C1 operation is outside the current inventory and baseline scope.
 - No final front/rear/upper/lower mounting names may be used until installation is physically verified.
 
 ## Environmental-Sensing Policy
@@ -105,15 +105,14 @@ These facts do not verify the wiring, mounting, serial identifiers, revisions, o
 
 ## Unverified Integration Details
 
-- Individual C1 serial IDs.
-- Individual C1 revisions.
-- Operational status of either physical C1.
+- Physical C1 serial ID.
+- Physical C1 revision.
+- Operational status of the physical C1.
 - Final C1 placement and orientation.
-- Simultaneous dual-C1 architecture.
 - ESP32 module UART pins have CONFIRMED_MODULE_EVIDENCE for GPIO21 TX and GPIO20 RX; OpenRF1 USART3 connector-to-MCU mapping remains UNVERIFIED.
 - Exact UART assignment.
 - Exact STM32-ESP32 connector.
-- HC-SR04 Phase 3.2E isolated CN6 pin order, PA5 TRIG, PA4 ECHO, TIM6, and required external 10 kOhm / 15 kOhm ECHO divider are AUTHORITATIVE_VENDOR_DOCUMENTED. Physical installation, voltages, pulses, and distance data remain UNVERIFIED.
+- HC-SR04 Phase 3.2E isolated CN6 pin order, PA5 TRIG, PA4 ECHO, TIM6, and required external 10 kOhm / 15 kOhm ECHO divider are AUTHORITATIVE_VENDOR_DOCUMENTED for one-module bring-up, neutrally assigned to `ultrasonic_1`. Physical installation, voltages, pulses, and distance data remain UNVERIFIED. The final GPIO and connector paths for simultaneous `ultrasonic_2` and `ultrasonic_3` operation are also UNVERIFIED.
 - Ground-sensor Phase 3.2F isolated tracking-connector mappings are AUTHORITATIVE_VENDOR_DOCUMENTED: signal 1 / X1 / PC4, signal 2 / X2 / PC5, signal 3 / X3 / PB0, connector pin 1: GND, pin 2: X4 / schematic PC14, pin 3: X3 / PB0, pin 4: X2 / PC5, pin 5: X1 / PC4, pin 6: VCC_5V. The old example maps X4 to PB1, so signal 4 / X4 remains unused. Physical wiring, connector orientation, rail voltages, output voltages, active polarity, surface behavior, magnetic behavior, and actual serial periodicity remain UNVERIFIED.
 - BH1750 communication at configured address `0x23` is MANUAL_EVIDENCE_VERIFIED for the recorded Phase 3.2A run. BMP280 ACK/address `0x76`, chip ID `0x58`, configuration readback, compensated live temperature/pressure telemetry, and 500 ms periodicity are PHYSICAL_EVIDENCE_VERIFIED for the isolated Phase 3.2C capture. BMP280 shared-I2C concurrency remains UNVERIFIED. Phase 3.2D software prepares MPU6050 address `0x68` with AD0 grounded, but physical ACK, WHO_AM_I, configuration readback, and live IMU telemetry remain UNVERIFIED.
 - Physical TCRT5000 and Hall active polarity.
@@ -124,7 +123,7 @@ These facts do not verify the wiring, mounting, serial identifiers, revisions, o
 ## Phase Order
 
 - Phase 2.4: multi-sensor recording, replay, reproducible datasets, current hardware inventory update, and project-plan rebaseline.
-- Phase 2.5: PC-direct testing of both RPLIDAR C1 units separately, real scan acquisition, distance/orientation checks, device identification, recording, and visualization.
+- Phase 2.5: PC-direct testing of the single physical RPLIDAR C1 as `c1_1`, real scan acquisition, distance/orientation checks, device identification, recording, and visualization. `c1_2` is retained only for synthetic software compatibility.
 - Phase 3.1: STM32 low-rate sensor telemetry software foundation, deterministic simulator, strict PC parser, Phase 2.4 recording bridge, and manual bring-up checklist.
 - Phase 3.2A: OpenRF1 STM32F103RCT6 + GY-302/BH1750 firmware foundation, mocked PC serial-capture workflow, and manual bring-up procedure.
 - Phase 3.2B: OpenRF1 multisensor and communications software foundation for proposed wiring; physical STM32 integration and validation remain manual future work.
@@ -133,7 +132,7 @@ These facts do not verify the wiring, mounting, serial identifiers, revisions, o
 - Phase 3.2E: isolated OpenRF1 HC-SR04-only software bring-up firmware, PA5/PA4/TIM6 vendor-documented design lock, external ECHO divider requirement, Keil target, host-side tests, and verifier support; physical wiring, pulses, real distance data, timeout behavior, and absolute accuracy remain unverified.
 - Phase 3.2F: isolated OpenRF1 ground-sensor-only software bring-up firmware, X1/PC4 left TCRT5000 mapping, X2/PC5 right TCRT5000 mapping, X3/protected PB0 Hall mapping, X4 PC14/PB1 conflict documentation, Keil target, host-side tests, and verifier support; physical wiring, voltage levels, active polarity, surface response, magnetic behavior, and serial periodicity remain unverified.
 - Phase 4: wheel encoders, MPU6050, mecanum kinematics, closed-loop motion, and odometry.
-- Phase 5: STM32-ESP32-computer communication, WiFi transport, one-C1 baseline integration, then optional dual-C1 feasibility evaluation.
+- Phase 5: STM32-ESP32-computer communication, WiFi transport, and single-C1 (`c1_1`) integration.
 - Phase 6: real-time computer visualization, rover trajectory, and short-range encoder/IMU-assisted accumulated 2D mapping.
 - Phase 7: local autonomous obstacle stop/turn behavior.
 - Phase 8: full Mars-like venue integration, environmental experiments, validation, reliability testing, and final presentation evidence.
@@ -144,9 +143,9 @@ Phase 2.4 is software-only. It accepts deterministic synthetic recordings and re
 
 ## Phase 2.5 Acceptance Philosophy
 
-Phase 2.5 adds PC-direct C1 software acquisition boundaries and safe integration into the existing `ScanFrame`, JSONL recording, replay, and visualization pipeline. Automated tests use mocked byte streams and do not open serial ports. Manual hardware acceptance still requires independent tests for `c1_1` and `c1_2`, redacted device identity, health, bounded capture, distance/orientation checks, and saved replay/visualization evidence.
+Phase 2.5 adds PC-direct C1 software acquisition boundaries and safe integration into the existing `ScanFrame`, JSONL recording, replay, and visualization pipeline. Automated tests use mocked byte streams and do not open serial ports. Manual hardware acceptance requires a test of the single physical `c1_1`, redacted device identity, health, bounded capture, distance/orientation checks, and saved replay/visualization evidence. Automated `c1_2` cases are synthetic compatibility tests and are not hardware acceptance.
 
-Phase 2.5 does not implement STM32 integration, ESP32 communication, WiFi, ROS, SLAM, navigation, obstacle avoidance, or simultaneous dual-C1 operation.
+Phase 2.5 does not implement STM32 integration, ESP32 communication, WiFi, ROS, SLAM, navigation, obstacle avoidance, or additional physical C1 hardware.
 
 ## Phase 3.1 Acceptance Philosophy
 

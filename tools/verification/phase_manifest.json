@@ -120,7 +120,8 @@
           ],
           "expected_files": [
             ".verification/phase2.4/synthetic_multisensor_room.jsonl"
-          ]
+          ],
+          "warning": "This command deliberately creates two synthetic LiDAR streams. c1_2 is a synthetic/backward-compatibility fixture only; the physical inventory contains one C1."
         },
         {
           "label": "Phase 2.4 inspect recording",
@@ -166,7 +167,7 @@
             ".verification/phase2.4/c1_2_last_polar.png",
             ".verification/phase2.4/c1_2_last_point_cloud.png"
           ],
-          "warning": "Manual replay visualization inspection is still required."
+          "warning": "Manual replay visualization inspection is still required. c1_2 in this artifact is synthetic/backward-compatibility coverage only, not a second physical C1."
         }
       ]
     },
@@ -262,7 +263,7 @@
           "warning": "Manual C1 hardware capture and visual orientation inspection are still required."
         },
         {
-          "label": "Phase 2.5 capture c1_2 fixture",
+          "label": "Phase 2.5 capture c1_2 synthetic backward-compatibility fixture",
           "args": [
             "-m",
             "rplidar_c1_tools.cli",
@@ -283,10 +284,11 @@
           ],
           "expected_files": [
             ".verification/phase2.5/c1_2_pc_direct_capture.jsonl"
-          ]
+          ],
+          "warning": "c1_2 is a synthetic/backward-compatibility fixture only. Do not interpret this command as evidence of a second physical C1."
         },
         {
-          "label": "Phase 2.5 render c1_2 fixture",
+          "label": "Phase 2.5 render c1_2 synthetic backward-compatibility fixture",
           "args": [
             "-m",
             "rplidar_c1_tools.cli",
@@ -301,7 +303,7 @@
             ".verification/phase2.5/c1_2_last_polar.png",
             ".verification/phase2.5/c1_2_last_point_cloud.png"
           ],
-          "warning": "Simultaneous dual-C1 operation remains UNVERIFIED."
+          "warning": "c1_2 is a synthetic/backward-compatibility fixture only. Current physical inventory is one C1; no second-device or dual-C1 hardware claim is made."
         }
       ]
     },

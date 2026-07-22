@@ -6,7 +6,7 @@ Current Phase 1 scope: repository audit, hardware-fact locking, interface invent
 
 ## Supersession Note
 
-On 2026-07-15, Phase 2.4 rebaselined the current inventory and project plan. This Phase 1 audit remains historical context. Current authoritative inventory is maintained in `HARDWARE_LOCK.md`, `PROJECT_SPEC.md`, and `README.md`, including RPLIDAR C1 x2, HC-SR04 x3, TCRT5000 x2, BH1750 x1, BMP280 x1, MPU6050 x1, Hall sensor module x1, STM32 x1, ESP32 x1, battery/power system, four encoded motors, and four mecanum wheels. The two C1 units are available but have not yet passed independent Phase 2.5 PC-direct tests.
+On 2026-07-15, Phase 2.4 rebaselined the current inventory and project plan. This Phase 1 audit remains historical context. On 2026-07-22, the current physical inventory was corrected to one RPLIDAR C1 and three HC-SR04 modules. Current authoritative inventory is maintained in `HARDWARE_LOCK.md`, `PROJECT_SPEC.md`, and `README.md`, including RPLIDAR C1 x1, HC-SR04 x3, TCRT5000 x2, BH1750 x1, BMP280 x1, MPU6050 x1, Hall sensor module x1, STM32 x1, ESP32 x1, battery/power system, four encoded motors, and four mecanum wheels. The earlier two-C1 wording is historical and must not be used as current physical evidence; `c1_2` is retained only for software fixture compatibility.
 
 ## Source-Of-Truth Review
 

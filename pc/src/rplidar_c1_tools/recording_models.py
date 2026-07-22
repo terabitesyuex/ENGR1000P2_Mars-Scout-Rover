@@ -9,6 +9,8 @@ from typing import Any
 
 SCHEMA_NAME = "mars_scout_multisensor_recording"
 SCHEMA_VERSION = 1
+# The schema keeps c1_2 for old recordings and deterministic compatibility tests.
+# The confirmed physical inventory contains only c1_1.
 LIDAR_SENSOR_IDS = ("c1_1", "c1_2")
 
 
@@ -148,10 +150,10 @@ class LidarTransportStatsSample:
 
 def default_sensor_inventory(
     *,
-    lidar_count: int = 2,
+    lidar_count: int = 1,
     include_auxiliary: bool = True,
 ) -> tuple[SensorDefinition, ...]:
-    """Return the neutral planned inventory used by synthetic recordings."""
+    """Return the single-C1 baseline or an explicit two-ID software fixture."""
     if lidar_count not in (1, 2):
         raise ValueError("lidar_count must be 1 or 2")
 
@@ -159,7 +161,11 @@ def default_sensor_inventory(
         SensorDefinition(
             sensor_id=sensor_id,
             sensor_type="rplidar_c1",
-            description="Planned SLAMTEC RPLIDAR C1 unit; operation unverified",
+            description=(
+                "Confirmed-inventory SLAMTEC RPLIDAR C1 unit; operation unverified"
+                if sensor_id == "c1_1"
+                else "Synthetic/backward-compatibility C1 ID; no second physical unit"
+            ),
             units=("angle_deg", "distance_mm", "quality"),
         )
         for sensor_id in LIDAR_SENSOR_IDS[:lidar_count]

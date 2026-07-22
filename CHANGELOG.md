@@ -2,6 +2,34 @@
 
 All notable subsystem changes are recorded here. Track protocol, GPIO, power, data-format, firmware, and calibration changes explicitly.
 
+## 2026-07-22 - Repository Assembly Preparation
+
+- Removed the obsolete nested `rplidar_c1_subsystem/` repository snapshot so the repository root is the only source of truth.
+- Removed README-only future application placeholders; planned modules now receive directories only with implementation and tests.
+- Retained the real OpenRF1 sensor bring-ups, rover-control foundation, PC tooling, verification tests, evidence, and hardware-safety documentation needed for staged rover assembly.
+- Added structure checks that prevent the nested snapshot and empty future-module placeholders from returning.
+
+## 2026-07-22 - Phase 4 Motion-Control Software Foundation
+
+- Added a unified OpenRF1 application architecture under firmware/openrf1/app/ without moving or coupling the existing isolated sensor bring-up targets.
+- Added centralized motor, encoder, geometry, RPLIDAR UART, and ESP32 UART readiness contracts; every unresolved mapping remains UNKNOWN and disabled.
+- Recorded user-provided JGB37-520 and encoder parameters separately from physical verification: 6-12 V, 11 PPR motor side, nominal 30:1 gearbox, 330 PPR output side, and proposed x4 1320 counts/output revolution.
+- Added an injected four-channel Motor HAL with signed permille commands, explicit direction/stop operations, all-channel stop, and backend-error handling.
+- Added an injected four-channel Encoder HAL with signed cumulative counts, software zeroing, wrap-safe millisecond intervals, and speed in counts per second.
+- Added fixed-point mecanum inverse kinematics using explicit mm/s, mrad/s, runtime geometry, rover-frame conventions, and ratio-preserving wheel-speed limiting.
+- Added TODO_HARDWARE.md for all unresolved pin, connector, timer, geometry, polarity, power, and communication information.
+- Added the isolated ARM Compiler 6 target OpenRF1_RoverControl_Foundation.uvprojx and focused software/compile tests.
+- Kept real PWM, motor direction, encoder acquisition, wheel geometry, motion, PID, odometry, sensor-manager integration, UART communication, and physical operation UNVERIFIED or PLANNED as applicable.
+
+## 2026-07-22 - Physical Inventory And Guidance Rebaseline
+
+- Corrected the current physical inventory to RPLIDAR C1 x1 and HC-SR04 x3.
+- Retained `c1_2` only as a synthetic/backward-compatibility software fixture; it is not a second physical device and creates no second-C1 or dual-C1 hardware acceptance requirement.
+- Updated current-plan and hardware-lock validation anchors so future guidance must preserve the single-C1 inventory, all three HC-SR04 units, and the `c1_2` fixture-only boundary.
+- Clarified Phase 2.4 and Phase 2.5 verifier warnings wherever synthetic `c1_2` artifacts are generated.
+- Refreshed superseded nested-copy headers to direct readers to the repository root and prevent historical text from being treated as current hardware guidance.
+- Preserved all older changelog entries as historical records; their former inventory statements do not override this correction.
+
 ## 2026-07-18 - Phase 3.2F Ground-Sensor Bring-Up Foundation
 
 - Added isolated OpenRF1 ground-sensor firmware under `firmware/openrf1/ground_sensors_bringup/`.

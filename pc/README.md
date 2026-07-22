@@ -10,6 +10,8 @@ Phase 3.2A capture tools use file-backed mock input in automated tests. Manual l
 
 Phase 3.2B tools use deterministic fixtures and pure codecs only. They do not open USART2, USART3, real COM ports, USB devices, WiFi sockets, GPIO, I2C, flashing tools, or sensors.
 
+The confirmed physical inventory contains one RPLIDAR C1, identified as `c1_1`. New synthetic recordings default to one LiDAR. `c1_2` and `--lidar-count 2` remain available only for deterministic schema/replay backward-compatibility coverage; they do not represent a second physical unit.
+
 ## Install For Development
 
 ```powershell
@@ -36,7 +38,7 @@ One-LiDAR synthetic session:
 python -m rplidar_c1_tools.cli record-synthetic --scene room --frames 2 --lidar-count 1 --output .verification\phase2.4\one_c1_room.jsonl
 ```
 
-Two-LiDAR synthetic session with auxiliary streams:
+Explicit two-ID software compatibility fixture with auxiliary streams:
 
 ```powershell
 python -m rplidar_c1_tools.cli record-synthetic --scene room --frames 3 --lidar-count 2 --include-aux --output .verification\phase2.4\synthetic_multisensor_room.jsonl
@@ -70,10 +72,13 @@ python -m rplidar_c1_tools.cli replay-recording .verification\phase2.4\synthetic
 python -m rplidar_c1_tools.cli render-recording .verification\phase2.4\synthetic_multisensor_room.jsonl --output-dir .verification\phase2.4
 ```
 
-Expected output names include:
+The default one-C1 output names are:
 
 - `c1_1_last_polar.png`
 - `c1_1_last_point_cloud.png`
+
+An explicit `--lidar-count 2` compatibility fixture additionally creates:
+
 - `c1_2_last_polar.png`
 - `c1_2_last_point_cloud.png`
 

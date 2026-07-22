@@ -2,11 +2,13 @@
 
 The rover architecture separates hardware access, transport, data models, algorithms, visualization, recording, and replay. Phase 3.2F adds an isolated OpenRF1 ground-sensor-only software bring-up target while preserving the Phase 3.2A BH1750-only path, Phase 3.2C BMP280-only path, Phase 3.2D MPU6050-only path, Phase 3.2E HC-SR04-only path, Phase 3.2B full-hardware foundation, and the Phase 2.4 recording/replay pipeline.
 
+The repository root is the only source tree. Application directories are created with working code and tests, not as README-only placeholders.
+
 ## Sensor Layer
 
 Ranging:
 
-- RPLIDAR C1 x2, neutral IDs `c1_1` and `c1_2`.
+- RPLIDAR C1 x1, physical ID `c1_1`. The legacy `c1_2` ID is synthetic/backward-compatibility coverage only.
 - HC-SR04 x3, neutral IDs `ultrasonic_1`, `ultrasonic_2`, `ultrasonic_3`.
 
 Motion and pose:
@@ -65,7 +67,7 @@ ESP32 planned responsibilities:
 - Receive STM32 rover and sensor information.
 - Package and transmit data.
 - Receive limited configuration/control messages.
-- Interface with at least one RPLIDAR C1 in a later phase.
+- Interface with the physical `c1_1` in a later phase.
 
 PC responsibilities:
 
@@ -100,19 +102,19 @@ OpenRF1 Phase 3.2F ground-sensor bring-up software tests
 
 The Phase 2.4 JSONL recording format is a PC-side reproducibility format. Phase 2.5 writes PC-direct C1 captures into that same format. Phase 3.1 writes validated STM32 low-rate sensor telemetry into that same format. Phase 3.2A writes mocked or manually captured BH1750 serial telemetry into that same format. Phase 3.2B writes deterministic raw-IMU and transport-status fixture records into that same format. JSONL recordings are not the future on-wire ESP32 protocol.
 
-## Two-C1 Policy
+## C1 Policy
 
-- Two C1 units are available.
-- Phase 2.5 must test both independently.
-- One stable C1 is the baseline integration target.
-- Simultaneous dual-C1 operation is optional and remains UNVERIFIED until UART, GPIO, bandwidth, buffering, timing, and power feasibility are measured.
+- One physical C1 is available and is tested as `c1_1`.
+- Phase 2.5 hardware acceptance and later integration use `c1_1` only.
+- `c1_2` may be used in synthetic recordings and compatibility tests, but does not represent a second physical unit.
+- Dual-C1 hardware operation is outside the current inventory and baseline scope.
 - Final exact LiDAR-derived avoidance ownership is not yet locked.
 
 ## Current Phase Scope
 
 Phase 3.1 implements `mars_scout_stm32_sensor_telemetry` v1, deterministic STM32 sensor telemetry simulation, strict PC parsing, and a bridge into the existing recording format. Automated tests use fixture files and in-memory streams only.
 
-Phase 3.1 does not implement real STM32 sensor acquisition, serial ports, GPIO, I2C, timers, ESP32 communication, WiFi sockets, firmware behavior, mapping, SLAM, odometry, navigation, obstacle avoidance, or simultaneous dual-C1 operation.
+Phase 3.1 does not implement real STM32 sensor acquisition, serial ports, GPIO, I2C, timers, ESP32 communication, WiFi sockets, firmware behavior, mapping, SLAM, odometry, navigation, obstacle avoidance, or physical C1 operation.
 
 Phase 3.2A implements application-layer firmware source for one GY-302/BH1750 sensor on OpenRF1 software I2C PB1/PC3, plus a mockable PC serial-capture layer for versioned `illuminance` telemetry from `bh1750_1`. Automated tests use pure logic and file-backed mock readers only.
 
@@ -127,5 +129,7 @@ Phase 3.2C implements an isolated BMP280-only OpenRF1 bring-up firmware target u
 Phase 3.2D implements an isolated MPU6050-only OpenRF1 software bring-up target under `firmware/openrf1/mpu6050_bringup/` and `OpenRF1_MPU6050_Bringup.uvprojx`. It reuses the software-I2C and MPU6050 driver boundary, emits USART1 JSONL for future manual capture, and keeps BH1750, BMP280, and FullHardware targets separate. Physical MPU6050 ACK, WHO_AM_I, configuration readback, live IMU telemetry, calibration, axis orientation, shared-I2C concurrency, and full-hardware operation remain UNVERIFIED.
 
 Phase 3.2F implements an isolated ground-sensor-only OpenRF1 software bring-up target under `firmware/openrf1/ground_sensors_bringup/` and `OpenRF1_GroundSensors_Bringup.uvprojx`. It samples PC4, PC5, and PB0 as floating inputs every 5 ms, applies independent 4-sample debounce, and emits 50 ms JSONL raw/debounced numeric levels only. Signal 1 / X1 / PC4, signal 2 / X2 / PC5, signal 3 / X3 / PB0, and the tracking connector pin order are AUTHORITATIVE_VENDOR_DOCUMENTED. The schematic says PC14 for X4 while the old example maps X4 to PB1, so signal 4 remains unused. Physical wiring, voltage levels, active polarity, surface behavior, magnetic behavior, serial periodicity, and full-hardware operation remain UNVERIFIED.
+
+The initial Phase 4 software foundation is isolated under firmware/openrf1/app/. It adds a centralized unknown-hardware contract, an injected four-channel Motor HAL, an injected four-channel Encoder HAL, and fixed-point mecanum inverse kinematics. The compile-only OpenRF1_RoverControl_Foundation.uvprojx target uses inert backends and does not select or access GPIO, PWM, timers, UART, motors, encoders, or sensors. Motor/encoder connector mappings, GPIO, timer resources, wheel signs, wheel geometry, real closed-loop control, odometry, and motion remain UNVERIFIED. PID, odometry, communication integration, and the unified sensor manager remain PLANNED.
 
 Emergency stopping remains a local STM32 safety responsibility in the plan. PC mapping occurs later and is short-range accumulated mapping, not a required reusable global SLAM map. ROS is not required.

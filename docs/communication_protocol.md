@@ -29,9 +29,9 @@ ESP32 to PC future WiFi link:
 
 ## C1 Integration Policy
 
-- Phase 2.5 tests `c1_1` and `c1_2` independently by PC-direct methods.
-- Phase 5 first targets one stable C1 + STM32 + ESP32 WiFi.
-- Simultaneous dual-C1 operation is optional and remains UNVERIFIED until UART, GPIO, bandwidth, buffering, timing, and power feasibility are measured.
+- Phase 2.5 tests the single physical C1 as `c1_1` by PC-direct methods; `c1_2` is synthetic compatibility coverage only.
+- Phase 5 targets the physical `c1_1` + STM32 + ESP32 WiFi.
+- Additional-C1 and dual-C1 hardware are outside the current inventory and baseline scope.
 - No final ESP32 GPIO or UART assignment is locked in Phase 3.1.
 - No final STM32 GPIO, timer, UART, or I2C peripheral assignment is locked in Phase 3.1.
 
@@ -127,7 +127,7 @@ This bring-up stream is for isolated bench evidence and host-side tests. It does
 - Bound buffering and memory use.
 - Support timeout stop behavior.
 - Support reconnection reporting.
-- Measure bandwidth before dual-C1 operation is considered.
+- Measure bandwidth for the single-C1 path before integration claims are made.
 
 ## Safety Expectations
 
@@ -146,7 +146,7 @@ The following remain UNVERIFIED:
 - Exact checksum polynomial.
 - Exact bandwidth budget.
 - Exact reconnection timing.
-- Simultaneous dual-C1 transport feasibility.
+- Any future additional-C1 transport feasibility.
 - OpenRF1 USART2 connector-to-MCU pins.
 - OpenRF1 USART3 connector-to-MCU pins.
 - Physical STM32-to-ESP32 baud rate.

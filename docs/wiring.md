@@ -12,11 +12,11 @@ Electrical safety is the first project priority. Do not connect live hardware un
 | Black | GND | Controller and supply ground |
 | Fifth position | Unused | Leave unused |
 
-These wire functions preserve the verified C1 harness profile. They do not prove that either physical C1 is currently connected.
+These wire functions preserve the verified C1 harness profile. They do not prove that the physical `c1_1` is currently connected.
 
 ## Block-Level Inventory
 
-- RPLIDAR C1 x2.
+- RPLIDAR C1 x1.
 - HC-SR04 x3.
 - TCRT5000 x2.
 - BH1750 x1.
@@ -37,13 +37,13 @@ These wire functions preserve the verified C1 harness profile. They do not prove
 - Black GND must share common ground with the controller and supply.
 - Do not connect LiDAR TX to TX or LiDAR RX to RX.
 - Do not drive LiDAR RX from a USB adapter and ESP32 at the same time.
-- Dual-C1 ESP32 wiring is UNVERIFIED.
+- Additional-C1 or dual-C1 ESP32 wiring is outside the current inventory and baseline scope.
 - ESP32-C3 GPIO21/GPIO20 are CONFIRMED_MODULE_EVIDENCE for the proposed module-side UART pins; OpenRF1 USART3 connector-to-MCU mapping remains UNVERIFIED.
 - Exact UART assignment is UNVERIFIED.
 
 ## Power Rules
 
-- Use a regulated 5 V supply capable of startup current margin for each connected C1.
+- Use a regulated 5 V supply capable of startup current margin for the physical `c1_1`.
 - Preserve the verified C1 supply range of 4.8 V to 5.2 V.
 - Keep specified supply ripple below 150 mV.
 - Keep motor power wiring away from UART and low-level sensor wiring.
@@ -175,7 +175,7 @@ Disconnect all power before changing wiring. Check printed module labels rather 
 
 ### HC-SR04 Multi-Sensor Future Allocation
 
-Earlier Phase 3.2B logical allocation for all three HC-SR04 modules remains UNVERIFIED beyond the Phase 3.2E CN6 isolated baseline. Do not assign final front/left/right mounting or trigger multiple modules until physical integration evidence exists.
+Three HC-SR04 modules are physical inventory. The Phase 3.2E CN6 wiring above is an isolated baseline for one module, currently `ultrasonic_1`. The final GPIO and connector paths for `ultrasonic_2` and `ultrasonic_3` remain UNVERIFIED. Do not assign final front/left/right mounting or trigger multiple modules until physical integration evidence exists.
 
 For any future non-CN6 HC-SR04 path, Echo level protection is conditional on module supply and measured Echo VOH, plus the exact STM32 input path. Direct connection is not approved without recorded voltage-safety evidence.
 
@@ -222,6 +222,6 @@ Physical connector orientation, cable orientation, TCRT output topology, TCRT ac
 - Verify common ground.
 - Verify connector orientation.
 - Verify current margin under motor load.
-- Verify each C1 independently before any dual-C1 wiring.
+- Verify the single physical `c1_1` before controller integration; no dual-C1 wiring is in scope.
 - Verify STM32-ESP32 physical link before relying on transferred sensor data.
 - Label each neutral sensor ID after installation evidence exists.

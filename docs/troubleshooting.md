@@ -22,7 +22,7 @@ Missing header:
 Duplicate sensor ID:
 
 - Sensor IDs in `sensor_inventory` must be unique.
-- Use neutral IDs such as `c1_1` and `c1_2`.
+- Use `c1_1` for the physical C1. `c1_2` is permitted only in synthetic fixture/backward-compatibility recordings.
 
 Unknown sensor ID:
 
@@ -48,10 +48,10 @@ Replay timing:
 - `replay-recording` is immediate by default.
 - Timed replay is available for tests and experiments, but tests should inject fake sleep functions.
 
-Two-C1 filtering:
+Synthetic multi-C1 filtering:
 
 - Use `--sensor-id c1_1` or `--sensor-id c1_2` for single-sensor replay.
-- Simultaneous dual-C1 hardware operation remains UNVERIFIED.
+- `c1_2` here is fixture/replay compatibility only; it is not a second physical device.
 
 Visualization from replay:
 
@@ -86,10 +86,11 @@ Recording integration:
 - Captures are saved as `lidar_scan` records in the Phase 2.4 JSONL format.
 - Use `inspect-recording`, `replay-recording`, and `render-recording` after capture.
 
-Dual-C1:
+Physical C1 scope:
 
-- Test `c1_1` and `c1_2` independently.
-- Do not run simultaneous dual-C1 operation in Phase 2.5.
+- Test the one physical device as `c1_1`.
+- Do not use `c1_2` fixture results as physical Phase 2.5 evidence.
+- Additional-C1 hardware and simultaneous dual-C1 operation are outside the current inventory and baseline scope.
 
 ## Phase 3.1 STM32 Telemetry
 

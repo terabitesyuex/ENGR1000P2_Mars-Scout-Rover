@@ -24,9 +24,25 @@ from rplidar_c1_tools import (
 from rplidar_c1_tools.replay import inspect_recording, iter_lidar_scans, iter_recording_entries
 
 
-def test_writer_creates_versioned_header_with_two_neutral_c1_ids(tmp_path):
+def test_writer_defaults_to_the_single_physical_c1_inventory(tmp_path):
+    path = tmp_path / "single_c1_session.jsonl"
+    with MultiSensorRecorder(path, created_unix_us=123):
+        pass
+
+    header = read_recording_header(path)
+    lidar_sensors = [
+        sensor for sensor in header["sensor_inventory"] if sensor["sensor_type"] == "rplidar_c1"
+    ]
+    assert [sensor["sensor_id"] for sensor in lidar_sensors] == ["c1_1"]
+
+
+def test_writer_supports_explicit_c1_2_software_compatibility_inventory(tmp_path):
     path = tmp_path / "session.jsonl"
-    with MultiSensorRecorder(path, created_unix_us=123) as recorder:
+    with MultiSensorRecorder(
+        path,
+        sensor_inventory=default_sensor_inventory(lidar_count=2),
+        created_unix_us=123,
+    ) as recorder:
         recorder.write_lidar_scan("c1_1", generate_circle_scan(point_count=4))
         recorder.write_lidar_scan("c1_2", generate_circle_scan(point_count=4))
 
@@ -158,7 +174,10 @@ def test_writer_rejects_non_json_nan_payload(tmp_path):
 
 def test_inspection_counts_lidar_and_auxiliary_records(tmp_path):
     path = tmp_path / "session.jsonl"
-    with MultiSensorRecorder(path) as recorder:
+    with MultiSensorRecorder(
+        path,
+        sensor_inventory=default_sensor_inventory(lidar_count=2),
+    ) as recorder:
         recorder.write_lidar_scan("c1_1", generate_circle_scan(point_count=4))
         recorder.write_lidar_scan("c1_2", generate_circle_scan(point_count=4))
         recorder.write_illuminance_sample(IlluminanceSample(timestamp_us=0, illuminance_lux=10.0))

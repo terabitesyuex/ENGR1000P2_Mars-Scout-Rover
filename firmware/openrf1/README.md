@@ -67,7 +67,9 @@ Phase 3.2E adds a separate HC-SR04-only bring-up target:
 - HC-SR04 bring-up project: `firmware/openrf1/keil/OpenRF1_HCSR04_Bringup.uvprojx`.
 - HC-SR04 bring-up output: `firmware/openrf1/keil/Objects_HCSR04_Bringup/OpenRF1_HCSR04_Bringup.hex`.
 
-The HC-SR04 target is for one module on OpenRF1 CN6 only. Vendor-documented design locks CN6 pin 1: VCC_5V, pin 2: GND, pin 3: PA5_TRIG, pin 4: PA4_ECHO; TRIG: PA5; ECHO: PA4; timer: TIM6. Do not connect ECHO directly to CN6 pin 4; the external 10 kOhm / 15 kOhm divider is required before PA4 receives the signal. Physical wiring, pulses, real distance data, timeout behavior, and accuracy remain UNVERIFIED.
+The physical inventory contains three HC-SR04 modules, but this target is for one module on OpenRF1 CN6 only. Vendor-documented design locks CN6 pin 1: VCC_5V, pin 2: GND, pin 3: PA5_TRIG, pin 4: PA4_ECHO; TRIG: PA5; ECHO: PA4; timer: TIM6. CN6 uses a JST PH 2.0 mm `B4B-PH-K-S(LF)(SN)` header and requires a matching `PHR-4` cable; 2.54 mm Dupont leads must not be forced into it. Do not connect ECHO directly to CN6 pin 4; the external 10 kOhm / 15 kOhm divider is required before PA4 receives the signal.
+
+The three modules may be validated sequentially, one at a time, on the single CN6 path. GPIO, connector, and timer resources for two additional simultaneous paths are UNVERIFIED and are not implemented by this target. Each future simultaneous ECHO path requires its own divider; divider midpoints must not be shared. Physical wiring, pulses, real distance data, timeout behavior, accuracy, staggered triggering, cross-talk, and simultaneous three-module operation remain UNVERIFIED. See the [hardware materials BOM](../../docs/hardware_materials_bom.md) and [HC-SR04 bring-up guide](../../docs/openrf1_hcsr04_bringup.md) before procurement or wiring.
 
 Phase 3.2F adds a separate ground-sensor-only bring-up target:
 
