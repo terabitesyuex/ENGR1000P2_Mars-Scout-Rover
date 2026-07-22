@@ -91,7 +91,7 @@ These facts do not verify the wiring, mounting, serial identifier, revision, or 
 ## Single-C1 Policy
 
 - The current physical LiDAR inventory is exactly one RPLIDAR C1M1-R2 with ID `c1_1`.
-- Phase 2.5 acceptance covers `c1_1` only and remains UNVERIFIED until physical evidence is recorded.
+- Phase 2.5 acceptance covers `c1_1` only. PC-direct acquisition and visualization are MANUAL_EVIDENCE_VERIFIED; electrical, calibration, mounting, and integrated-rover acceptance remain UNVERIFIED.
 - There is no current requirement to compare two devices or evaluate dual-C1 feasibility.
 - Historical version-1 recordings and explicitly synthetic compatibility fixtures may contain `c1_2`; this does not indicate current hardware.
 - A future second C1 requires an explicit inventory change and new electrical, power, UART, bandwidth, buffering, timing, mounting, synchronization, and safety validation.
@@ -108,7 +108,7 @@ These facts do not verify the wiring, mounting, serial identifier, revision, or 
 
 - C1 serial ID.
 - C1 revision.
-- Operational status of the physical C1.
+- Complete operational acceptance of the physical C1 beyond the recorded PC-direct acquisition evidence.
 - Final C1 placement and orientation.
 - ESP32 module UART pins have CONFIRMED_MODULE_EVIDENCE for GPIO21 TX and GPIO20 RX; OpenRF1 USART3 connector-to-MCU mapping remains UNVERIFIED.
 - Exact UART assignment.
@@ -124,7 +124,7 @@ These facts do not verify the wiring, mounting, serial identifier, revision, or 
 ## Phase Order
 
 - Phase 2.4: multi-sensor recording, replay, reproducible datasets, current hardware inventory update, and project-plan rebaseline.
-- Phase 2.5: PC-direct acceptance planning for one physical `c1_1`, real scan acquisition, distance/orientation checks, device identification, recording, and visualization.
+- Phase 2.5: PC-direct acquisition, recording, replay, visualization, and evidence validation for one physical `c1_1`; electrical and calibration closeout remain future manual work.
 - Phase 3.1: STM32 low-rate sensor telemetry software foundation, deterministic simulator, strict PC parser, Phase 2.4 recording bridge, and manual bring-up checklist.
 - Phase 3.2A: OpenRF1 STM32F103RCT6 + GY-302/BH1750 firmware foundation, mocked PC serial-capture workflow, and manual bring-up procedure.
 - Phase 3.2B: OpenRF1 multisensor and communications software foundation for proposed wiring; physical STM32 integration and validation remain manual future work.
@@ -147,9 +147,9 @@ Phase 2.4 is software-only. It accepts deterministic synthetic recordings and re
 
 ## Phase 2.5 Acceptance Philosophy
 
-Phase 2.5 adds PC-direct C1 software acquisition boundaries and safe integration into the existing `ScanFrame`, JSONL recording, replay, and visualization pipeline. Automated tests use mocked byte streams and do not open serial ports. Manual hardware acceptance for the one physical `c1_1` still requires a redacted device identity, health, bounded capture, distance/orientation checks, and saved replay/visualization evidence.
+Phase 2.5 adds PC-direct C1 software acquisition boundaries and safe integration into the existing `ScanFrame`, JSONL recording, replay, and visualization pipeline. Automated tests use mocked byte streams and do not open serial ports. Committed manual evidence verifies physical `c1_1` acquisition, bounded JSONL recording, replay/render output, target/direction smoke response, and external RViz `/scan` visualization. Vendor health, electrical measurements, wall-clock timing, corrupt/dropped-node accounting, absolute accuracy, and final mounting remain UNVERIFIED.
 
-Phase 2.5 does not implement STM32 integration, ESP32 communication, WiFi, ROS, SLAM, navigation, obstacle avoidance, or simultaneous dual-C1 operation.
+Phase 2.5 does not implement STM32 integration, ESP32 communication, WiFi, ROS, SLAM, navigation, obstacle avoidance, or simultaneous dual-C1 operation. ROS2/RViz appears only as user-provided external diagnostic evidence and is not a baseline dependency.
 
 ## Phase 3.1 Acceptance Philosophy
 

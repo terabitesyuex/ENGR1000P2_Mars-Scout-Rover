@@ -87,6 +87,7 @@ Targeted:
 - `pc/tests/test_c1_pc_direct.py`
 - `pc/tests/test_recording.py`
 - `pc/tests/test_replay.py`
+- `pc/tests/test_phase25_physical_evidence.py`
 
 Regression:
 
@@ -105,7 +106,7 @@ Smoke workflow:
 - Render final replayed frame images.
 - Verify artifacts under `.verification/phase2.5/`.
 
-Phase 2.5 automated tests do not open serial ports. Manual PC-direct hardware tests remain required before physical C1 operation can be marked verified.
+Phase 2.5 automated tests do not open serial ports. They also hash-lock and structurally validate the committed physical `c1_1` evidence offline. PC-direct acquisition is MANUAL_EVIDENCE_VERIFIED; electrical safety, vendor health, wall-clock timing, absolute accuracy, final mounting, and rover integration still require manual work.
 
 ## Phase 3.1 Automated Software Tests
 

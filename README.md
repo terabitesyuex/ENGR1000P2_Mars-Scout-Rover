@@ -25,7 +25,7 @@ The repository root is the single source of truth. Historical nested repository 
 - Automated phase verification foundation: complete.
 - Phase 2.3: synthetic LiDAR visualization complete.
 - Phase 2.4: multi-sensor JSONL recording, replay, reproducible synthetic datasets, hardware-inventory update, and plan rebaseline complete.
-- Phase 2.5: PC-direct C1 driver boundary, standard scan-node parsing, bounded capture into JSONL, replay, and visualization integration complete.
+- Phase 2.5: PC-direct C1 driver boundary, standard scan-node parsing, bounded capture into JSONL, replay, visualization, and committed physical-evidence validation complete. The one `c1_1` has MANUAL_EVIDENCE_VERIFIED physical acquisition and external RViz `/scan` visualization; electrical safety, vendor health, wall-clock timing, absolute accuracy, and rover integration remain UNVERIFIED.
 - Phase 3.1: STM32 low-rate sensor telemetry protocol, deterministic simulator, strict parser, recording bridge, CLI workflows, and manual bring-up checklist complete.
 - Phase 3.2A: OpenRF1 STM32F103RCT6 + GY-302/BH1750 firmware foundation, mocked PC serial-capture workflow, documentation, phase verification, and recorded BH1750-only physical evidence complete. Absolute lux calibration remains UNVERIFIED.
 - Phase 3.2B: OpenRF1 multisensor and communications software foundation, isolated full-hardware Keil project, PC contracts, simulators, parser/recording support, and software verification support added. Physical wiring and live sensor/link behavior remain UNVERIFIED.
@@ -37,7 +37,7 @@ The repository root is the single source of truth. Historical nested repository 
 - Phase 4B: validated body-motion commands, proportional wheel desaturation, acceleration limiting, four independent PID controllers, command watchdog, local safety arbitration, deterministic synthetic wheel plants, version-1 telemetry/recording additions, CLI, tests, documentation, and verifier support complete as a software-only foundation. Real motor/encoder behavior, PWM mapping, physical PID tuning, stopping distance, and closed-loop performance remain UNVERIFIED.
 - OpenRF1 rover-control firmware boundary: centralized UNKNOWN hardware mappings, injected four-channel Motor and Encoder HALs, fixed-point mecanum inverse kinematics, and an isolated ARM Compiler 6 compile target are present. The target uses inert backends and must not be flashed as operational rover firmware; real PWM, encoder acquisition, motion, and hardware integration remain UNVERIFIED.
 
-Phases 4A and 4B do not implement real motor/PWM control, encoder GPIO/timers/interrupts, ESP32 WiFi firmware, mapping, SLAM, navigation, obstacle avoidance, physical C1 validation, MPU6050 fusion, physical closed-loop motion, or full multisensor hardware integration. Automated tests do not access real COM ports, USB devices, GPIO, timer peripherals, I2C, encoders, motors, flashing tools, WiFi, or sensors.
+Phases 4A and 4B do not implement real motor/PWM control, encoder GPIO/timers/interrupts, ESP32 WiFi firmware, mapping, SLAM, navigation, obstacle avoidance, C1 electrical/calibration/integrated-rover validation, MPU6050 fusion, physical closed-loop motion, or full multisensor hardware integration. Automated tests do not access real COM ports, USB devices, GPIO, timer peripherals, I2C, encoders, motors, flashing tools, WiFi, or sensors.
 
 ## Phase 4A Mecanum Kinematics and Odometry
 
@@ -98,9 +98,9 @@ Controllers and chassis:
 
 Use neutral sensor IDs until installation is physically verified: `c1_1`, `ultrasonic_1`, `ultrasonic_2`, `ultrasonic_3`, `tcrt5000_1`, `tcrt5000_2`, `bh1750_1`, `bmp280_1`, `mpu6050_1`, and `hall_1`. Historical version-1 recordings and explicitly synthetic compatibility fixtures may contain `c1_2`.
 
-Exactly one physical RPLIDAR C1M1-R2 is available. `c1_1` is the only current physical LiDAR sensor and the only active LiDAR integration target. Physical acceptance remains UNVERIFIED. There is no current requirement to compare two physical units, no current dual-C1 integration phase, and no current dual-C1 feasibility evaluation. A future second C1 requires an explicit inventory change and new electrical, power, UART, bandwidth, buffering, timing, mounting, synchronization, and safety validation.
+Exactly one physical RPLIDAR C1M1-R2 is available. `c1_1` is the only current physical LiDAR sensor and the only active LiDAR integration target. PC-direct acquisition and visualization are MANUAL_EVIDENCE_VERIFIED; full physical acceptance remains partial. There is no current requirement to compare two physical units, no current dual-C1 integration phase, and no current dual-C1 feasibility evaluation. A future second C1 requires an explicit inventory change and new electrical, power, UART, bandwidth, buffering, timing, mounting, synchronization, and safety validation.
 
-The software pipeline can now accept a bounded PC-direct C1 byte stream and save it as JSONL. Real physical C1 operation still requires manual Phase 2.5 hardware evidence before it can be marked VERIFIED.
+Committed Phase 2.5 evidence preserves 102 physical scan records containing 36,720 points plus a hash-locked RViz screenshot. Offline validation confirms schema, identity, sequence, point shape, hashes, and privacy without opening a serial port. The capture timestamps are tool-generated, and the raw bundle retains quality-zero and above-12 m outliers, so scan timing, clean-packet rate, absolute accuracy, electrical safety, and integrated operation remain UNVERIFIED.
 
 ## Phase 3.1 STM32 Sensor Telemetry
 
@@ -295,6 +295,8 @@ python -m rplidar_c1_tools.cli capture-c1 --sensor-id c1_1 --sample-hex 3d0100a0
 
 Captured files use the existing `mars_scout_multisensor_recording` JSONL schema. The driver converts native C1 clockwise angles into the project rover-frame `ScanPoint.angle_deg` convention before recording.
 
+The committed physical evidence and its exact limitations are documented in `evidence/phase2.5/c1_1_physical_evidence.md`. ROS2/RViz is retained only as external diagnostic evidence; ROS2 is not a baseline runtime dependency.
+
 ## Phase Verification
 
 Supported phases include `phase1`, `phase2.1`, `phase2.2`, `phase2.3`, `phase2.4`, `phase2.5`, `phase3.1`, `phase3.2a`, `phase3.2b`, `phase3.2c`, `phase3.2d`, `phase3.2e`, `phase3.2f`, `phase4a`, and `phase4b`.
@@ -334,7 +336,7 @@ The verifier checks Git state, Python selection, pytest import, targeted tests, 
 ## Revised Roadmap
 
 - Phase 2.4: multi-sensor recording, replay, reproducible datasets, current hardware inventory update, and project-plan rebaseline.
-- Phase 2.5: PC-direct acceptance planning for one physical `c1_1`, real scan acquisition, distance/orientation checks, device identification, recording, and visualization; physical acceptance remains UNVERIFIED.
+- Phase 2.5: PC-direct acquisition, recording, replay, visualization, and committed evidence validation for one physical `c1_1`; acquisition is MANUAL_EVIDENCE_VERIFIED while electrical, timing, absolute-accuracy, final-mounting, and integrated-rover acceptance remain unverified.
 - Phase 3.1: STM32 low-rate sensor telemetry software foundation, deterministic simulator, PC parser, recording bridge, and manual bring-up checklist.
 - Phase 3.2A: OpenRF1 STM32F103RCT6 + GY-302/BH1750 firmware foundation, mocked serial-capture workflow, and manual bring-up procedure.
 - Phase 3.2B: OpenRF1 multisensor and communications software foundation; physical integration remains future manual validation.

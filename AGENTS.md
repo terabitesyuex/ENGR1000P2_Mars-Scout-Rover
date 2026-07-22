@@ -21,7 +21,7 @@ This repository is the ENGR1000P2 Mars Scout Rover software and documentation ba
 ## Current Scope
 
 - Completed phases: Phase 0, Phase 1, Phase 2.1, Phase 2.2, automated verification foundation, Phase 2.3, Phase 2.4, Phase 2.5, Phase 3.1, Phase 3.2A, the Phase 3.2B software foundation, Phase 3.2C isolated BMP280 bring-up evidence, the Phase 3.2D isolated MPU6050 software foundation, the Phase 3.2E isolated HC-SR04 software foundation, the Phase 3.2F isolated ground-sensor software foundation, Phase 4A, and the Phase 4B software-only closed-loop wheel-speed control and motion-safety foundation.
-- Current state: Phase 2.5 software foundation is complete; physical C1 validation remains a manual UNVERIFIED activity.
+- Current state: Phase 2.5 software and committed physical-evidence validation are complete. The one physical `c1_1` has MANUAL_EVIDENCE_VERIFIED PC-direct capture, repository replay/rendering, bounded 50 x 360 acquisition, target/direction smoke response, and external ROS2/RViz `/scan` visualization. Electrical measurements, vendor health, wall-clock timing, absolute accuracy, final mounting, STM32/ESP32 transport, and full-rover operation remain UNVERIFIED.
 - Phase 3.1 software work is complete: versioned STM32 low-rate sensor telemetry, deterministic PC simulator, strict parser, and recording bridge are implemented.
 - Phase 3.2A software work is complete: OpenRF1 STM32F103RCT6 + GY-302/BH1750 firmware foundation, mocked PC serial capture, documentation, and verifier support are implemented. Recorded manual evidence verifies the BH1750-only flash, CH340/USART1 telemetry, configured `0x23` BH1750 communication, 500 ms telemetry period, and physical light response; absolute lux calibration remains UNVERIFIED.
 - Phase 3.2B software work is complete: isolated OpenRF1 full-hardware firmware foundation, PC contracts, deterministic fixtures, documentation, and verifier support are implemented. Phase 3.2B physical sensor integration has not started.
@@ -80,7 +80,7 @@ Do not treat BH1750 communication failures as zero-lux readings; valid darkness 
 ## Phase Order
 
 - Phase 2.4: multi-sensor recording, replay, reproducible datasets, inventory update, and plan rebaseline.
-- Phase 2.5: PC-direct acceptance planning for the one physical `c1_1`, real scan acquisition, device identification, recording, and visualization; physical acceptance remains UNVERIFIED.
+- Phase 2.5: PC-direct acquisition for the one physical `c1_1`, recording, replay, visualization, and committed evidence validation. Physical scan acquisition is MANUAL_EVIDENCE_VERIFIED; electrical, calibration, final-mounting, and integrated-rover acceptance remain UNVERIFIED.
 - Phase 3.1: STM32 low-rate sensor telemetry software foundation, simulator, parser, recording bridge, and manual bring-up checklist.
 - Phase 3.2A: OpenRF1 STM32F103RCT6 + GY-302/BH1750 firmware foundation and mocked PC serial-capture workflow.
 - Phase 3.2B: OpenRF1 multisensor and communications software foundation for proposed wiring; physical validation remains manual and UNVERIFIED.

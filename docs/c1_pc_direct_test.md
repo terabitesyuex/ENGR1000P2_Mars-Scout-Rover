@@ -1,6 +1,6 @@
 # C1 PC-Direct Test Plan
 
-Phase 2.5 adds the PC-side software boundary for direct RPLIDAR C1 acquisition. Automated tests use mocked byte streams. They do not open serial ports and do not prove the physical unit works.
+Phase 2.5 adds the PC-side software boundary for direct RPLIDAR C1 acquisition. Automated tests use mocked byte streams and do not open serial ports. Separately committed manual evidence now verifies bounded physical acquisition for `c1_1`; automation validates those files offline only.
 
 ## Scope
 
@@ -44,7 +44,7 @@ UNVERIFIED:
 
 - C1 serial ID.
 - C1 hardware revision.
-- Operational status of the physical C1.
+- Electrical and vendor-health acceptance of the physical C1.
 - Final mounting position or orientation.
 - Any future second-C1 operation.
 - Any COM port name.
@@ -116,3 +116,9 @@ Manual Phase 2.5 hardware evidence should include:
 - Any dropped/corrupt sample observations.
 
 Record hardware evidence in documentation only after the measurements are actually performed.
+
+## Recorded 2026-07-22 Evidence
+
+`evidence/phase2.5/c1_1_physical_evidence.md` records the received physical dataset, exact SHA-256 locks, offline validation, and remaining limitations. The evidence verifies repository PC-direct acquisition, bounded recording, replay/rendering, target/direction smoke response, and external RViz `/scan` visualization as MANUAL_EVIDENCE_VERIFIED.
+
+The capture tool generated 100 ms timestamp steps, so they are not measured scan timing. The raw data retains quality-zero and above-12 m points. Electrical safety, vendor health, corrupt/dropped-node rate, wall-clock stability, absolute range accuracy, final mounting, and rover integration remain UNVERIFIED.

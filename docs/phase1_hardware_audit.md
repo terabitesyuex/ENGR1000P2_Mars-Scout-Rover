@@ -46,7 +46,7 @@ The audit did not use internet browsing and did not read files outside the Git r
 - Device firmware version.
 - Device hardware revision.
 - Redacted device serial identifier.
-- Successful PC-direct test date.
+- Successful PC-direct evidence date: MANUAL_EVIDENCE_VERIFIED on 2026-07-22.
 - Exact connector orientation on the physical harness.
 - Voltage and polarity measurement evidence for the assembled wiring.
 

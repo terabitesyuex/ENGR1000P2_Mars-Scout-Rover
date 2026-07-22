@@ -2,7 +2,7 @@
 
 PC-side package for synthetic scans, coordinate transforms, visualization, Phase 2.4 multi-sensor recording, deterministic replay, Phase 2.5 PC-direct C1 capture, Phase 3.1 STM32 telemetry simulation/parsing/recording bridge, Phase 3.2A OpenRF1 BH1750 mocked serial capture, Phase 3.2B multisensor/link fixtures, and later mapping work.
 
-Phase 2.5 automated tests use mocked C1 byte streams only. Manual PC-direct capture can use an explicit user-verified port, but this package does not invent ports, access STM32/ESP32 firmware, use WiFi sockets, implement mapping, implement SLAM, or implement obstacle avoidance.
+Phase 2.5 live-driver tests use mocked C1 byte streams only. The package also validates committed physical `c1_1` JSONL and RViz evidence offline by hash and structure. It does not invent ports, access STM32/ESP32 firmware, use WiFi sockets, implement mapping, implement SLAM, or implement obstacle avoidance.
 
 Phase 3.1 STM32 telemetry tools use deterministic files and in-memory streams only. They do not open serial ports, GPIO, I2C, USB devices, timers, or network sockets.
 

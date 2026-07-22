@@ -108,7 +108,7 @@ Phase 4A adds pure host-side kinematics and odometry records to the same version
 ## Single-C1 Policy
 
 - Exactly one physical C1 is available and `c1_1` is the only active LiDAR integration target.
-- Phase 2.5 acceptance covers this one device only and remains UNVERIFIED until physical evidence is recorded.
+- Phase 2.5 covers this one device only. PC-direct acquisition and visualization are MANUAL_EVIDENCE_VERIFIED; electrical, calibration, mounting, and integrated-rover acceptance remain UNVERIFIED.
 - There is no current dual-C1 integration or feasibility-evaluation phase.
 - A future second C1 requires an explicit inventory change and new electrical, power, UART, bandwidth, buffering, timing, mounting, synchronization, and safety validation.
 - Final exact LiDAR-derived avoidance ownership is not yet locked.

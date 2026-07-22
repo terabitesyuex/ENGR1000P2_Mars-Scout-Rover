@@ -4,7 +4,7 @@ Official SLAMTEC RPLIDAR protocol documentation is the source of truth for all C
 
 ## Current Phase 2.5 Rule
 
-Phase 2.5 implements a bounded PC-direct software parser for standard 5-byte scan nodes and a driver boundary that converts native C1 angles before `ScanPoint` creation. Automated tests use fixture bytes only and do not prove either physical C1 unit operates.
+Phase 2.5 implements a bounded PC-direct software parser for standard 5-byte scan nodes and a driver boundary that converts native C1 angles before `ScanPoint` creation. Automated driver tests use fixture bytes only. Separately committed evidence marks physical PC-direct acquisition for the one `c1_1` MANUAL_EVIDENCE_VERIFIED, while electrical, vendor-health, clean-packet-rate, timing, and accuracy acceptance remain UNVERIFIED.
 
 The parser is intentionally separated from serial hardware access and recording. Future protocol extensions such as high-speed or capsule scan modes must be added as separate parser paths with tests.
 
@@ -29,7 +29,7 @@ Phase 2.5 begins with the minimum reliable PC-direct subset:
 
 - stop;
 - start scan;
-- standard scan-node parsing path, pending physical validation.
+- standard scan-node parsing path, physically exercised with raw quality-zero and above-profile-range points retained for follow-up filtering analysis.
 
 Device information, health information, reset behavior, and additional scan modes remain future manual hardware validation items until documented.
 

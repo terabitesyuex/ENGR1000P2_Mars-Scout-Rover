@@ -1,1 +1,9 @@
 evidence/phase3.2c/bmp280_physical_adef636_20260718_002346.jsonl -text -diff
+evidence/phase2.5/c1_1_live_1x360.jsonl -text -diff
+evidence/phase2.5/c1_1_pc_direct_1x360.jsonl -text -diff
+evidence/phase2.5/c1_1_stability_50x360.jsonl -text -diff
+evidence/phase2.5/c1_1_target_500mm.jsonl -text -diff
+evidence/phase2.5/c1_1_target_1000mm.jsonl -text -diff
+evidence/phase2.5/c1_1_target_2000mm.jsonl -text -diff
+evidence/phase2.5/c1_1_target_left.jsonl -text -diff
+evidence/phase2.5/c1_1_target_right.jsonl -text -diff

@@ -173,11 +173,27 @@
     },
     "phase2.5": {
       "display_name": "Phase 2.5",
+      "required_files": [
+        "evidence/phase2.5/c1_1_physical_evidence.md",
+        "evidence/phase2.5/c1_1_live_1x360.jsonl",
+        "evidence/phase2.5/c1_1_pc_direct_1x360.jsonl",
+        "evidence/phase2.5/c1_1_stability_50x360.jsonl",
+        "evidence/phase2.5/c1_1_target_500mm.jsonl",
+        "evidence/phase2.5/c1_1_target_1000mm.jsonl",
+        "evidence/phase2.5/c1_1_target_2000mm.jsonl",
+        "evidence/phase2.5/c1_1_target_left.jsonl",
+        "evidence/phase2.5/c1_1_target_right.jsonl",
+        "evidence/phase2.5/c1_1_ros2_rviz_laserscan.png",
+        "pc/src/rplidar_c1_tools/phase25_evidence.py",
+        "pc/tests/test_phase25_physical_evidence.py",
+        "tools/audit_phase25.py"
+      ],
       "targeted": [
         "pc/tests/test_c1_pc_direct.py",
         "pc/tests/test_recording.py",
         "pc/tests/test_replay.py",
-        "pc/tests/test_single_c1_inventory.py"
+        "pc/tests/test_single_c1_inventory.py",
+        "pc/tests/test_phase25_physical_evidence.py"
       ],
       "regression": [
         "pc/tests/test_visualization.py",
@@ -261,7 +277,19 @@
             ".verification/phase2.5/c1_1_last_polar.png",
             ".verification/phase2.5/c1_1_last_point_cloud.png"
           ],
-          "warning": "Manual C1 hardware capture and visual orientation inspection are still required."
+          "warning": "This smoke render uses fixture bytes. Separate committed physical c1_1 acquisition and RViz evidence is MANUAL_EVIDENCE_VERIFIED; electrical, timing, accuracy, mounting, and integration remain UNVERIFIED."
+        },
+        {
+          "label": "Phase 2.5 physical c1_1 evidence audit",
+          "args": [
+            "tools/audit_phase25.py",
+            "--audit-output",
+            ".verification/phase2.5/physical_evidence_audit.txt"
+          ],
+          "expected_files": [
+            ".verification/phase2.5/physical_evidence_audit.txt"
+          ],
+          "warning": "PC-direct acquisition and RViz visualization are MANUAL_EVIDENCE_VERIFIED. Electrical measurements, vendor health, wall-clock timing, absolute accuracy, final mounting, and rover integration remain UNVERIFIED."
         }
       ]
     },

@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-07-22 - Phase 2.5 Physical C1 Evidence
+
+- Added eight hash-locked physical `c1_1` JSONL captures containing 102 scan records and 36,720 decoded points.
+- Added the supplied ROS2/RViz `/scan` screenshot as external diagnostic evidence without adding ROS2 as a project dependency.
+- Added offline evidence validation for hashes, privacy, schema, identity, sequences, point shape, generated timestamps, and PNG integrity, plus Phase 2.5 verifier integration.
+- Marked PC-direct acquisition, bounded recording, replay/rendering, target/direction smoke response, and RViz visualization MANUAL_EVIDENCE_VERIFIED.
+- Kept electrical measurements, vendor health, wall-clock timing, corrupt/dropped-node rate, absolute range accuracy, final mounting, STM32/ESP32 transport, and full-rover operation UNVERIFIED; retained quality-zero and above-12 m points as unfiltered raw evidence.
+
 ## 2026-07-22 - Repository Assembly Preparation
 
 - Removed the obsolete nested `rplidar_c1_subsystem/` snapshot so the repository root is the only source of truth.
