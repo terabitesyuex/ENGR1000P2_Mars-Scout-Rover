@@ -1,6 +1,26 @@
 # OpenRF1 HC-SR04 Bring-Up
 
-Phase 3.2E implements the isolated HC-SR04 software bring-up path for one sensor on the OpenRF1 STM32F103RCT6 controller. No physical verification has yet occurred.
+Phase 3.2E implements the isolated HC-SR04 software bring-up path for one sensor on the OpenRF1 STM32F103RCT6 controller. The physical inventory contains three HC-SR04 modules, but the current authoritative hardware path supports only one module at a time on CN6. No physical HC-SR04 response, pulse, distance, or timeout verification has yet occurred.
+
+## Current Inventory And Scope
+
+CONFIRMED:
+
+- HC-SR04 physical inventory: 3 modules.
+- Authoritative isolated interface: one OpenRF1 CN6 path.
+- CN6 board header: JST PH series `B4B-PH-K-S(LF)(SN)`, 2.0 mm, 4 positions.
+- Correct mating housing: `PHR-4`, preferably purchased as a correctly pre-crimped pigtail.
+- Existing 2.54 mm Dupont leads cannot be inserted into CN6 and must not be forced.
+
+The three modules may be screened sequentially on the single CN6 path. Label the physical module and evidence capture for each run. Sequential screening does not verify three-sensor simultaneous operation and does not assign the final `ultrasonic_1`, `ultrasonic_2`, and `ultrasonic_3` mounting positions.
+
+UNVERIFIED:
+
+- GPIO, connector, and timer resources for the second and third simultaneous HC-SR04 paths.
+- Final module identities and rover-frame mounting positions.
+- Staggered triggering, cross-talk, total power, and simultaneous three-module operation.
+
+Do not repurpose a motor/encoder connector or ground-sensor connector by appearance. The remaining two paths require a separate schematic/resource review, firmware implementation, tests, and physical validation.
 
 ## Source Status
 
@@ -22,6 +42,8 @@ AUTHORITATIVE_VENDOR_DOCUMENTED:
 
 These facts are design-locked from vendor material. They are not physical evidence for this rover.
 
+The complete procurement and bench-preparation list is maintained in [`hardware_materials_bom.md`](hardware_materials_bom.md).
+
 ## Electrical Safety Contract
 
 Do not connect HC-SR04 ECHO directly to CN6 pin 4.
@@ -35,7 +57,16 @@ Do not connect HC-SR04 ECHO directly to CN6 pin 4.
 - The external 10 kOhm / 15 kOhm divider is required before ECHO reaches PA4.
 - Nominal divider behavior: 5.0 V ECHO becomes approximately 3.0 V; 5.5 V ECHO becomes approximately 3.3 V.
 
-Disconnect all power before changing wiring. Check printed module labels rather than assuming left-to-right order. Only HC-SR04 should be connected for isolated validation. ECHO voltage compatibility must be confirmed before connection, and raw 5 V must not be applied to an unverified STM32 input. Measurements are nominal and uncalibrated.
+Disconnect all power before changing wiring. Check printed module labels rather than assuming left-to-right order. Only one HC-SR04 should be connected for isolated validation. ECHO voltage compatibility must be confirmed before connection, and raw 5 V must not be applied to an unverified STM32 input. Measurements are nominal and uncalibrated.
+
+Four independent divider pairs are required for the final planned hardware: one per HC-SR04 ECHO and one for the Hall output. Divider midpoints must not be shared. For the isolated CN6 test, install and measure the divider used by the single connected HC-SR04 before connecting PA4.
+
+MANUAL_EVIDENCE_VERIFIED for preliminary loose-component screening only:
+
+- One nominal 10 kOhm resistor measured 9.56 kOhm, within a 5% band.
+- One nominal 15 kOhm resistor measured 14.05 kOhm, below the 14.25 kOhm lower limit for a 15 kOhm 5% part. Do not use it for formal divider evidence.
+
+Use 1%, 1/4 W parts for the next build and record the installed values and divider voltages. These loose-component readings do not verify installed wiring.
 
 Soft materials and angled surfaces may produce weak or missing echoes. Very close objects may fall inside the module practical blind region.
 
@@ -82,6 +113,9 @@ Soft materials and angled surfaces may produce weak or missing echoes. Very clos
 - Temperature compensation.
 - Long-duration stability.
 - Full-hardware operation.
+- Independent operation of all three physical modules.
+- GPIO/connector/timer mappings for simultaneous modules 2 and 3.
+- Three-module trigger staggering and cross-talk behavior.
 
 ## JSONL Identity Record
 
@@ -121,7 +155,8 @@ Supported error codes:
 - [ ] Verify TRIG and ECHO pin mapping.
 - [ ] Verify ECHO voltage-divider or level-shifter wiring.
 - [ ] Confirm common ground.
-- [ ] Connect only HC-SR04.
+- [ ] Fit a keyed `PHR-4` cable; do not force 2.54 mm Dupont leads into CN6.
+- [ ] Connect only one labeled HC-SR04.
 - [ ] Flash with FlyMcu.
 - [ ] Reset and capture the startup identity record.
 - [ ] Confirm 100 ms scheduled attempts.
@@ -139,5 +174,7 @@ Supported error codes:
 - [ ] Record capture hash.
 - [ ] Record the actual reference distances separately.
 - [ ] Do not claim calibrated absolute accuracy unless compared with a reference instrument under a defined method.
+- [ ] Repeat the isolated procedure for each of the three physical modules, one at a time, using separately labeled captures.
+- [ ] Keep simultaneous three-module integration UNVERIFIED until two additional paths are explicitly designed and validated.
 
-Future formal evidence should demonstrate successful distance records and at least one observable bounded error path if safely reproducible.
+Future formal evidence should demonstrate successful distance records and at least one observable bounded error path if safely reproducible. Sequential evidence for all three modules proves only that each specimen works on the single CN6 baseline; it does not prove simultaneous operation.

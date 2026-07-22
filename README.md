@@ -6,6 +6,16 @@ Mandatory baseline functions are nearby-obstacle detection, local stop/turn coll
 
 Major enhancements are encoder/IMU-assisted pose estimation, short-range accumulated 2D environment mapping, and environmental-change indication using illuminance, temperature, and atmospheric-pressure measurements. The current inventory has exactly one physical RPLIDAR C1M1-R2; dual-C1 work is not current scope. ROS and a vehicle-mounted Linux computer are not required.
 
+## Repository Layout
+
+- `firmware/openrf1/`: OpenRF1 firmware, isolated bring-up applications, centralized rover configuration, and the embedded motor/encoder/mecanum boundary.
+- `firmware/include/` and `firmware/src/`: portable firmware interfaces and transport/processing foundations retained for later integration.
+- `pc/`: installable PC tools, parsers, recording/replay, visualization, simulations, and automated tests.
+- `pc_direct/`: operator-driven direct C1 diagnostics and the official SDK probe.
+- `docs/`, `evidence/`, and `tools/`: current hardware guidance, recorded evidence, and deterministic verification.
+
+The repository root is the single source of truth. Historical nested repository copies and README-only future-module placeholders are intentionally excluded.
+
 ## Current Phase
 
 - Phase 0: complete.
@@ -25,6 +35,7 @@ Major enhancements are encoder/IMU-assisted pose estimation, short-range accumul
 - Phase 3.2F: isolated OpenRF1 ground-sensor firmware foundation and TCRT5000 evidence closeout complete. A's evidence verifies the isolated build/flash, PC4/PC5 signal connections, labelled 3.3 V/common-GND connections, both modules' raw/debounced response, four 100-frame gap-free captures, and exact 50 ms steady-state timestamps. Electrical measurements, polarity semantics, black/white/drop classification, Hall behavior, long-duration operation, and full-rover operation remain UNVERIFIED.
 - Phase 4A: standard X-layout mecanum kinematics, explicit wheel-side encoder conversion, body-twist estimation, exact SE(2) odometry integration, deterministic simulation, version-1 telemetry/recording compatibility, tests, documentation, and verifier support complete as a software-only foundation. All rover geometry, encoder resolution/signs, roller orientation, hardware acquisition, and physical odometry accuracy remain UNVERIFIED.
 - Phase 4B: validated body-motion commands, proportional wheel desaturation, acceleration limiting, four independent PID controllers, command watchdog, local safety arbitration, deterministic synthetic wheel plants, version-1 telemetry/recording additions, CLI, tests, documentation, and verifier support complete as a software-only foundation. Real motor/encoder behavior, PWM mapping, physical PID tuning, stopping distance, and closed-loop performance remain UNVERIFIED.
+- OpenRF1 rover-control firmware boundary: centralized UNKNOWN hardware mappings, injected four-channel Motor and Encoder HALs, fixed-point mecanum inverse kinematics, and an isolated ARM Compiler 6 compile target are present. The target uses inert backends and must not be flashed as operational rover firmware; real PWM, encoder acquisition, motion, and hardware integration remain UNVERIFIED.
 
 Phases 4A and 4B do not implement real motor/PWM control, encoder GPIO/timers/interrupts, ESP32 WiFi firmware, mapping, SLAM, navigation, obstacle avoidance, physical C1 validation, MPU6050 fusion, physical closed-loop motion, or full multisensor hardware integration. Automated tests do not access real COM ports, USB devices, GPIO, timer peripherals, I2C, encoders, motors, flashing tools, WiFi, or sensors.
 

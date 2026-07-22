@@ -2,6 +2,8 @@
 
 The rover architecture separates hardware access, transport, data models, algorithms, visualization, recording, and replay. Phase 3.2F adds an isolated OpenRF1 ground-sensor-only software bring-up target while preserving the Phase 3.2A BH1750-only path, Phase 3.2C BMP280-only path, Phase 3.2D MPU6050-only path, Phase 3.2E HC-SR04-only path, Phase 3.2B full-hardware foundation, and the Phase 2.4 recording/replay pipeline.
 
+The repository root is the only source tree. Application directories are created with working code and tests, not as README-only placeholders.
+
 ## Sensor Layer
 
 Ranging:
@@ -134,5 +136,7 @@ Phase 3.2F implements an isolated ground-sensor-only OpenRF1 target under `firmw
 Phase 4A implements the standard X-layout mecanum equations, explicit raw-to-mathematical encoder signs, wheel-side count conversion, body-twist estimation, and exact constant-twist SE(2) integration on the host. It is a SOFTWARE_VERIFIED software-only foundation. Actual wheel geometry, resolution, gear ratio, counter width, signs, roller orientation, encoder acquisition, motor control, MPU6050 fusion, wheel slip, and physical accuracy remain UNVERIFIED.
 
 Phase 4B layers pure control stages above Phase 4A: validated body commands, inverse kinematics, proportional wheel desaturation, per-wheel acceleration limits, explicit safety arbitration, four independent PID states, and dimensionless normalized efforts. A separate deterministic first-order synthetic plant feeds Phase 4A forward kinematics and optional pose integration. Hardware adapters remain outside these modules. Phase 4B does not import or access serial, USB, GPIO, I2C, timers, encoders, motors, or sensors.
+
+The OpenRF1 embedded rover-control boundary under `firmware/openrf1/app/` complements those host models with centralized UNKNOWN hardware contracts, injected four-channel Motor and Encoder HALs, and fixed-point inverse kinematics. Its isolated Keil target links inert callbacks only; no GPIO, PWM, timer, UART, motor, encoder, or sensor hardware is selected or accessed.
 
 Emergency stopping remains a local STM32 safety responsibility in the plan. PC mapping occurs later and is short-range accumulated mapping, not a required reusable global SLAM map. ROS is not required.

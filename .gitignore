@@ -38,6 +38,7 @@ firmware/openrf1/keil/Objects_BMP280_Bringup/
 firmware/openrf1/keil/Objects_MPU6050_Bringup/
 firmware/openrf1/keil/Objects_HCSR04_Bringup/
 firmware/openrf1/keil/Objects_GroundSensors_Bringup/
+firmware/openrf1/keil/Objects_RoverControl_Foundation/
 firmware/openrf1/keil/Listings/
 firmware/openrf1/keil/DebugConfig/
 firmware/openrf1/keil/*.uvguix.*

@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-07-22 - Repository Assembly Preparation
+
+- Removed the obsolete nested `rplidar_c1_subsystem/` snapshot so the repository root is the only source of truth.
+- Removed README-only future application placeholders; planned modules now receive directories only with implementation and tests.
+- Retained all real OpenRF1 bring-ups, Phase 4A/4B host models, PC tooling, evidence, and hardware-safety documentation needed for staged assembly.
+- Added structure checks that prevent the nested snapshot and empty future-module placeholders from returning.
+
+## 2026-07-22 - OpenRF1 Rover-Control Firmware Boundary
+
+- Added centralized UNKNOWN motor, encoder, geometry, RPLIDAR UART, and ESP32 UART readiness contracts.
+- Added injected four-channel Motor and Encoder HALs plus fixed-point mecanum inverse kinematics with explicit units and ratio-preserving limiting.
+- Added `TODO_HARDWARE.md`, assembly materials guidance, an isolated ARM Compiler 6 compile target, and focused software/compile tests.
+- Kept real PWM, motor direction, encoder acquisition, wheel geometry, PID integration, odometry integration, UART communication, and physical operation UNVERIFIED or PLANNED.
+
 ## 2026-07-21 - Phase 3.2F Isolated TCRT5000 Evidence
 
 - Recorded four sanitized 100-frame TCRT5000 JSONL captures with locked hashes, contiguous sequences, and exact 50 ms steady-state timestamps.
