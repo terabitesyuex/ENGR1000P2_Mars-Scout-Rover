@@ -9,9 +9,14 @@ MPU6050、RPLIDAR C1M1-R2、ESP32-C3 SuperMini。
 本文件用于现场装车。参数依据和状态说明以
 [`openrf1_rover_wiring_plan.md`](openrf1_rover_wiring_plan.md) 为准。
 
+用户现已报告全车按本方案完成装配，但尚未提交新的照片、通断、轨电压、
+保护配置或运行证据，因此不能把“装好”升级为“电气验收通过”。近期软件
+交接和下一步边界见
+[`near_term_vehicle_bringup_handoff.md`](near_term_vehicle_bringup_handoff.md)。
+
 ## 先看结论
 
-- 现在可以安装元件、制作线束、焊接分压器、贴标签和做断电通断检查。
+- 全车装配已由用户报告完成；下一步是断电复核、测量和分级验证。
 - 现在不能直接给整车通电。
 - 电池圆孔插头极性、BMS 连续/峰值电流、主保险丝、主回路线径、板端
   电源插头规格和全部 5 V 输入分压后的电压尚未实测。

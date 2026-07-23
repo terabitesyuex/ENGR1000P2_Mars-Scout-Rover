@@ -14,6 +14,11 @@ installed components are wide-voltage parts. Battery polarity, BMS current
 limits, four-motor stall current, main fuse value, physical connector
 orientation, and installed divider voltages remain manual pre-power checks.
 
+The user subsequently reported that the complete vehicle was assembled to this
+plan. That report does not verify any manual pre-power check or authorize
+flashing, serial access, motor power, or motion. Continue from
+[`near_term_vehicle_bringup_handoff.md`](near_term_vehicle_bringup_handoff.md).
+
 ## Status Legend
 
 - `AUTHORITATIVE_VENDOR_DOCUMENTED`: directly shown by the OpenRF1 schematic.

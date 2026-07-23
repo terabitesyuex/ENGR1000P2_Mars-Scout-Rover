@@ -79,3 +79,16 @@ def test_validation_rejects_lost_chinese_assembly_stop_rule() -> None:
     errors = validator.validate_text_contents(contents, firmware_sources)
 
     assert any("Chinese assembly battery stop rule" in error for error in errors)
+
+
+def test_validation_rejects_lost_vehicle_assembly_evidence_boundary() -> None:
+    validator, contents, firmware_sources = loaded_repository_texts()
+    handoff_path = "docs/near_term_vehicle_bringup_handoff.md"
+    contents[handoff_path] = contents[handoff_path].replace(
+        "Physical installation is therefore still `UNVERIFIED`.",
+        "Physical installation is accepted.",
+    )
+
+    errors = validator.validate_text_contents(contents, firmware_sources)
+
+    assert any("vehicle assembly evidence boundary" in error for error in errors)

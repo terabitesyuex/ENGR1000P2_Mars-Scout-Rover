@@ -33,6 +33,11 @@ Environment:
 Controllers and chassis:
 
 - STM32 controller board x1.
+- The user reports that the complete vehicle has been assembled according to
+  `docs/openrf1_rover_wiring_plan.md`. This is not accompanied by new physical
+  evidence; connector orientation, continuity, voltage rails, protection,
+  mounting poses, motor/encoder signs, and integrated operation remain
+  UNVERIFIED.
 - ESP32 board x1: user-confirmed ESP32-C3 SuperMini. GPIO21 TX and GPIO20 RX are
   user-confirmed as stable UART pins for the STM32 link. The exact installed LDO
   part and thermally sustainable output current remain UNVERIFIED.

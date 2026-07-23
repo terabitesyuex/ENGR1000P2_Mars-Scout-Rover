@@ -9,6 +9,12 @@ three-HC-SR04 allocation, power distribution, level protection, and the staged
 pre-power procedure. Historical phase sections below preserve the evidence
 boundary that existed when each isolated bring-up was prepared.
 
+The user subsequently reported that the complete rover was assembled from that
+plan. No new photographs, continuity checks, voltage measurements, or
+integrated operation evidence were recorded, so installed wiring remains
+`UNVERIFIED`. The next software agent must begin with
+[`near_term_vehicle_bringup_handoff.md`](near_term_vehicle_bringup_handoff.md).
+
 装车现场按中文施工清单
 [`openrf1_rover_wiring_plan_zh.md`](openrf1_rover_wiring_plan_zh.md) 逐项接线和
 验线；工程状态与依据仍以英文总计划为准。

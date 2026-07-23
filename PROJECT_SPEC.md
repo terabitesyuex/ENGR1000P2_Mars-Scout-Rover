@@ -60,6 +60,9 @@ Environment:
 Controllers and chassis:
 
 - STM32 controller board x1.
+- The user reports complete vehicle assembly according to the repository wiring
+  plan. Physical installation, electrical acceptance, and full-rover operation
+  remain UNVERIFIED until evidence is recorded.
 - ESP32 board x1.
 - Li-ion battery pack x1: seller-documented 11.1 V, 7800 mAh, 5C, 12.6 V fully
   charged, 70 x 55 x 23 mm, DC 5.5 x 2.5 mm male connector.

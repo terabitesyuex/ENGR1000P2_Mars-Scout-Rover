@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-07-23 - Near-Term Vehicle Bring-Up Handoff
+
+- Recorded the user's report that the complete rover has been assembled to the
+  wiring plan without promoting installation or operation to verified status.
+- Added a detailed Phase 4C software/hardware handoff, exact current capability
+  boundary, mappings, unresolved measurements, parameter plan, delivery order,
+  acceptance criteria, and verification commands.
+- Added a ready-to-copy next-agent prompt that authorizes software-only Phase 4C
+  preparation while prohibiting unapproved serial, flashing, power, and motion.
+- Updated current guidance and validators so a new agent cannot treat the inert
+  rover-control foundation as drive-ready or merge generated HC-SR04 build
+  artifacts into `main`.
+
 ## 2026-07-23 - OpenRF1 Assembly Wiring Plan
 
 - Added a Chinese vehicle-assembly field checklist with a single end-to-end

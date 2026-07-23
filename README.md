@@ -6,6 +6,14 @@ Mandatory baseline functions are nearby-obstacle detection, local stop/turn coll
 
 Major enhancements are encoder/IMU-assisted pose estimation, short-range accumulated 2D environment mapping, and environmental-change indication using illuminance, temperature, and atmospheric-pressure measurements. The current inventory has exactly one physical RPLIDAR C1M1-R2; dual-C1 work is not current scope. ROS and a vehicle-mounted Linux computer are not required.
 
+The user reports that the complete vehicle has been assembled to the wiring
+plan, but installation remains UNVERIFIED until photographs, continuity,
+voltage, protection, mounting, and controlled-operation evidence are recorded.
+The next software scope is Phase 4C; see
+[`docs/near_term_vehicle_bringup_handoff.md`](docs/near_term_vehicle_bringup_handoff.md)
+and the ready-to-copy
+[`docs/phase4c_agent_prompt.md`](docs/phase4c_agent_prompt.md).
+
 ## Repository Layout
 
 - `firmware/openrf1/`: OpenRF1 firmware, isolated bring-up applications, centralized rover configuration, and the embedded motor/encoder/mecanum boundary.

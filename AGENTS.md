@@ -28,6 +28,11 @@ This repository is the ENGR1000P2 Mars Scout Rover software and documentation ba
 
 - Completed phases: Phase 0, Phase 1, Phase 2.1, Phase 2.2, automated verification foundation, Phase 2.3, Phase 2.4, Phase 2.5, Phase 3.1, Phase 3.2A, the Phase 3.2B software foundation, Phase 3.2C isolated BMP280 bring-up evidence, the Phase 3.2D isolated MPU6050 software foundation, the Phase 3.2E isolated HC-SR04 software foundation, the Phase 3.2F isolated ground-sensor software foundation, Phase 4A, and the Phase 4B software-only closed-loop wheel-speed control and motion-safety foundation.
 - Current state: Phase 2.5 software and committed physical-evidence validation are complete. The one physical `c1_1` has MANUAL_EVIDENCE_VERIFIED PC-direct capture, repository replay/rendering, bounded 50 x 360 acquisition, target/direction smoke response, and external ROS2/RViz `/scan` visualization. Electrical measurements, vendor health, wall-clock timing, absolute accuracy, final mounting, STM32/ESP32 transport, and full-rover operation remain UNVERIFIED.
+- The user reports that the complete vehicle has been assembled according to the
+  repository wiring plan. No new photos, continuity records, voltage readings,
+  serial captures, motor motion, or integrated-system evidence accompanied that
+  report, so installation and full-rover operation remain UNVERIFIED. Use
+  `docs/near_term_vehicle_bringup_handoff.md` for the current handoff boundary.
 - Phase 3.1 software work is complete: versioned STM32 low-rate sensor telemetry, deterministic PC simulator, strict parser, and recording bridge are implemented.
 - Phase 3.2A software work is complete: OpenRF1 STM32F103RCT6 + GY-302/BH1750 firmware foundation, mocked PC serial capture, documentation, and verifier support are implemented. Recorded manual evidence verifies the BH1750-only flash, CH340/USART1 telemetry, configured `0x23` BH1750 communication, 500 ms telemetry period, and physical light response; absolute lux calibration remains UNVERIFIED.
 - Phase 3.2B software work is complete: isolated OpenRF1 full-hardware firmware foundation, PC contracts, deterministic fixtures, documentation, and verifier support are implemented. Phase 3.2B physical sensor integration has not started.
@@ -38,7 +43,22 @@ This repository is the ENGR1000P2 Mars Scout Rover software and documentation ba
 - Phase 4A software work is complete: typed standard X-layout mecanum kinematics, explicit wheel-side encoder conversion and signs, forward body-twist estimation, exact constant-twist SE(2) integration, deterministic scenarios, version-1 telemetry/recording additions, documentation, tests, and verifier support are implemented. Actual geometry, encoder resolution, gear ratio, counter width, signs, roller orientation, acquisition timing, wheel slip, motor behavior, and physical odometry accuracy remain UNVERIFIED.
 - Phase 4B software work is complete: validated body commands, proportional four-wheel desaturation, angular-acceleration limiting, independent discrete PID controllers with conditional anti-windup, deterministic reset/disable, command watchdog, explicit local safety arbitration, synthetic first-order wheel plants, version-1 telemetry/recording additions, CLI, tests, documentation, and verifier support are implemented. Motor rotation, encoder acquisition, physical directions, PWM mapping, usable physical gains, roller orientation, trajectory following, stopping distance, and real closed-loop performance remain UNVERIFIED.
 - The OpenRF1 rover-control firmware boundary is present under `firmware/openrf1/app/`: centralized UNKNOWN mappings, injected Motor and Encoder HALs, fixed-point mecanum inverse kinematics, and an inert ARM Compiler 6 link target are SOFTWARE_VERIFIED. It does not select GPIO, PWM, timers, UARTs, connectors, or physical geometry and must not be flashed as operational rover firmware.
-- Do not begin Phase 3.2B physical integration, additional physical sensor bring-up, motor/encoder hardware work, ESP32/WiFi implementation, or other hardware bring-up without an explicit request and the documented hardware-safety prerequisites.
+- Phase 4C software-only motor/encoder bring-up preparation is the immediate
+  next development scope. Hardware access, serial-port access, flashing,
+  energizing motors, or issuing motion commands still require a separate
+  explicit request and the documented hardware-safety prerequisites.
+
+## Near-Term Handoff
+
+- Read `docs/near_term_vehicle_bringup_handoff.md` before Phase 4C work.
+- A ready-to-copy next-agent prompt is in `docs/phase4c_agent_prompt.md`.
+- Do not flash `OpenRF1_RoverControl_Foundation`; it has inert motor callbacks
+  and returns encoder count zero.
+- Do not merge `phase3.2e-hcsr04-bringup` tip `17c6cd5`; it adds generated Keil
+  `Objects_HCSR04_Bringup` output only, while the source is already represented
+  in `main`.
+- The first Phase 4C deliverable is an isolated, software-verified, fail-disabled
+  one-wheel-at-a-time motor/encoder bring-up target. It is not four-wheel motion.
 
 ## Confirmed Inventory
 

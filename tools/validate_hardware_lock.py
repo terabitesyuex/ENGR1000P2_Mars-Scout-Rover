@@ -132,6 +132,26 @@ REQUIRED_TEXTS: tuple[RequiredText, ...] = (
         "H6 | USART3 Bluetooth port | 1 5V, 2 GND, 3 PB11/RX3, 4 PB10/TX3",
         "assembly USART3 connector pinout",
     ),
+    RequiredText(
+        "docs/near_term_vehicle_bringup_handoff.md",
+        "Physical installation is therefore still `UNVERIFIED`.",
+        "vehicle assembly evidence boundary",
+    ),
+    RequiredText(
+        "docs/near_term_vehicle_bringup_handoff.md",
+        "it must not be flashed as",
+        "inert rover-control target warning",
+    ),
+    RequiredText(
+        "docs/phase4c_agent_prompt.md",
+        "Do not merge phase3.2e-hcsr04-bringup tip 17c6cd5 into main.",
+        "generated HC-SR04 branch exclusion",
+    ),
+    RequiredText(
+        "docs/phase4c_agent_prompt.md",
+        "Do not commit or push unless explicitly requested.",
+        "next-agent git authorization boundary",
+    ),
 )
 
 

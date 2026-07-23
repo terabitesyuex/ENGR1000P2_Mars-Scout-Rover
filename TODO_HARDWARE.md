@@ -12,6 +12,7 @@ items below remain stop conditions where that checklist requires measurement.
 
 | Item | Status | Information needed |
 |---|---|---|
+| Complete vehicle assembly | unverified | User reports assembly to the wiring plan; retain top/front/underside/controller photos, continuity results, rail voltages, protection details, and mounting measurements |
 | Four motor connector pinouts | authoritative_vendor_documented | CN1-CN4 pins 1 OUT2, 2 encoder 5 V, 3 A, 4 B, 5 GND, 6 OUT1; verify physical pin-1 orientation |
 | Motor connector to logical wheel mapping | design_locked; physical validation required | Vendor mapping A/L1=CN2, B/R1=CN4, C/L2=CN1, D/R2=CN3; confirm FL/FR/RL/RR on blocks |
 | Motor PWM GPIO | authoritative_vendor_documented | PC6, PC7, PC8, PC9 |

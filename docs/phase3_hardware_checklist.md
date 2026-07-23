@@ -2,6 +2,10 @@
 
 Do not mark checklist items complete automatically. Record measured evidence before changing any UNVERIFIED value.
 
+The user reports complete vehicle assembly, but no new checklist evidence has
+been recorded. Use `near_term_vehicle_bringup_handoff.md` before beginning
+Phase 4C software work or requesting any physical action.
+
 ## General Evidence Table
 
 Evidence table fields:
