@@ -474,7 +474,8 @@
         <targetInfos>
           <targetInfo name="OpenRF1_HCSR04_Bringup"/>
         </targetInfos>
-      </component>      <component Cclass="Device" Cgroup="StdPeriph Drivers" Csub="USART" Cvendor="Keil" Cversion="3.6.0" condition="STM32F1xx STDPERIPH RCC" ymlID="Device:StdPeriph Drivers:USART">
+      </component>
+      <component Cclass="Device" Cgroup="StdPeriph Drivers" Csub="USART" Cvendor="Keil" Cversion="3.6.0" condition="STM32F1xx STDPERIPH RCC" ymlID="Device:StdPeriph Drivers:USART">
         <package name="STM32F1xx_DFP" schemaVersion="1.7.2" url="https://www.keil.com/pack/" vendor="Keil" version="2.4.1"/>
         <targetInfos>
           <targetInfo name="OpenRF1_HCSR04_Bringup"/>
@@ -525,4 +526,5 @@
       </Layer>
     </Layers>
   </LayerInfo>
+
 </Project>
