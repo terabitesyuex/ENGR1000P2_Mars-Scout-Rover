@@ -3,9 +3,10 @@
 For installation order and point-to-point destinations, use
 [`openrf1_rover_wiring_plan_zh.md`](openrf1_rover_wiring_plan_zh.md). This BOM
 retains procurement quantities, evidence boundaries, and acceptance checks.
-The user subsequently reported that the complete vehicle was assembled, but no
-installation evidence or electrical acceptance measurements accompanied that
-report. Continue from
+The user subsequently reported that the complete vehicle was assembled.
+Exterior and underside-sensor photographs plus supplied geometry are archived,
+but electrical acceptance measurements and controller-bay evidence remain
+missing. Continue from
 [`near_term_vehicle_bringup_handoff.md`](near_term_vehicle_bringup_handoff.md);
 do not treat this purchasing list as proof of installed or accepted hardware.
 

@@ -7,8 +7,11 @@ Mandatory baseline functions are nearby-obstacle detection, local stop/turn coll
 Major enhancements are encoder/IMU-assisted pose estimation, short-range accumulated 2D environment mapping, and environmental-change indication using illuminance, temperature, and atmospheric-pressure measurements. The current inventory has exactly one physical RPLIDAR C1M1-R2; dual-C1 work is not current scope. ROS and a vehicle-mounted Linux computer are not required.
 
 The user reports that the complete vehicle has been assembled to the wiring
-plan, but installation remains UNVERIFIED until photographs, continuity,
-voltage, protection, mounting, and controlled-operation evidence are recorded.
+plan. A 2026-07-23 evidence batch records exterior/underside sensor photographs,
+vehicle front, installed C1/GY-521, 79 mm wheel diameter, 190 mm wheelbase,
+217 mm track width, and an 85.8 mm C1 scan-plane height above the chassis upper
+surface. Electrical acceptance, controller wiring, signs, calibration, and
+controlled operation remain UNVERIFIED.
 The next software scope is Phase 4C; see
 [`docs/near_term_vehicle_bringup_handoff.md`](docs/near_term_vehicle_bringup_handoff.md)
 and the ready-to-copy
@@ -45,7 +48,7 @@ The repository root is the single source of truth. Historical nested repository 
 - Phase 3.2D: isolated OpenRF1 MPU6050-only bring-up firmware foundation, Keil target, host-side MPU6050 register/telemetry tests, verifier support, startup gyro-bias calibration software, and recorded isolated manual evidence complete. Absolute acceleration/gyro accuracy, calibration motion rejection, final rover-frame axis alignment, shared-I2C concurrency, and full-hardware operation remain UNVERIFIED.
 - Phase 3.2E: isolated OpenRF1 HC-SR04-only bring-up firmware, bounded telemetry framing, strict parser, dedicated mock capture, fixtures, evidence lifecycle, A/B handoffs, PA5/PA4/CN6/TIM6 vendor-documented design lock, required external ECHO divider, Keil target, tests, and verifier support complete. Physical wiring, trigger/echo pulses, real distance data, timeout behavior, and distance accuracy remain UNVERIFIED.
 - Phase 3.2F: isolated OpenRF1 ground-sensor firmware foundation and TCRT5000 evidence closeout complete. A's evidence verifies the isolated build/flash, PC4/PC5 signal connections, labelled 3.3 V/common-GND connections, both modules' raw/debounced response, four 100-frame gap-free captures, and exact 50 ms steady-state timestamps. Electrical measurements, polarity semantics, black/white/drop classification, Hall behavior, long-duration operation, and full-rover operation remain UNVERIFIED.
-- Phase 4A: standard X-layout mecanum kinematics, explicit wheel-side encoder conversion, body-twist estimation, exact SE(2) odometry integration, deterministic simulation, version-1 telemetry/recording compatibility, tests, documentation, and verifier support complete as a software-only foundation. All rover geometry, encoder resolution/signs, roller orientation, hardware acquisition, and physical odometry accuracy remain UNVERIFIED.
+- Phase 4A: standard X-layout mecanum kinematics, explicit wheel-side encoder conversion, body-twist estimation, exact SE(2) odometry integration, deterministic simulation, version-1 telemetry/recording compatibility, tests, documentation, and verifier support complete as a software-only foundation. Supplied geometry is recorded at 0.1 mm precision; encoder resolution/signs, roller orientation, hardware acquisition, geometry tolerance, and physical odometry accuracy remain UNVERIFIED.
 - Phase 4B: validated body-motion commands, proportional wheel desaturation, acceleration limiting, four independent PID controllers, command watchdog, local safety arbitration, deterministic synthetic wheel plants, version-1 telemetry/recording additions, CLI, tests, documentation, and verifier support complete as a software-only foundation. Real motor/encoder behavior, PWM mapping, physical PID tuning, stopping distance, and closed-loop performance remain UNVERIFIED.
 - OpenRF1 rover-control firmware boundary: centralized UNKNOWN hardware mappings, injected four-channel Motor and Encoder HALs, fixed-point mecanum inverse kinematics, and an isolated ARM Compiler 6 compile target are present. The target uses inert backends and must not be flashed as operational rover firmware; real PWM, encoder acquisition, motion, and hardware integration remain UNVERIFIED.
 
@@ -111,6 +114,8 @@ Controllers and chassis:
 - Four encoded motors.
 - Four mecanum wheels.
 - Existing rover chassis.
+- Supplied geometry record: 79 mm loaded wheel diameter, 190 mm wheelbase,
+  217 mm track width. These are not yet physically tolerance-calibrated.
 
 Use neutral sensor IDs until installation is physically verified: `c1_1`, `ultrasonic_1`, `ultrasonic_2`, `ultrasonic_3`, `tcrt5000_1`, `tcrt5000_2`, `bh1750_1`, `bmp280_1`, `mpu6050_1`, and `hall_1`. Historical version-1 recordings and explicitly synthetic compatibility fixtures may contain `c1_2`.
 

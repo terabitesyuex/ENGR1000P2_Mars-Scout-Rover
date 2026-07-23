@@ -34,10 +34,11 @@ Controllers and chassis:
 
 - STM32 controller board x1.
 - The user reports that the complete vehicle has been assembled according to
-  `docs/openrf1_rover_wiring_plan.md`. This is not accompanied by new physical
-  evidence; connector orientation, continuity, voltage rails, protection,
-  mounting poses, motor/encoder signs, and integrated operation remain
-  UNVERIFIED.
+  `docs/openrf1_rover_wiring_plan.md`. The 2026-07-23 evidence batch now records
+  exterior assembly, vehicle front, three front HC-SR04 modules, installed
+  C1/GY-521 modules, and supplied geometry/mounting dimensions. Connector
+  orientation, continuity, voltage rails, protection, controller-bay wiring,
+  motor/encoder signs, and integrated operation remain UNVERIFIED.
 - ESP32 board x1: user-confirmed ESP32-C3 SuperMini. GPIO21 TX and GPIO20 RX are
   user-confirmed as stable UART pins for the STM32 link. The exact installed LDO
   part and thermally sustainable output current remain UNVERIFIED.
@@ -65,6 +66,26 @@ Controllers and chassis:
   12.8 A theoretical simultaneous stall current before board limiting.
 - Four mecanum wheels.
 - Existing rover chassis.
+
+2026-07-23 vehicle geometry and mounting evidence:
+
+- `MANUAL_EVIDENCE_VERIFIED` as supplied records: loaded wheel diameter
+  `79 mm`, axle-centre wheelbase `190 mm`, and wheel-centre track width
+  `217 mm`. Corresponding radius/half-values are `39.5 mm`, `95 mm`, and
+  `108.5 mm`; tolerance and repeatability remain UNVERIFIED.
+- The user reports C1 scan-plane height above the chassis upper surface as
+  `56 mm + 29.8 mm = 85.8 mm`. C1 rover-frame x/y/yaw and an as-built datum
+  check remain UNVERIFIED.
+- The supplied response records left/centre/right HC-SR04 angles as
+  `-45 deg`, `0 deg`, and `+45 deg`, with source-CAD tuples
+  `(-42.45, 2.67, 132.23) mm`, `(0, 2.67, 148.33) mm`, and
+  `(41.18, 2.67, 132.23) mm`. The source CAD axis convention is not defined,
+  so these tuples are not yet rover-frame offsets.
+- MPU6050 top/underside photographs preserve the installed module orientation
+  relative to the marked vehicle front. The exact rover-frame axis transform,
+  polarity, and calibration remain UNVERIFIED.
+- Source files and hashes are archived in
+  `evidence/hardware/vehicle_assembly_2026-07-23/vehicle_assembly_evidence.md`.
 
 Neutral planned sensor IDs:
 

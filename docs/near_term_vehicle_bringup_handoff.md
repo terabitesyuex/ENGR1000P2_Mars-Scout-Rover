@@ -3,17 +3,18 @@
 Date: 2026-07-23
 
 This document hands the Mars Scout Rover from wiring preparation to the next
-software-development agent. It is intentionally conservative: the user reports
-that the complete vehicle has been assembled according to the repository wiring
-plan, but no new photographs, continuity records, voltage measurements, serial
-captures, motor motion, or integrated-system evidence accompanied that report.
-Physical installation is therefore still `UNVERIFIED`.
+software-development agent. A 2026-07-23 evidence batch now archives exterior
+and underside-sensor photographs, MPU6050 orientation photographs, CAD
+screenshots, and supplied geometry. This verifies only the recorded appearance
+and values. Electrical installation, controller-bay wiring, continuity, power
+rails, signs, sensor operation, and full-rover operation remain `UNVERIFIED`.
 
 ## Repository Snapshot
 
 - Repository: the current `<repository-root>` workspace
 - Expected working branch: `main`
-- Snapshot HEAD when this handoff was prepared: `0442dc3`
+- Original handoff HEAD: `0442dc3`; consult current `git rev-parse HEAD` before
+  development.
 - `main` and `origin/main` were synchronized and the working tree was clean
   before this handoff edit.
 - Do not create another branch unless the user explicitly asks for one.
@@ -29,8 +30,8 @@ The user reports that the complete rover has been assembled according to:
 - [`openrf1_rover_wiring_plan.md`](openrf1_rover_wiring_plan.md)
 - [`openrf1_rover_wiring_plan_zh.md`](openrf1_rover_wiring_plan_zh.md)
 
-This report is useful scheduling information, not evidence that the following
-have passed:
+The archived photographs and supplied measurements are useful mounting
+evidence, not evidence that the following have passed:
 
 - connector pin-1 orientation and point-to-point continuity;
 - battery and charger barrel polarity;
@@ -39,6 +40,17 @@ have passed:
 - four encoder pull-ups and four 10 kOhm / 15 kOhm divider networks;
 - motor and encoder wheel identities or signs;
 - shared I2C, three-HC-SR04 operation, USART2, USART3, or full-rover operation.
+
+Recorded supplied values:
+
+- wheel diameter `79 mm`, wheelbase `190 mm`, track width `217 mm`;
+- C1 scan-plane height `85.8 mm` above the chassis upper surface;
+- left/centre/right HC-SR04 angles `-45/0/+45 deg`;
+- source-CAD HC-SR04 tuples `(-42.45, 2.67, 132.23) mm`,
+  `(0, 2.67, 148.33) mm`, and `(41.18, 2.67, 132.23) mm`.
+
+Do not consume the HC-SR04 tuples as rover-frame coordinates until the CAD axes
+are mapped to `+x` forward, `+y` left, `+z` up.
 
 Do not describe the vehicle as electrically accepted, powered, commissioned, or
 drive-ready until controlled evidence exists.
@@ -96,6 +108,10 @@ Nominal motor/encoder data are 6-12 V, 0.36 A no-load, 3.2 A stall, 330 rpm
 no-load output, 30:1 ratio, 11 A cycles and 11 B cycles per motor revolution,
 and nominal 1320 x4 counts per output revolution. The count and all signs still
 require controlled validation.
+
+Supplied geometry is stored at 0.1 mm precision in `board_config.h`:
+`790`, `1900`, and `2170` x0.1 mm. The legacy whole-millimetre runtime geometry
+remains disabled so 39.5 mm radius and 108.5 mm half-track are not rounded.
 
 ### Sensors And Communications
 
@@ -197,13 +213,13 @@ section and require wheels to be raised or removed.
 
 | Priority | Required information | Exact form |
 | ---: | --- | --- |
-| 1 | Assembly photos | top, front, underside, and OpenRF1 wiring close-up; mark rover front |
-| 2 | Connector-to-wheel trace | `CN1=...`, `CN2=...`, `CN3=...`, `CN4=...` using FL/FR/RL/RR |
-| 3 | Roller layout | top photo showing all four mecanum rollers |
-| 4 | Electrical preflight | battery centre/sleeve polarity and measured battery, VIN, 5 V, 3.3 V, buck voltages in volts |
-| 5 | Main protection | BMS continuous/peak current, installed fuse, and main-wire AWG/cross-section |
-| 6 | Geometry | loaded wheel diameter, axle-centre wheelbase, wheel-centre track width in millimetres |
-| 7 | Mounting poses | C1, MPU6050, three ultrasonic, two TCRT5000, and Hall positions/orientations |
+| 1 | Electrical preflight | battery centre/sleeve polarity and measured battery, VIN, 5 V, 3.3 V, buck voltages in volts |
+| 2 | Controller wiring evidence | OpenRF1 bay close-up plus divider, fuse, connector pin-1, and common-ground views |
+| 3 | Connector-to-wheel trace | `CN1=...`, `CN2=...`, `CN3=...`, `CN4=...` using FL/FR/RL/RR |
+| 4 | Main protection | BMS continuous/peak current, installed fuse, and main-wire AWG/cross-section |
+| 5 | Roller layout | clear wheel-by-wheel handedness record or controlled raised-wheel confirmation |
+| 6 | Mounting transforms | C1 x/y/yaw; source-CAD axis definition; TCRT5000/Hall positions and heights |
+| 7 | Geometry tolerance | repeat loaded wheel diameter, wheelbase, and track measurements with method/tolerance |
 | 8 | Motion requirements | maximum linear speed, yaw rate, acceleration, and stopping distance |
 | 9 | ESP32 environment | PlatformIO/Arduino/ESP-IDF preference; USB connector type |
 | 10 | PC control requirement | keyboard, gamepad, or browser; PC operating system |

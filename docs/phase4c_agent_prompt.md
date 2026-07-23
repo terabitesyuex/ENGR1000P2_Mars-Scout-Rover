@@ -8,8 +8,10 @@ Scout Rover repository. Treat the current workspace as `<repository-root>` and
 perform all work inside it.
 
 The user reports that the complete rover has been assembled according to the
-repository wiring plan. Treat that as an UNVERIFIED user report, not electrical
-or operational evidence. No new photos, continuity results, voltage readings,
+repository wiring plan. A 2026-07-23 evidence batch records exterior and
+underside-sensor photographs, MPU6050 orientation, supplied geometry, C1
+height, and HC-SR04 CAD tuples. Treat those records as bounded mounting evidence,
+not electrical or operational evidence. No continuity results, voltage readings,
 serial captures, motor motion, or integrated-system evidence have been recorded.
 
 Your immediate scope is Phase 4C software-only preparation for real OpenRF1
@@ -43,9 +45,10 @@ Current critical software facts:
   be flashed as operational firmware.
 - firmware/openrf1/app/config/board_config.h still marks motor, encoder, geometry,
   C1 UART, and ESP32 UART readiness as zero.
-- Phase 4A and Phase 4B algorithms are software-verified foundations, but the
-  physical values are unknown and the Phase 4B controller is not integrated as
-  an operational STM32 motor loop.
+- Phase 4A and Phase 4B algorithms are software-verified foundations. Supplied
+  geometry is recorded at 0.1 mm precision, but signs, roller handedness,
+  counts, tolerances, and physical performance remain unresolved; Phase 4B is
+  not integrated as an operational STM32 motor loop.
 - The Phase 3.2B full-hardware target still contains no-op/placeholder physical
   acquisition paths and is not a complete rover application.
 - There is no operational ESP32-C3 WiFi firmware in the repository.
@@ -91,7 +94,7 @@ actual result. Do not claim physical operation from a successful build.
 
 Stop before any manual hardware step and request these items incrementally:
 
-- top/front/underside/OpenRF1 wiring photographs with rover front marked;
+- OpenRF1 wiring-bay photographs showing pin-1, dividers, fuse, and grounds;
 - CN1-CN4 to FL/FR/RL/RR trace confirmation;
 - mecanum roller top view;
 - battery polarity and measured battery/VIN/5V/3.3V/buck voltages;

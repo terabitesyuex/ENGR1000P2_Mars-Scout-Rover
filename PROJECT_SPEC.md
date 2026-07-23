@@ -61,8 +61,9 @@ Controllers and chassis:
 
 - STM32 controller board x1.
 - The user reports complete vehicle assembly according to the repository wiring
-  plan. Physical installation, electrical acceptance, and full-rover operation
-  remain UNVERIFIED until evidence is recorded.
+  plan. Exterior and underside-sensor photographs plus supplied geometry are
+  archived. Electrical acceptance, controller wiring, motor/encoder signs, and
+  full-rover operation remain UNVERIFIED.
 - ESP32 board x1.
 - Li-ion battery pack x1: seller-documented 11.1 V, 7800 mAh, 5C, 12.6 V fully
   charged, 70 x 55 x 23 mm, DC 5.5 x 2.5 mm male connector.
@@ -71,6 +72,11 @@ Controllers and chassis:
 - Four encoded motors.
 - Four mecanum wheels.
 - Existing rover chassis.
+
+Supplied as-built records are 79 mm loaded wheel diameter, 190 mm wheelbase,
+217 mm track width, and 85.8 mm C1 scan-plane height above the chassis upper
+surface. They are recorded at 0.1 mm precision where necessary; tolerance,
+coordinate transforms, and operational calibration remain UNVERIFIED.
 
 ## Confirmed Electrical Facts
 

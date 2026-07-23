@@ -149,7 +149,7 @@ def test_keil_arm_compiler_6_target_is_isolated_from_all_bringups():
     assert "USART" not in main_source
 
 
-def test_board_config_keeps_unknown_hardware_centralized_and_disabled():
+def test_board_config_centralizes_documented_mappings_and_keeps_runtime_disabled():
     config = _text(BOARD_CONFIG)
     assert '#define OPENRF1_HARDWARE_UNKNOWN_TEXT "UNKNOWN"' in config
     assert "#define OPENRF1_MOTOR_HARDWARE_MAPPING_READY ((uint8_t)0u)" in config
@@ -157,28 +157,29 @@ def test_board_config_keeps_unknown_hardware_centralized_and_disabled():
     assert "#define OPENRF1_MECANUM_GEOMETRY_READY ((uint8_t)0u)" in config
     assert "#define OPENRF1_RPLIDAR_C1_UART_MAPPING_READY ((uint8_t)0u)" in config
     assert "#define OPENRF1_ESP32_UART_MAPPING_READY ((uint8_t)0u)" in config
-    for suffix in (
-        "MOTOR_FRONT_LEFT_PWM_PIN",
-        "MOTOR_FRONT_RIGHT_PWM_PIN",
-        "MOTOR_REAR_LEFT_PWM_PIN",
-        "MOTOR_REAR_RIGHT_PWM_PIN",
-        "ENCODER_FRONT_LEFT_A_PIN",
-        "ENCODER_FRONT_LEFT_B_PIN",
-        "ENCODER_FRONT_RIGHT_A_PIN",
-        "ENCODER_FRONT_RIGHT_B_PIN",
-        "ENCODER_REAR_LEFT_A_PIN",
-        "ENCODER_REAR_LEFT_B_PIN",
-        "ENCODER_REAR_RIGHT_A_PIN",
-        "ENCODER_REAR_RIGHT_B_PIN",
-        "RPLIDAR_C1_UART_TX_PIN",
-        "RPLIDAR_C1_UART_RX_PIN",
-        "ESP32_UART_TX_PIN",
-        "ESP32_UART_RX_PIN",
+    for mapping in (
+        '#define OPENRF1_MOTOR_FRONT_LEFT_PWM_PIN "PC7/TIM8_CH2"',
+        '#define OPENRF1_MOTOR_FRONT_RIGHT_PWM_PIN "PC9/TIM8_CH4"',
+        '#define OPENRF1_MOTOR_REAR_LEFT_PWM_PIN "PC6/TIM8_CH1"',
+        '#define OPENRF1_MOTOR_REAR_RIGHT_PWM_PIN "PC8/TIM8_CH3"',
+        '#define OPENRF1_ENCODER_FRONT_LEFT_A_PIN "PA6"',
+        '#define OPENRF1_ENCODER_FRONT_RIGHT_A_PIN "PB6"',
+        '#define OPENRF1_ENCODER_REAR_LEFT_A_PIN "PA0"',
+        '#define OPENRF1_ENCODER_REAR_RIGHT_A_PIN "PA15"',
+        '#define OPENRF1_RPLIDAR_C1_UART "USART2"',
+        '#define OPENRF1_RPLIDAR_C1_UART_TX_PIN "PA2"',
+        '#define OPENRF1_RPLIDAR_C1_UART_RX_PIN "PA3"',
+        '#define OPENRF1_ESP32_UART "USART3"',
+        '#define OPENRF1_ESP32_UART_TX_PIN "PB10"',
+        '#define OPENRF1_ESP32_UART_RX_PIN "PB11"',
     ):
-        assert f"#define OPENRF1_{suffix} OPENRF1_HARDWARE_UNKNOWN_TEXT" in config
+        assert mapping in config
+    assert "#define OPENRF1_MOTOR_ENABLE_SIGNAL OPENRF1_HARDWARE_UNKNOWN_TEXT" in config
+    assert "#define OPENRF1_MOTOR_BRAKE_BEHAVIOR OPENRF1_HARDWARE_UNKNOWN_TEXT" in config
+    assert "#define OPENRF1_ENCODER_DIRECTION_SIGNS OPENRF1_HARDWARE_UNKNOWN_TEXT" in config
 
 
-def test_user_provided_motor_and_encoder_numbers_are_recorded_without_geometry_guess():
+def test_user_provided_motor_encoder_and_geometry_numbers_are_recorded_without_rounding():
     config = _text(BOARD_CONFIG)
     assert "OPENRF1_JGB37_520_MIN_SUPPLY_MV ((uint32_t)6000u)" in config
     assert "OPENRF1_JGB37_520_MAX_SUPPLY_MV ((uint32_t)12000u)" in config
@@ -187,6 +188,13 @@ def test_user_provided_motor_and_encoder_numbers_are_recorded_without_geometry_g
     assert "OPENRF1_ENCODER_OUTPUT_SHAFT_PPR ((uint32_t)330u)" in config
     assert "OPENRF1_ENCODER_QUADRATURE_MULTIPLIER ((uint32_t)4u)" in config
     assert "OPENRF1_ENCODER_COUNTS_PER_OUTPUT_REV ((uint32_t)1320u)" in config
+    assert "OPENRF1_WHEEL_DIAMETER_X10_MM ((uint32_t)790u)" in config
+    assert "OPENRF1_WHEELBASE_X10_MM ((uint32_t)1900u)" in config
+    assert "OPENRF1_TRACK_WIDTH_X10_MM ((uint32_t)2170u)" in config
+    assert (
+        "OPENRF1_RPLIDAR_C1_SCAN_PLANE_HEIGHT_ABOVE_CHASSIS_X10_MM "
+        "((uint32_t)858u)"
+    ) in config
     assert "#define OPENRF1_WHEEL_RADIUS_MM OPENRF1_HARDWARE_UNKNOWN_I32" in config
     assert "#define OPENRF1_HALF_WHEELBASE_MM OPENRF1_HARDWARE_UNKNOWN_I32" in config
     assert "#define OPENRF1_HALF_TRACK_WIDTH_MM OPENRF1_HARDWARE_UNKNOWN_I32" in config
@@ -319,9 +327,9 @@ def test_hardware_todo_locks_documented_mappings_and_required_unknowns():
         "| Encoder B GPIO for all four wheels | authoritative_vendor_documented | CN1 PA1, CN2 PA7, CN3 PB3, CN4 PB7 |",
         "| RPLIDAR C1 STM32 UART and pins | authoritative_vendor_documented | H5 pin 3 PA2/TX2, pin 4 PA3/RX2; physical C1 link still unverified |",
         "| ESP32 STM32 UART and pins | authoritative_vendor_documented | H6 pin 3 PB11/RX3, pin 4 PB10/TX3; physical ESP32 link still unverified |",
-        "| Wheel radius | unknown |",
-        "| Half wheelbase | unknown |",
-        "| Half track width | unknown |",
+        "| Wheel diameter / radius | manual_evidence_verified supplied measurement |",
+        "| Wheelbase / half wheelbase | manual_evidence_verified supplied measurement |",
+        "| Track width / half track width | manual_evidence_verified supplied measurement |",
         "| Battery advertised electrical values | seller_documented | Li-ion, 11.1 V nominal, 7800 mAh, 5C, 12.6 V fully charged; source images and hashes archived |",
         "| Battery BMS current limits | unverified |",
         "| Battery charger | seller_documented; physical validation required |",

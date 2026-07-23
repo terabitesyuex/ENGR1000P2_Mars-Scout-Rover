@@ -10,9 +10,10 @@ pre-power procedure. Historical phase sections below preserve the evidence
 boundary that existed when each isolated bring-up was prepared.
 
 The user subsequently reported that the complete rover was assembled from that
-plan. No new photographs, continuity checks, voltage measurements, or
-integrated operation evidence were recorded, so installed wiring remains
-`UNVERIFIED`. The next software agent must begin with
+plan. Exterior and underside-sensor photographs plus supplied geometry are now
+archived, but no controller-bay photographs, continuity checks, voltage
+measurements, or integrated operation evidence were recorded, so installed
+wiring remains `UNVERIFIED`. The next software agent must begin with
 [`near_term_vehicle_bringup_handoff.md`](near_term_vehicle_bringup_handoff.md).
 
 装车现场按中文施工清单

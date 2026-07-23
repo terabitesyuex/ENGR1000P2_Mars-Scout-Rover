@@ -371,7 +371,9 @@ values are recorded:
 - final FL/FR/RL/RR motor and encoder signs;
 - firmware support for ultrasonic 2/3 on PB9/PB8 and PD2/PC11;
 - shared-I2C operation, USART2 C1 operation, and USART3 ESP32 operation;
-- loaded wheel radius, wheelbase, track width, and mecanum roller placement.
+- geometry tolerance and repeatability for the supplied 79 mm wheel diameter,
+  190 mm wheelbase, and 217 mm track width;
+- mecanum roller handedness and controlled motion confirmation.
 
 No hardware access, serial-port access, flashing, or physical measurement was
 performed while preparing this plan.

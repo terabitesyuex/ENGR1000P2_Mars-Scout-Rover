@@ -134,7 +134,7 @@ REQUIRED_TEXTS: tuple[RequiredText, ...] = (
     ),
     RequiredText(
         "docs/near_term_vehicle_bringup_handoff.md",
-        "Physical installation is therefore still `UNVERIFIED`.",
+        "full-rover operation remain `UNVERIFIED`.",
         "vehicle assembly evidence boundary",
     ),
     RequiredText(
@@ -151,6 +151,26 @@ REQUIRED_TEXTS: tuple[RequiredText, ...] = (
         "docs/phase4c_agent_prompt.md",
         "Do not commit or push unless explicitly requested.",
         "next-agent git authorization boundary",
+    ),
+    RequiredText(
+        "evidence/hardware/vehicle_assembly_2026-07-23/vehicle_assembly_evidence.md",
+        "FD4954180AE16CD45CA0ED9B50642BEF62AD84B1534065FA8E13EA7A34A5AD0C",
+        "vehicle assembly response-document hash",
+    ),
+    RequiredText(
+        "evidence/hardware/vehicle_assembly_2026-07-23/vehicle_assembly_evidence.md",
+        "56 mm + 29.8 mm = 85.8 mm",
+        "C1 scan-plane height evidence",
+    ),
+    RequiredText(
+        "firmware/openrf1/app/config/board_config.h",
+        "OPENRF1_WHEEL_DIAMETER_X10_MM ((uint32_t)790u)",
+        "supplied wheel diameter without rounding",
+    ),
+    RequiredText(
+        "firmware/openrf1/app/config/board_config.h",
+        "OPENRF1_TRACK_WIDTH_X10_MM ((uint32_t)2170u)",
+        "supplied track width without rounding",
     ),
 )
 

@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-07-23 - Vehicle Assembly And Mounting Evidence
+
+- Archived the supplied information-response DOCX, exterior/underside assembly
+  photographs, MPU6050 orientation photographs, and CAD screenshots with
+  SHA-256 hashes.
+- Recorded supplied geometry without integer rounding: 79 mm wheel diameter,
+  190 mm wheelbase, 217 mm track width, and 85.8 mm C1 scan-plane height above
+  the chassis upper surface.
+- Recorded three HC-SR04 source-CAD tuples and angles while keeping the
+  source-CAD-to-rover coordinate transform explicitly UNVERIFIED.
+- Updated current hardware/configuration sources and regression checks without
+  enabling operational motor firmware or claiming electrical acceptance.
+
 ## 2026-07-23 - Near-Term Vehicle Bring-Up Handoff
 
 - Recorded the user's report that the complete rover has been assembled to the

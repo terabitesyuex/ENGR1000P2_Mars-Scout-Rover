@@ -59,8 +59,10 @@ No physical calibration is completed by Phase 3.1 automation. This file records 
 ## Encoders And Mecanum Geometry
 
 - Measure encoder counts per wheel revolution.
-- Measure wheel diameter.
-- Measure wheelbase and track geometry.
+- Recheck the supplied 79 mm loaded wheel diameter and record tolerance.
+- Recheck the supplied 190 mm wheelbase and 217 mm track width.
+- Preserve 39.5 mm wheel radius and 108.5 mm half-track without integer
+  rounding in production configuration.
 - Verify forward, lateral, and yaw kinematics.
 - Measure straight-distance, lateral-distance, yaw, and repeatability errors.
 
@@ -71,6 +73,8 @@ No physical calibration is completed by Phase 3.1 automation. This file records 
 - Measure gyro bias.
 - Measure accelerometer offsets.
 - Confirm axis orientation relative to the rover.
+- Use the archived top/underside orientation photographs as the mounting record,
+  then verify the transform with controlled axis motion.
 - Measure yaw drift over short intervals.
 
 ## WiFi Timing

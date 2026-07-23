@@ -9,9 +9,11 @@ MPU6050、RPLIDAR C1M1-R2、ESP32-C3 SuperMini。
 本文件用于现场装车。参数依据和状态说明以
 [`openrf1_rover_wiring_plan.md`](openrf1_rover_wiring_plan.md) 为准。
 
-用户现已报告全车按本方案完成装配，但尚未提交新的照片、通断、轨电压、
-保护配置或运行证据，因此不能把“装好”升级为“电气验收通过”。近期软件
-交接和下一步边界见
+用户现已报告全车按本方案完成装配。2026-07-23 已归档整车外观、底部
+传感器、MPU6050 朝向和 CAD 截图，并记录轮径 79 mm、轴距 190 mm、
+轮距 217 mm、C1 扫描平面高出底盘上表面 85.8 mm。控制板接线区、
+通断、轨电压、保护配置、轮位追线和运行证据仍缺失，因此不能把“装好”
+升级为“电气验收通过”。近期软件交接和下一步边界见
 [`near_term_vehicle_bringup_handoff.md`](near_term_vehicle_bringup_handoff.md)。
 
 ## 先看结论
