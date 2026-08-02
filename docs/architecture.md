@@ -139,4 +139,25 @@ Phase 4B layers pure control stages above Phase 4A: validated body commands, inv
 
 The OpenRF1 embedded rover-control boundary under `firmware/openrf1/app/` complements those host models with centralized UNKNOWN hardware contracts, injected four-channel Motor and Encoder HALs, and fixed-point inverse kinematics. Its isolated Keil target links inert callbacks only; no GPIO, PWM, timer, UART, motor, encoder, or sensor hardware is selected or accessed.
 
+The accelerated `firmware/openrf1/vehicle_demo/` target separately contains a
+read-only connector encoder adapter. TIM5/CN1, TIM3/CN2, full-remapped TIM2/CN3,
+and TIM4/CN4 run in TI12 encoder mode without update interrupts. A pure helper
+converts 16-bit raw counters into shortest modular deltas and bounded cumulative
+counts at 50 ms. JSONL and the PC inspector retain connector identities because
+physical wheel mapping and direction signs are not verified. This adapter is
+not yet an odometry or closed-loop control input.
+
+The dedicated `firmware/openrf1/encoder_bringup/` target narrows this boundary
+further for Phase 4C. It initializes only the four read-only encoder timers,
+their GPIO/remap support, SysTick, and transmit-only USART1. It emits the same
+strict connector-labelled JSONL at 100 ms and has no receive, motor, ultrasonic,
+or Hall path. Hardware semantics remain outside this adapter.
+
+`firmware/openrf1/motor_bringup/` adds a separate one-wheel state machine and
+TIM8 backend. The pure controller owns configuration, arming, one-connector
+selection, direction-sign application, duty ceiling, heartbeat, stop/reset,
+and timeout. The platform keeps CCR/CCER/MOE disabled until a valid RUN and
+enables one CCER bit only. It remains disconnected from Phase 4B closed-loop
+control and from all autonomous behavior.
+
 Emergency stopping remains a local STM32 safety responsibility in the plan. PC mapping occurs later and is short-range accumulated mapping, not a required reusable global SLAM map. ROS is not required.

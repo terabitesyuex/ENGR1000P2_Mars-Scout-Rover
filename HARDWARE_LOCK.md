@@ -141,6 +141,31 @@ OpenRF1 motor, encoder, and UART evidence added from the board schematic dated
   directly connected without dividers and obstacle avoidance operates. This is
   functional evidence only. ECHO-high voltage at PB8, PB4, and PC11 and
   long-term electrical safety remain UNVERIFIED.
+- VEHICLE_DEMO_ENCODER_SOFTWARE_VERIFIED: the isolated VehicleDemo target
+  configures the vendor-documented connector timer paths as CN1/TIM5 PA0/PA1,
+  CN2/TIM3 PA6/PA7, CN3/TIM2 full remap PA15/PB3 with JTAG disabled and SWD
+  retained, and CN4/TIM4 PB6/PB7. It samples 16-bit raw counters every 50 ms,
+  computes modular deltas/cumulative counts, and emits connector-labelled
+  read-only JSONL. This is not physical encoder evidence and does not establish
+  CN-to-wheel mapping, installed pull-ups, direction signs, counts per wheel
+  revolution, or real counter activity.
+- ENCODER_BRINGUP_SOFTWARE_VERIFIED: the dedicated
+  `OpenRF1_Encoder_Bringup` target uses the same neutral CN1/TIM5,
+  CN2/TIM3, CN3/full-remapped-TIM2, and CN4/TIM4 read-only counter mapping at
+  100 ms. It initializes no TIM8, motor GPIO, receive command path, ultrasonic,
+  or Hall peripheral and linked with ARM Compiler 6.24 at 0 errors and
+  0 warnings. This is not physical evidence; signal levels, pull-ups, counter
+  activity, physical wheel assignment, direction, and counts/revolution remain
+  UNVERIFIED.
+- MOTOR_BRINGUP_SOFTWARE_VERIFIED: the dedicated
+  `OpenRF1_Motor_Bringup` target preserves the vendor connector PWM,
+  direction, and encoder mapping, but starts unconfigured with all TIM8 CCR
+  values zero and both CCER and BDTR/MOE disabled. Exactly one connector can be
+  enabled after explicit configuration plus ARM/RUN, and watchdog or command
+  failure removes output. ARM Compiler 6.24 reports 0 errors and 0 warnings.
+  The 0..1000 duty representation bound is not a physical safety rating.
+  Flashing, wiring safety, selected duty, physical wheel identity/sign,
+  current, stopping, counter response, and operation remain UNVERIFIED.
 
 The complete assembly harness and pre-power procedure are recorded in
 `docs/openrf1_rover_wiring_plan.md`.
@@ -490,6 +515,25 @@ PC planned responsibilities:
 - isolated firmware build and flash: MANUAL_EVIDENCE_VERIFIED.
 - installed left OUT -> signal 1 / X1 / PC4 and right OUT -> signal 2 / X2 / PC5: MANUAL_EVIDENCE_VERIFIED.
 - labelled 3.3 V/common-GND module connections: MANUAL_EVIDENCE_VERIFIED as connections only; voltage remains unmeasured.
+- Hall physical placement: USER_CONFIRMED_FROM_SUPPLIED_PHOTOGRAPH as mounted
+  on the rover underside; the top of the supplied photograph is the rover-front
+  direction.
+- Hall body-boundary clearances: MANUAL_EVIDENCE_VERIFIED as user-supplied
+  corrected measurements: 185 mm to the front boundary, 135 mm to the rear
+  boundary, and 75 mm to both the left and right boundaries. These imply a body
+  envelope of 320 x 150 mm and a derived planar Hall offset of x=-25 mm, y=0 mm
+  from that envelope's geometric centre (`+x` forward, `+y` left).
+- Hall-to-axle measurements: MANUAL_EVIDENCE_VERIFIED as user-supplied values
+  of 95 mm to both front and rear axle centres. Together with the supplied
+  190 mm wheelbase and equal 75 mm side clearances, this establishes the Hall
+  sensing point at x=0 mm, y=0 mm relative to the wheel-centre `base_link` in
+  the horizontal plane.
+- Hall sensing-point height above the floor: MANUAL_EVIDENCE_VERIFIED as a
+  user-supplied 65 mm measurement. With the supplied 79 mm loaded wheel diameter
+  (39.5 mm radius) and `base_link z=0` at the wheel-centre plane, the derived
+  vertical offset is z=+25.5 mm. This is mounting geometry, not verified
+  magnetic working distance. Sensing face, connector wiring, and cable routing
+  remain UNVERIFIED.
 - live raw/debounced response from both TCRT modules: MANUAL_EVIDENCE_VERIFIED for the tested geometry.
 - four 100-frame captures without sequence gaps and exact 50 ms steady-state timestamps: MANUAL_EVIDENCE_VERIFIED.
 - final connector/cable orientation and strain relief: UNVERIFIED.

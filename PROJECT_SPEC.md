@@ -55,6 +55,16 @@ Ground and landmark:
 
 - TCRT5000 reflective infrared sensor x2 for edge/drop detection.
 - Hall sensor module x1 for magnetic landmark/checkpoint detection.
+- The user-supplied one-way course layout places three centreline magnetic
+  landmarks at `(600, 400)`, `(1800, 400)`, and `(2200, 400)` mm. VehicleDemo
+  records polarity-independent baseline-excursion events for later accumulated
+  map drift checking. These are course coordinates, not rover-centre pose
+  fixes. User-supplied Hall clearances to the front/rear/left/right body
+  boundaries are `185/135/75/75 mm`, deriving `x=-25 mm, y=0 mm` from that
+  320 x 150 mm body envelope's centre. Supplied 95 mm distances to both axle
+  centres establish `x=0 mm, y=0 mm` in the wheel-centre `base_link` plane.
+  The supplied 65 mm sensing-point floor height and 39.5 mm loaded wheel radius
+  derive `base_link z=+25.5 mm`. Magnetic working range remains UNVERIFIED.
 
 Environment:
 
@@ -133,7 +143,7 @@ These facts do not verify the wiring, mounting, serial identifier, revision, or 
 - STM32-ESP32 H6/USART3 is DESIGN_LOCKED; installed operation remains
   UNVERIFIED.
 - HC-SR04 Phase 3.2E isolated CN6 pin order, PA5 TRIG, PA4 ECHO, TIM6, and required external 10 kOhm / 15 kOhm ECHO divider are AUTHORITATIVE_VENDOR_DOCUMENTED. Physical installation, voltages, pulses, and distance data remain UNVERIFIED.
-- Ground-sensor Phase 3.2F isolated tracking-connector mappings are AUTHORITATIVE_VENDOR_DOCUMENTED: signal 1 / X1 / PC4, signal 2 / X2 / PC5, signal 3 / X3 / PB0, connector pin 1: GND, pin 2: X4 / schematic PC14, pin 3: X3 / PB0, pin 4: X2 / PC5, pin 5: X1 / PC4, pin 6: VCC_5V. The old example maps X4 to PB1, so signal 4 / X4 remains unused. Installed PC4/PC5 TCRT connections, live response, and exact 50 ms steady-state capture timing are MANUAL_EVIDENCE_VERIFIED. Rail/output voltages, polarity semantics, black/white/drop classification, Hall behavior, final mounting, and full-rover operation remain UNVERIFIED.
+- Ground-sensor Phase 3.2F isolated tracking-connector mappings are AUTHORITATIVE_VENDOR_DOCUMENTED: signal 1 / X1 / PC4, signal 2 / X2 / PC5, signal 3 / X3 / PB0, connector pin 1: GND, pin 2: X4 / schematic PC14, pin 3: X3 / PB0, pin 4: X2 / PC5, pin 5: X1 / PC4, pin 6: VCC_5V. The old example maps X4 to PB1, so signal 4 / X4 remains unused. Installed PC4/PC5 TCRT connections, live response, and exact 50 ms steady-state capture timing are MANUAL_EVIDENCE_VERIFIED. A user-supplied photograph confirms the Hall module is mounted under the rover and defines the photograph's top edge as rover-forward. Corrected Hall boundary/axle measurements and 65 mm floor height establish x=0 mm, y=0 mm, z=+25.5 mm relative to the wheel-centre `base_link`, using the supplied 39.5 mm loaded wheel radius. Sensing face, rail/output voltages, polarity semantics, black/white/drop classification, Hall magnetic behavior/working distance, and full-rover operation remain UNVERIFIED.
 - BH1750 communication at configured address `0x23` is MANUAL_EVIDENCE_VERIFIED for the recorded Phase 3.2A run. BMP280 ACK/address `0x76`, chip ID `0x58`, configuration readback, compensated live temperature/pressure telemetry, and 500 ms periodicity are PHYSICAL_EVIDENCE_VERIFIED for the isolated Phase 3.2C capture. MPU6050 ACK/address `0x68`, WHO_AM_I `0x68`, isolated configuration readback, live IMU JSON telemetry, startup gyro-bias calibration, approximately 10 Hz output, 15-second no-sequence-loss capture, and isolated axis response are MANUAL_EVIDENCE_VERIFIED for the isolated Phase 3.2D bring-up. BMP280/MPU6050 shared-I2C concurrency, MPU6050 absolute accuracy, final rover-frame alignment, and complete full-hardware operation remain UNVERIFIED.
 - Physical TCRT5000 and Hall active polarity.
 - Battery advertised values are seller-documented; actual voltage/capacity,
@@ -155,7 +165,7 @@ These facts do not verify the wiring, mounting, serial identifier, revision, or 
 - Phase 3.2F: isolated OpenRF1 ground-sensor-only firmware, X1/PC4 and X2/PC5 TCRT5000 mappings, protected X3/PB0 Hall design, host-side tests, verifier support, and sanitized isolated TCRT5000 evidence. A's evidence verifies build/flash, installed PC4/PC5 signal connections, labelled 3.3 V/common-GND connections, live raw/debounced response, four gap-free 100-frame captures, and exact 50 ms steady-state timestamps. Electrical measurements, semantic polarity, black/white/drop classification, Hall behavior, long-duration behavior, and full-rover operation remain unverified.
 - Phase 4A: software-only mecanum kinematics, encoder conversion, and odometry foundation.
 - Phase 4B: software-only wheel-speed control, command shaping, watchdog, safety arbitration, and synthetic plant foundation.
-- Phase 4C: future real motor/encoder hardware bring-up and physical direction/timer/interrupt/PWM validation.
+- Phase 4C: encoder observation and fail-disabled one-wheel motor software are implemented; real encoder and motor hardware bring-up plus physical direction/timer/interrupt/PWM validation remain.
 - Later Phase 4: physical PID tuning, MPU6050-assisted pose estimation, real closed-loop motion, and physical odometry validation.
 - Phase 5: STM32-ESP32-computer communication, WiFi transport, and one-C1 baseline integration.
 - Phase 6: real-time computer visualization, rover trajectory, and short-range encoder/IMU-assisted accumulated 2D mapping.
@@ -169,6 +179,27 @@ states. The current demo pin profile is USER_CONFIRMED as left PB9/PB8, centre
 PB5/PB4, and right PD2/PC11, superseding the earlier CN6-first proposal for this
 target only. Direct ECHO operation without dividers is user-reported functional;
 actual ECHO voltages and electrical safety remain unverified.
+
+VehicleDemo also contains a read-only connector encoder acquisition foundation.
+It configures CN1/TIM5, CN2/TIM3, CN3/TIM2 full remap, and CN4/TIM4 in TI12
+encoder mode, samples 16-bit counters at 50 ms, and emits raw, modular-delta,
+and cumulative connector counts. A strict file-only PC inspector validates
+sequence, timestamps, counter wrap, and cumulative consistency. Physical wheel
+roles, direction signs, pull-ups, counter activity, counts/rev, and odometry
+remain unverified; encoder data does not enter motor or obstacle decisions.
+
+Phase 4C adds a separate `OpenRF1_Encoder_Bringup` target for the safer first
+manual gate. It uses the same connector-labelled counters at 100 ms, USART1 TX
+only, and no motor/sensor/command initialization. Its ARM Compiler 6.24
+zero-error/zero-warning build is SOFTWARE_VERIFIED; flashing, serial capture,
+electrical compatibility, real counts, wheel mapping, signs, and counts per
+revolution remain UNVERIFIED.
+
+A separate `OpenRF1_Motor_Bringup` target supplies the remaining software
+gate: no default connector/sign/duty/watchdog, TIM8 CCER/MOE disabled at
+startup, one-channel-only output, explicit ARM/RUN, watchdog, and fail-stop
+command/transport handling. Its zero-error/zero-warning ARM Compiler 6.24 build
+is SOFTWARE_VERIFIED. All physical motor safety and behavior remain UNVERIFIED.
 
 ## Phase 2.4 Acceptance Philosophy
 

@@ -75,6 +75,15 @@ from .stm32_sensor_simulator import (
     STM32_SIMULATOR_SCENARIOS,
     generate_synthetic_stm32_lines,
 )
+from .vehicle_demo_hall import (
+    VehicleDemoTelemetryError,
+    analyze_vehicle_demo_hall_stream,
+    record_vehicle_demo_hall_stream,
+)
+from .vehicle_demo_encoder import (
+    VehicleDemoEncoderTelemetryError,
+    analyze_vehicle_demo_encoder_stream,
+)
 from .synthetic_scan import SyntheticRoomConfig, SyntheticScanSource, scan_to_json
 from .synthetic_scan import generate_circle_scan, generate_room_scan
 
@@ -326,6 +335,28 @@ def main() -> int:
     record_stm32.add_argument("--output", type=Path, required=True)
     record_stm32.add_argument("--overwrite", action="store_true")
 
+    record_vehicle_hall = subparsers.add_parser(
+        "record-vehicle-demo-hall",
+        help="Convert offline VehicleDemo JSONL into Hall recording entries.",
+    )
+    record_vehicle_hall.add_argument("--input", type=Path, required=True)
+    record_vehicle_hall.add_argument("--output", type=Path, required=True)
+    record_vehicle_hall.add_argument("--overwrite", action="store_true")
+
+    inspect_vehicle_hall = subparsers.add_parser(
+        "inspect-vehicle-demo-hall",
+        help="Summarize offline VehicleDemo Hall levels and observed transitions.",
+    )
+    inspect_vehicle_hall.add_argument("--input", type=Path, required=True)
+    inspect_vehicle_hall.add_argument("--output", type=Path)
+
+    inspect_vehicle_encoder = subparsers.add_parser(
+        "inspect-vehicle-demo-encoder",
+        help="Validate and summarize offline VehicleDemo connector encoder telemetry.",
+    )
+    inspect_vehicle_encoder.add_argument("--input", type=Path, required=True)
+    inspect_vehicle_encoder.add_argument("--output", type=Path)
+
     simulate_bh1750 = subparsers.add_parser(
         "simulate-bh1750-telemetry",
         help="Generate deterministic OpenRF1 BH1750-only telemetry JSONL.",
@@ -571,6 +602,28 @@ def main() -> int:
             )
             print(path)
             return 0
+        if args.command == "record-vehicle-demo-hall":
+            path = record_vehicle_demo_hall_file(
+                input_path=args.input,
+                output_path=args.output,
+                overwrite=args.overwrite,
+            )
+            print(path)
+            return 0
+        if args.command == "inspect-vehicle-demo-hall":
+            text = inspect_vehicle_demo_hall_file(args.input)
+            if args.output:
+                args.output.parent.mkdir(parents=True, exist_ok=True)
+                args.output.write_text(text, encoding="utf-8")
+            print(text, end="")
+            return 0
+        if args.command == "inspect-vehicle-demo-encoder":
+            text = inspect_vehicle_demo_encoder_file(args.input)
+            if args.output:
+                args.output.parent.mkdir(parents=True, exist_ok=True)
+                args.output.write_text(text, encoding="utf-8")
+            print(text, end="")
+            return 0
         if args.command == "simulate-bh1750-telemetry":
             path = simulate_bh1750_telemetry(
                 output_path=args.output,
@@ -628,6 +681,8 @@ def main() -> int:
         Stm32TelemetryError,
         Stm32SerialCaptureError,
         Hcsr04CaptureError,
+        VehicleDemoTelemetryError,
+        VehicleDemoEncoderTelemetryError,
     ) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
@@ -977,6 +1032,33 @@ def record_stm32_telemetry_file(
             output_path=output_path,
             overwrite=overwrite,
         )
+
+
+def record_vehicle_demo_hall_file(
+    *,
+    input_path: Path,
+    output_path: Path,
+    overwrite: bool,
+) -> Path:
+    """Convert an offline VehicleDemo JSONL file to Hall recording entries."""
+    with input_path.open("r", encoding="utf-8") as stream:
+        return record_vehicle_demo_hall_stream(
+            stream,
+            output_path=output_path,
+            overwrite=overwrite,
+        )
+
+
+def inspect_vehicle_demo_hall_file(input_path: Path) -> str:
+    """Return a compact offline Hall-level transition report."""
+    with input_path.open("r", encoding="utf-8") as stream:
+        return analyze_vehicle_demo_hall_stream(stream).to_text()
+
+
+def inspect_vehicle_demo_encoder_file(input_path: Path) -> str:
+    """Return a strict offline connector-encoder report."""
+    with input_path.open("r", encoding="utf-8") as stream:
+        return analyze_vehicle_demo_encoder_stream(stream).to_text()
 
 
 def simulate_bh1750_telemetry(

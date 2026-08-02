@@ -156,3 +156,43 @@ The following remain UNVERIFIED:
 ## Phase 4B Software-Derived Control Records
 
 Phase 4B extends the existing version-1 telemetry vocabulary only for software-derived command, wheel-setpoint, synthetic wheel-measurement, normalized-effort, motion-safety, and complete control-snapshot records. This does not implement STM32 motor transport, ESP32 forwarding, WiFi, PWM, encoder acquisition, or any on-wire motor command. All Phase 4B outputs identify their synthetic/software origin.
+
+## VehicleDemo Read-Only Connector Encoder JSONL
+
+VehicleDemo emits `message_type: "vehicle_demo_encoder"` every nominal 50 ms
+with `status: "raw_counts"`. The payload contains:
+
+- fixed `mapping_status` value
+  `vendor_connector_mapping_physical_wheels_unverified`;
+- `counter_bits: 16`, positive `interval_ms`, and
+  `direction_signs_verified: false`;
+- `cn1` through `cn4` `raw_count`, `delta_count`, and `cumulative_count`.
+
+Connector timer order is CN1/TIM5, CN2/TIM3, CN3/TIM2 full remap, CN4/TIM4.
+The signed delta is the shortest modular 16-bit difference; it is valid only
+when fewer than 32768 counts occur between samples. Fields deliberately do not
+use `front_left`/`front_right`/`rear_left`/`rear_right`, because physical mapping
+and signs are unverified. The file-only command below validates global ordering,
+sample intervals, raw-counter wrap, and cumulative consistency without opening
+a serial port:
+
+```powershell
+python -m rplidar_c1_tools inspect-vehicle-demo-encoder --input vehicle.jsonl --output encoder_report.txt
+```
+
+The isolated `OpenRF1_Encoder_Bringup` target deliberately uses the same
+`vehicle_demo_encoder` payload and mapping status, but emits at a nominal
+100 ms interval and identifies itself with a preceding
+`vehicle_demo_identity` record. This keeps one strict offline inspector while
+avoiding a second schema. The identity states
+`motor_outputs_present: false`; it is not proof of physical isolation or
+counter activity until the built image and wiring are manually checked.
+
+## Phase 4C One-Wheel Motor Bring-Up Lines
+
+`OpenRF1_Motor_Bringup` accepts LF-terminated `CONFIG`, `ARM`, `RUN`,
+`HEARTBEAT`, `STOP`/`DISARM`, and `RESET` lines as specified in
+`docs/openrf1_motor_bringup.md`. CONFIG values are mandatory and no safe
+physical values are encoded. Status uses `motor_bringup_identity` and
+`motor_bringup_status` JSONL. This deliberately isolated diagnostic contract
+is not the future STM32-ESP32 operational motor protocol.

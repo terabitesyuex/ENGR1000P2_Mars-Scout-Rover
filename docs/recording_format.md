@@ -157,12 +157,36 @@ Fields:
 - `sensor_id`: `hall_1`.
 - `detected`, nullable until active polarity is verified.
 - optional `raw_state`
+- optional `debounced_state`
 - optional `polarity_verified`
 - optional `status`
 - optional `raw_value`
 - optional `source_sequence`
+- optional `landmark_index`
+- optional `known_x_mm` and `known_y_mm`
+- optional `known_base_link_x_mm` and `known_base_link_y_mm`
+- optional `base_link_planar_offset_applied`
+- optional `baseline_level`
+- optional `baseline_inferred`
 
 The Hall module is for magnetic landmark/checkpoint detection, not wheel odometry.
+VehicleDemo adaptation preserves both numeric states while leaving `detected`
+null and `polarity_verified` false. New VehicleDemo firmware infers the stable
+no-magnet startup level, latches each stable departure from that baseline, and
+emits a `vehicle_demo_hall_event` using the original detection timestamp. The
+PC adapter records one `hall_landmark` entry per latched event. For the supplied
+one-way course layout, event indices 1, 2, and 3 are associated with
+`(600, 400)`, `(1800, 400)`, and `(2200, 400)` millimetres. These coordinates
+describe the course magnets, not the rover centre; applying them as pose
+corrections normally requires the Hall-to-rover mounting offset. Corrected
+user-supplied measurements place the Hall sensing point at planar
+`base_link x=0 mm, y=0 mm`, so VehicleDemo event conversion also writes the
+same course coordinates as `known_base_link_x_mm/y_mm` and marks
+`base_link_planar_offset_applied=true`. This is a planar position observation,
+not a yaw observation, and it does not verify real magnetic activation,
+polarity, or working distance. The supplied 65 mm floor height derives a
+vertical mounting offset of `base_link z=+25.5 mm`, but the current landmark
+record remains intentionally planar.
 
 ### `illuminance`
 

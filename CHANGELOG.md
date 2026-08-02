@@ -12,12 +12,107 @@
   fail-closed safety, explicit ARM/START, a command heartbeat watchdog,
   interrupt-driven USART rings, a nonblocking staggered HC-SR04 state machine,
   and an overflow-extended TIM6 microsecond clock.
+- Fixed a real-board arming defect: an in-flight replacement ping briefly
+  invalidated its previous completed sample, which could falsely enter
+  `sensor_fault`. The driver now retains the prior sample until a replacement
+  completes or an explicit measurement error clears it.
+- Aligned TIM8 PWM idle initialization with the supplied stable motor source by
+  clearing PC6-PC9 output latches before switching them to alternate-function
+  PWM output.
+- Replaced the vehicle-demo's compact four-motor write helper with the supplied
+  stable source's per-connector TIM8/PWM and direction-write sequence after the
+  original HEX demonstrated real suspended-wheel motion.
+- Added read-only `MOTOR_DIAG` JSONL telemetry for physical motor-path diagnosis;
+  it reports TIM8 output registers and GPIO alternate-function configuration
+  without changing motion state or motor output.
+- Aligned ultrasonic GPIO initialization with the original stable source by
+  preserving its AFIO mapping and using its pull-down input setup for ECHO.
 - Added strict JSONL identity/status telemetry, null invalid distances, focused
   tests, a dedicated ignored Keil output path, and an integration audit.
 - Recorded the user-confirmed left PB9/PB8, centre PB5/PB4, and right
   PD2/PC11 mapping and the report that all three direct, undivided ECHO paths
   operate on the current rover. Actual ECHO-high voltages, electrical safety,
   obstacle performance, and the final linked Keil build remain unverified.
+- Added a telemetry-only Hall input path for `X3 / PB0`: platform GPIO reading,
+  5 ms sampling, four-sample debounce, and raw/debounced JSONL fields. It is
+  isolated from the motor and obstacle-control decisions; Hall polarity and
+  physical operation remain UNVERIFIED.
+- Added a PC-side VehicleDemo Hall adapter that validates source ordering,
+  preserves raw and debounced levels in existing `hall_landmark` JSONL records,
+  and reuses the existing recording/replay pipeline without assigning magnetic
+  detection semantics.
+- Added the file-only `record-vehicle-demo-hall` CLI workflow for converting
+  saved VehicleDemo JSONL into inspectable and replay-compatible recordings;
+  it has no serial-port or hardware option.
+- Added file-only Hall transition analysis with numeric level counts,
+  raw/debounced mismatch counts, and observed transition sequence/timestamps;
+  the report does not infer magnetic polarity or landmark detection.
+- Upgraded VehicleDemo Hall acquisition from periodic level observation to
+  polarity-independent landmark event capture: 100 ms stable startup-baseline
+  inference, 5 ms sampling, four-sample debounce, rearm-on-baseline-return,
+  latched event count, and original candidate-start timestamps prevent short
+  course-magnet crossings from disappearing between 250 ms status frames.
+- Added strict `vehicle_demo_hall_event` parsing and gap detection. The PC
+  recording adapter now writes one event per crossing and associates the
+  supplied one-way course landmarks with `(600, 400)`, `(1800, 400)`, and
+  `(2200, 400)` mm while leaving physical polarity and rover pose correction
+  explicitly unverified.
+- Recorded the user-supplied installed-rover photograph boundary: Hall is
+  mounted on the rover underside and the photograph's top edge is rover-forward.
+- Corrected the supplied Hall sensing-point clearances to 185 mm front, 135 mm
+  rear, 75 mm to each side body boundary, and 95 mm to each axle centre. These
+  establish planar `base_link x=0 mm, y=0 mm` and separately derive x=-25 mm,
+  y=0 mm from the 320 x 150 mm body-envelope centre.
+- Added explicit optional `known_base_link_x_mm/y_mm` Hall recording fields.
+  VehicleDemo event conversion applies the confirmed zero planar mounting
+  offset, while keeping yaw and physical magnetic behavior outside the claim.
+- Recorded the supplied Hall sensing-point floor height of 65 mm and derived
+  `base_link z=+25.5 mm` from the supplied 39.5 mm loaded wheel radius. The
+  current landmark correction remains planar.
+- Hall sensing face, wiring, active polarity, triggering pole, working distance,
+  and magnetic response remain unverified.
+- Hardened the Hall scheduler against delayed-loop catch-up: missed 5 ms slots
+  are dropped, so repeated immediate GPIO reads cannot fake the four-sample
+  debounce or stable startup baseline.
+- Extended offline Hall inspection with known-checkpoint count, expected
+  sequence completion, next expected checkpoint, and unexpected post-course
+  event reporting. This remains polarity-independent and software-only.
+- Added a VehicleDemo read-only four-connector encoder foundation: CN1/TIM5,
+  CN2/TIM3, CN3/TIM2 full remap with SWD retained, and CN4/TIM4 use TI12 mode
+  with no encoder interrupts and 50 ms polling.
+- Added pure 16-bit modular-delta and bounded cumulative-count handling plus
+  connector-labelled `vehicle_demo_encoder` JSONL. Physical wheel identities
+  and direction signs are deliberately absent and encoder data cannot affect
+  motion or obstacle decisions.
+- Added strict file-only encoder inspection for ordering, sample intervals,
+  counter wrap, cumulative consistency, mapping/sign claim rejection, and
+  per-connector summaries.
+- Linked the updated VehicleDemo Keil target with ARM Compiler 6 at 0 errors and
+  0 warnings. Physical pull-ups, counter activity, counts/rev, wheel mapping,
+  signs, and odometry remain unverified; no serial access, flashing, or wheel
+  motion was performed.
+- Added the dedicated `OpenRF1_Encoder_Bringup` Phase 4C observation target:
+  TX-only USART1, SysTick, and read-only CN1-CN4 TIM5/3/2/4 counters at 100 ms,
+  with no TIM8, motor GPIO, sensor path, command receiver, or encoder interrupt.
+- Added its independent Keil project/output, source-boundary tests, manual
+  preflight and hand-rotation procedure, and reuse of the strict connector
+  encoder JSONL inspector. ARM Compiler 6.24 links at 0 errors and 0 warnings
+  (Code 10272, RO 1708, RW 4, ZI 3384 bytes). No COM port was opened, nothing
+  was flashed, motors were not energized, and physical encoder behavior remains
+  unverified.
+- Added the separate `OpenRF1_Motor_Bringup` fail-disabled one-wheel target.
+  It has no default connector, signs, duty ceiling, or watchdog; requires
+  CONFIG then ARM/RUN; enables one TIM8 CCER channel only; and clears CCR,
+  CCER, MOE, and direction outputs on stop, reset, malformed input, serial
+  fault, telemetry failure, or watchdog expiry.
+- Added deterministic source-boundary tests, a dedicated Keil project and
+  ignored output, command/status documentation, and Phase 4C verifier support.
+  ARM Compiler 6.24 links at 0 errors and 0 warnings (Code 20372, RO 1892,
+  RW 4, ZI 3776 bytes). No hardware access or motion occurred.
+- Added a Chinese Phase 4C fill-in test card covering mechanical isolation,
+  voltage/pull-up/common-ground measurements, CN-to-wheel tracing, read-only
+  hand-rotation evidence, separately reviewed motor parameters, and stop/
+  watchdog results without pre-filling any unverified physical value.
 
 ## 2026-07-23 - Vehicle Assembly And Mounting Evidence
 

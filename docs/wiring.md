@@ -210,6 +210,18 @@ For any future non-CN6 HC-SR04 path, Echo level protection is conditional on mod
 
 This is the isolated Phase 3.2F bench target. The two TCRT5000 PC4/PC5 connections and live response have isolated manual evidence; the Hall path and electrical measurements do not. Connect only the modules needed for the current controlled test.
 
+A user-supplied installed-rover photograph confirms the Hall module is mounted
+on the rover underside and that the photograph's top edge is rover-forward.
+The corrected Hall sensing-point clearances are 185 mm to the front body
+boundary, 135 mm to the rear boundary, 75 mm to each side, and 95 mm to each
+axle centre. Together with the 190 mm wheelbase, these establish x=0 mm, y=0 mm
+in the wheel-centre `base_link` plane; they also derive x=-25 mm, y=0 mm from
+the 320 x 150 mm body-envelope centre. The evidence does not establish connector
+pin order or conductor function. The Hall sensing-point floor height is supplied
+as 65 mm, deriving `base_link z=+25.5 mm` from the supplied 39.5 mm loaded wheel
+radius. The evidence does not establish divider installation, sensing face, active
+polarity, triggering pole, or magnetic response.
+
 Vendor-documented tracking connector order:
 
 - pin 1: GND.

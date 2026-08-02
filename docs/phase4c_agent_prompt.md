@@ -55,14 +55,23 @@ Current critical software facts:
 
 Implement the first bounded Phase 4C deliverable:
 
-1. Create an isolated OpenRF1 motor/encoder bring-up target. Keep every existing
+Progress recorded 2026-08-02: the separate encoder-only observation and
+fail-disabled one-wheel motor subsets are complete under
+`firmware/openrf1/encoder_bringup/` and
+`firmware/openrf1/motor_bringup/`. Both have zero-error/zero-warning ARM
+Compiler 6.24 builds and host boundary tests. Do not reimplement or broaden
+them. Their physical gates remain pending.
+
+1. Prepare the manual preflight/evidence workflow for power-off encoder
+   observation and later one raised-wheel testing. Keep both Phase 4C targets
+   and every existing
    BH1750, BMP280, MPU6050, HC-SR04, ground-sensor, full-hardware, and rover-
    control foundation target intact.
 2. Centralize the documented motor/encoder mapping from the handoff. Do not
    invent geometry, wheel signs, encoder signs, speed limits, PID gains, fuse
    values, COM ports, or physical measurements.
-3. Add a real STM32 peripheral backend for TIM8 PWM/direction and TIM2/3/4/5
-   encoder acquisition, including required remaps, but initialize all outputs
+3. Add a real STM32 peripheral backend for TIM8 PWM/direction; reuse the tested
+   encoder helper/mapping without merging targets. Initialize all outputs
    disabled/zero and make motion impossible without an explicit validated enable.
 4. Design the isolated target around one selected logical wheel at a time,
    bounded commands, explicit stop, command timeout, reset, and raw encoder

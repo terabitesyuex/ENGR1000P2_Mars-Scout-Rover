@@ -72,9 +72,7 @@ static void start_channel(DemoUltrasonicArray *array, uint32_t now_us) {
     DemoUltrasonicChannel *channel;
     array->active_channel = array->next_channel;
     channel = &array->channels[array->active_channel];
-    channel->status = DEMO_SENSOR_NOT_READY;
-    channel->raw_echo_us = 0u;
-    channel->distance_mm = 0u;
+    /* Keep the last completed sample valid while this next ping is in flight. */
     channel->state_started_us = now_us;
     array->hardware.trigger_write(array->active_channel, 0u);
     channel->state = array->hardware.echo_read(array->active_channel) != 0u ?

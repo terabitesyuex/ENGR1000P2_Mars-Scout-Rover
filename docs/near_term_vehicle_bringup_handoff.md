@@ -148,6 +148,9 @@ remains disabled so 39.5 mm radius and 108.5 mm half-track are not rounded.
 - A Phase 3.2B full-hardware software foundation with scheduler, pure sensor
   helpers, telemetry framing, UART ring buffers, and STM32-to-ESP32 frame codec.
 - Motor and encoder HAL interfaces under `firmware/openrf1/app/drivers/`.
+- A VehicleDemo-only read-only STM32 encoder backend for connector-labelled
+  TIM2/3/4/5 raw, modular-delta, and cumulative telemetry; its Keil target links
+  with zero warnings. Physical activity, wheel mapping, and signs are unverified.
 - Fixed-point embedded mecanum inverse kinematics.
 - PC-side Phase 4A mecanum/encoder/odometry algorithms and deterministic tests.
 - PC-side Phase 4B command shaping, acceleration limits, four-wheel PID,
@@ -157,7 +160,8 @@ remains disabled so 39.5 mm radius and 108.5 mm half-track are not rounded.
 ### What Does Not Yet Exist
 
 - A real STM32 motor backend that configures TIM8 PWM and direction GPIOs.
-- A real STM32 encoder backend for TIM2/TIM3/TIM4/TIM5.
+- A drive-control STM32 encoder backend integrated with Phase 4A/4B. The new
+  VehicleDemo backend is observation-only and connector-labelled.
 - Embedded four-wheel PID/safety integration. Phase 4B is not yet an operational
   STM32 controller.
 - A drive-ready firmware image. `OpenRF1_RoverControl_Foundation` uses inert
@@ -179,6 +183,13 @@ This does not authorize hardware access, opening a serial port, flashing,
 energizing motors, or moving the vehicle.
 
 ### Phase 4C-A: Isolated Motor/Encoder Software Target
+
+Progress update 2026-08-02: the safer encoder-only subset is implemented as
+`OpenRF1_Encoder_Bringup` and builds with ARM Compiler 6.24 at 0 errors and
+0 warnings. It has no motor output or command receiver. Its manual power-off
+wheel-rotation observation is still pending. The separate fail-disabled
+`OpenRF1_Motor_Bringup` subset is now also implemented and links at 0 errors
+and 0 warnings; all powered use remains pending and unauthorized.
 
 Implement an isolated OpenRF1 motor/encoder bring-up target that:
 
@@ -233,7 +244,7 @@ section and require wheels to be raised or removed.
 | 3 | Connector-to-wheel trace | `CN1=...`, `CN2=...`, `CN3=...`, `CN4=...` using FL/FR/RL/RR |
 | 4 | Main protection | BMS continuous/peak current, installed fuse, and main-wire AWG/cross-section |
 | 5 | Roller layout | clear wheel-by-wheel handedness record or controlled raised-wheel confirmation |
-| 6 | Mounting transforms | C1 x/y/yaw; source-CAD axis definition; TCRT5000/Hall positions and heights |
+| 6 | Mounting transforms | C1 x/y/yaw; source-CAD axis definition; TCRT5000 positions/heights. Corrected Hall front/rear/left/right boundary clearances are 185/135/75/75 mm, both axle-centre distances are 95 mm, and floor height is 65 mm, establishing `base_link x=0 mm, y=0 mm, z=+25.5 mm` with the supplied 39.5 mm loaded wheel radius. Hall sensing face remains required. |
 | 7 | Geometry tolerance | repeat loaded wheel diameter, wheelbase, and track measurements with method/tolerance |
 | 8 | Motion requirements | maximum linear speed, yaw rate, acceleration, and stopping distance |
 | 9 | ESP32 environment | PlatformIO/Arduino/ESP-IDF preference; USB connector type |
@@ -269,7 +280,9 @@ Never insert synthetic Phase 4A/4B fixture values into rover firmware.
 ### Required Before Integrated Autonomy
 
 - TCRT active polarity, installed height, surface/drop threshold, and debounce;
-- Hall polarity, magnetic working distance, and debounce;
+- Hall polarity, magnetic working distance, sensing face, and physical debounce
+  suitability; underside placement and photograph-forward direction alone do
+  not resolve these values;
 - HC-SR04 offsets, timeout, quiet time, and cross-talk schedule;
 - MPU6050 axes, gyro bias, acceleration calibration, and mounting transform;
 - C1 mounting translation/yaw and scan-frame transform;
@@ -277,17 +290,18 @@ Never insert synthetic Phase 4A/4B fixture values into rover firmware.
 
 ## Recommended Delivery Order
 
-1. Software-only isolated motor/encoder target and host tests.
-2. User-reviewed preflight evidence template and one-wheel test card.
-3. Manual encoder-only observation with power-off wheel rotation.
-4. One raised wheel at minimum bounded duty.
-5. Four raised wheels, still open-loop and individually selectable.
-6. One-wheel speed loop, then four independent loops.
-7. Low-speed forward/reverse, rotate, and strafe on the floor.
-8. Physical odometry and MPU6050 integration.
-9. Full sensor scheduler and local safety inputs.
-10. ESP32/WiFi/PC command and telemetry path.
-11. Integrated C1 and obstacle stop/turn behavior.
+1. Software-only isolated encoder observation target and host tests (complete).
+2. Software-only fail-disabled one-wheel motor target and host tests (complete).
+3. User-reviewed preflight evidence template and one-wheel test card.
+4. Manual encoder-only observation with power-off wheel rotation.
+5. One raised wheel at minimum bounded duty.
+6. Four raised wheels, still open-loop and individually selectable.
+7. One-wheel speed loop, then four independent loops.
+8. Low-speed forward/reverse, rotate, and strafe on the floor.
+9. Physical odometry and MPU6050 integration.
+10. Full sensor scheduler and local safety inputs.
+11. ESP32/WiFi/PC command and telemetry path.
+12. Integrated C1 and obstacle stop/turn behavior.
 
 Each step requires its own evidence and regression coverage. A later step must
 not be used to hide a failure in an earlier one.

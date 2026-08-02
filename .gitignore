@@ -40,6 +40,8 @@ firmware/openrf1/keil/Objects_HCSR04_Bringup/
 firmware/openrf1/keil/Objects_GroundSensors_Bringup/
 firmware/openrf1/keil/Objects_RoverControl_Foundation/
 firmware/openrf1/keil/Objects_VehicleDemo/
+firmware/openrf1/keil/Objects_Encoder_Bringup/
+firmware/openrf1/keil/Objects_Motor_Bringup/
 firmware/openrf1/keil/Listings/
 firmware/openrf1/keil/DebugConfig/
 firmware/openrf1/keil/*.uvguix.*

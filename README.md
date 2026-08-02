@@ -48,7 +48,7 @@ The repository root is the single source of truth. Historical nested repository 
 - Phase 3.2C: isolated OpenRF1 BMP280-only bring-up firmware, Keil target, host-side BMP280 register/telemetry tests, verifier support, and recorded BMP280 physical evidence complete. Absolute temperature and pressure accuracy remain UNVERIFIED.
 - Phase 3.2D: isolated OpenRF1 MPU6050-only bring-up firmware foundation, Keil target, host-side MPU6050 register/telemetry tests, verifier support, startup gyro-bias calibration software, and recorded isolated manual evidence complete. Absolute acceleration/gyro accuracy, calibration motion rejection, final rover-frame axis alignment, shared-I2C concurrency, and full-hardware operation remain UNVERIFIED.
 - Phase 3.2E: isolated OpenRF1 HC-SR04-only bring-up firmware, bounded telemetry framing, strict parser, dedicated mock capture, fixtures, evidence lifecycle, A/B handoffs, PA5/PA4/CN6/TIM6 vendor-documented design lock, required external ECHO divider, Keil target, tests, and verifier support complete. Physical wiring, trigger/echo pulses, real distance data, timeout behavior, and distance accuracy remain UNVERIFIED.
-- Phase 3.2F: isolated OpenRF1 ground-sensor firmware foundation and TCRT5000 evidence closeout complete. A's evidence verifies the isolated build/flash, PC4/PC5 signal connections, labelled 3.3 V/common-GND connections, both modules' raw/debounced response, four 100-frame gap-free captures, and exact 50 ms steady-state timestamps. Electrical measurements, polarity semantics, black/white/drop classification, Hall behavior, long-duration operation, and full-rover operation remain UNVERIFIED.
+- Phase 3.2F: isolated OpenRF1 ground-sensor firmware foundation and TCRT5000 evidence closeout complete. A's evidence verifies the isolated build/flash, PC4/PC5 signal connections, labelled 3.3 V/common-GND connections, both modules' raw/debounced response, four 100-frame gap-free captures, and exact 50 ms steady-state timestamps. A later user-supplied photograph confirms the Hall module is mounted under the rover and that the photograph's top edge is rover-forward. Corrected front/rear/left/right Hall-to-body-boundary clearances are 185/135/75/75 mm; supplied 95/95 mm front/rear axle distances and 65 mm floor height establish Hall x=0 mm, y=0 mm, z=+25.5 mm relative to the wheel-centre `base_link`, using the supplied 39.5 mm loaded wheel radius. Electrical measurements, sensing face, polarity semantics, magnetic behavior/working distance, long-duration operation, and full-rover operation remain UNVERIFIED.
 - Phase 4A: standard X-layout mecanum kinematics, explicit wheel-side encoder conversion, body-twist estimation, exact SE(2) odometry integration, deterministic simulation, version-1 telemetry/recording compatibility, tests, documentation, and verifier support complete as a software-only foundation. Supplied geometry is recorded at 0.1 mm precision; encoder resolution/signs, roller orientation, hardware acquisition, geometry tolerance, and physical odometry accuracy remain UNVERIFIED.
 - Phase 4B: validated body-motion commands, proportional wheel desaturation, acceleration limiting, four independent PID controllers, command watchdog, local safety arbitration, deterministic synthetic wheel plants, version-1 telemetry/recording additions, CLI, tests, documentation, and verifier support complete as a software-only foundation. Real motor/encoder behavior, PWM mapping, physical PID tuning, stopping distance, and closed-loop performance remain UNVERIFIED.
 - OpenRF1 rover-control firmware boundary: centralized UNKNOWN hardware mappings, injected four-channel Motor and Encoder HALs, fixed-point mecanum inverse kinematics, and an isolated ARM Compiler 6 compile target are present. The target uses inert backends and must not be flashed as operational rover firmware; real PWM, encoder acquisition, motion, and hardware integration remain UNVERIFIED.
@@ -58,9 +58,29 @@ The repository root is the single source of truth. Historical nested repository 
   tests, and a dedicated Keil project are present. The current demo mapping is
   user-confirmed as left PB9/PB8, centre PB5/PB4, and right PD2/PC11. All three
   ECHO paths are user-reported operational without dividers, but their actual
-  voltages and electrical safety remain unverified.
+  voltages and electrical safety remain unverified. The same target now has a
+  read-only four-connector encoder foundation using TIM5/TIM3/TIM2-full-remap/
+  TIM4, 50 ms raw/delta/cumulative JSONL, and strict offline inspection. It does
+  not assign physical wheel roles or direction signs, and encoder data cannot
+  control motion.
 
-Phases 4A and 4B do not implement real motor/PWM control, encoder GPIO/timers/interrupts, ESP32 WiFi firmware, mapping, SLAM, navigation, obstacle avoidance, C1 electrical/calibration/integrated-rover validation, MPU6050 fusion, physical closed-loop motion, or full multisensor hardware integration. Automated tests do not access real COM ports, USB devices, GPIO, timer peripherals, I2C, encoders, motors, flashing tools, WiFi, or sensors.
+Phases 4A and 4B themselves do not implement hardware adapters. VehicleDemo now contains a software-verified read-only timer/counter encoder adapter, but its physical operation is unverified and it is not yet connected to Phase 4A odometry or Phase 4B control. ESP32 WiFi firmware, mapping, SLAM, navigation, C1 integrated-rover validation, MPU6050 fusion, physical closed-loop motion, and full multisensor hardware integration remain incomplete. Automated tests do not access real COM ports, USB devices, GPIO, timer peripherals, I2C, encoders, motors, flashing tools, WiFi, or sensors.
+
+Phase 4C now also has a dedicated `OpenRF1_Encoder_Bringup` firmware and Keil
+project. It is USART1-TX-only, samples neutral CN1-CN4 16-bit counters every
+100 ms, reuses the strict offline encoder inspector, and contains no TIM8,
+motor GPIO, sensor path, or command receiver. The ARM Compiler 6.24 build
+completed with 0 errors and 0 warnings. No COM port was opened and nothing was
+flashed; see `docs/openrf1_encoder_bringup.md` for the manual gate.
+
+The next software-only subset, `OpenRF1_Motor_Bringup`, is also present. It
+starts unconfigured with TIM8 CCR=0, CCER=0, and MOE off; requires one explicit
+CN, two signs, a user-reviewed duty ceiling, watchdog, ARM, and RUN; and removes
+output on all command/transport/watchdog failures. Its ARM Compiler 6.24 build
+also reports 0 errors and 0 warnings. No physical safety or operation is
+claimed; see `docs/openrf1_motor_bringup.md`.
+The fill-in preflight and evidence form is
+`docs/phase4c_manual_test_card_zh.md`.
 
 ## Phase 4A Mecanum Kinematics and Odometry
 
@@ -375,7 +395,7 @@ The verifier checks Git state, Python selection, pytest import, targeted tests, 
 - Phase 3.2F: OpenRF1 ground-sensor-only firmware and isolated TCRT5000 evidence; electrical measurements, semantic polarity, black/white/drop classification, Hall behavior, and full-hardware operation remain unverified.
 - Phase 4A: software-only mecanum kinematics, explicit encoder conversion, deterministic body-twist estimation, and SE(2) odometry foundation.
 - Phase 4B: software-only closed-loop wheel-speed control, command shaping, watchdog, local safety arbitration, and deterministic synthetic wheel-plant foundation.
-- Phase 4C: future real motor/encoder bring-up, physical direction discovery, electrical validation, and timer/interrupt/PWM validation.
+- Phase 4C: encoder observation and fail-disabled one-wheel motor firmware are software-verified; real encoder observation, powered motor bring-up, physical direction discovery, electrical validation, and timer/interrupt/PWM validation remain.
 - Later Phase 4 hardware/control work: wheel encoder acquisition, measured geometry/sign configuration, MPU6050 integration, motor control, closed-loop motion, calibration, and physical odometry validation.
 - Phase 5: STM32-ESP32-computer communication, WiFi transport, and one-C1 baseline integration. A second C1 is a future out-of-scope extension requiring a new inventory and feasibility review.
 - Phase 6: real-time PC visualization, rover trajectory, and short-range encoder/IMU-assisted accumulated 2D mapping.

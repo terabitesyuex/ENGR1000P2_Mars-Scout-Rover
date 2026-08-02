@@ -81,10 +81,19 @@ class HallLandmarkSample:
     detected: bool | None
     sensor_id: str = "hall_1"
     raw_state: int | None = None
+    debounced_state: int | None = None
     polarity_verified: bool = False
     status: str = "ok"
     raw_value: int | None = None
     source_sequence: int | None = None
+    landmark_index: int | None = None
+    known_x_mm: int | None = None
+    known_y_mm: int | None = None
+    known_base_link_x_mm: int | None = None
+    known_base_link_y_mm: int | None = None
+    base_link_planar_offset_applied: bool = False
+    baseline_level: int | None = None
+    baseline_inferred: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -271,7 +280,16 @@ def default_sensor_inventory(
                     "hall_1",
                     "hall_landmark",
                     "Planned magnetic landmark/checkpoint sensor",
-                    ("detected", "raw_value"),
+                    (
+                        "detected",
+                        "raw_state",
+                        "debounced_state",
+                        "landmark_index",
+                        "known_x_mm",
+                        "known_y_mm",
+                        "known_base_link_x_mm",
+                        "known_base_link_y_mm",
+                    ),
                 ),
                 SensorDefinition(
                     "bh1750_1",

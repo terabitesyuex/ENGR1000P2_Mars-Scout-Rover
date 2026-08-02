@@ -200,6 +200,14 @@ the module ECHO voltage. Measure the node before attaching it to OpenRF1.
 Power the two TCRT5000 modules from 3.3 V, not from tracking-connector pin 6.
 Power the Hall module from 5 V and divide its S output before PB0.
 
+The corrected installed Hall sensing-point clearances are 185 mm to the front
+body boundary, 135 mm to the rear boundary, 75 mm to both side boundaries, and
+95 mm to each axle centre. Together with the 190 mm wheelbase, they establish
+the planar Hall-to-`base_link` offset as x=0 mm, y=0 mm; the body-envelope-centre
+offset is x=-25 mm, y=0 mm. The supplied sensing-point floor height is 65 mm,
+deriving `base_link z=+25.5 mm` from the supplied 39.5 mm loaded wheel radius.
+Sensing-face orientation and magnetic working distance remain unverified.
+
 | Module signal | Destination | Status |
 | --- | --- | --- |
 | Left TCRT VCC/GND/OUT | CN5 pin 3 / common GND / tracking pin 5 PC4/X1 | TCRT signal path MANUAL_EVIDENCE_VERIFIED in isolation |

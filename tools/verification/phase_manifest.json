@@ -14,7 +14,8 @@
     "phase3.2e",
     "phase3.2f",
     "phase4a",
-    "phase4b"
+    "phase4b",
+    "phase4c"
   ],
   "phases": {
     "phase1": {
@@ -1182,6 +1183,41 @@
           ],
           "warning": "Phase 4B verifies software control mathematics and synthetic behavior only; all physical motion, tuning, and stopping facts remain UNVERIFIED."
         }
+      ]
+    },
+    "phase4c": {
+      "display_name": "Phase 4C",
+      "required_files": [
+        "docs/openrf1_encoder_bringup.md",
+        "docs/openrf1_motor_bringup.md",
+        "docs/phase4c_manual_test_card_zh.md",
+        "firmware/openrf1/encoder_bringup/board_config.h",
+        "firmware/openrf1/encoder_bringup/main_encoder_bringup.c",
+        "firmware/openrf1/encoder_bringup/platform_encoder_bringup.c",
+        "firmware/openrf1/motor_bringup/board_config.h",
+        "firmware/openrf1/motor_bringup/main_motor_bringup.c",
+        "firmware/openrf1/motor_bringup/motor_control.c",
+        "firmware/openrf1/motor_bringup/platform_motor_bringup.c",
+        "firmware/openrf1/keil/OpenRF1_Encoder_Bringup.uvprojx",
+        "firmware/openrf1/keil/OpenRF1_Motor_Bringup.uvprojx",
+        "firmware/openrf1/keil/RTE/_OpenRF1_Encoder_Bringup/RTE_Components.h",
+        "firmware/openrf1/keil/RTE/_OpenRF1_Motor_Bringup/RTE_Components.h",
+        "pc/tests/test_openrf1_encoder_bringup.py",
+        "pc/tests/test_openrf1_motor_bringup.py"
+      ],
+      "targeted": [
+        "pc/tests/test_openrf1_encoder_bringup.py",
+        "pc/tests/test_openrf1_motor_bringup.py",
+        "pc/tests/test_vehicle_demo_encoder.py"
+      ],
+      "regression": [
+        "pc/tests/test_openrf1_vehicle_demo.py",
+        "pc/tests/test_motion_control.py",
+        "pc/tests/test_mecanum_kinematics_odometry.py",
+        "pc/tests/test_hardware_lock_validation.py"
+      ],
+      "full": [
+        "pc/tests"
       ]
     }
   }

@@ -25,6 +25,9 @@ items below remain stop conditions where that checklist requires measurement.
 | Encoder A GPIO for all four wheels | authoritative_vendor_documented | CN1 PA0, CN2 PA6, CN3 PA15, CN4 PB6 |
 | Encoder B GPIO for all four wheels | authoritative_vendor_documented | CN1 PA1, CN2 PA7, CN3 PB3, CN4 PB7 |
 | Encoder timer/EXTI resources | vendor_software_documented | CN1 TIM5, CN2 TIM3, CN3 TIM2 full remap, CN4 TIM4 in encoder TI12 mode |
+| VehicleDemo encoder acquisition software | software_verified; physical operation unverified | Read-only 50 ms CN1-CN4 raw/delta/cumulative JSONL and strict offline inspection are implemented; confirm eight pull-ups, counter activity, connector-to-wheel trace, signs, and counts/rev manually |
+| Isolated encoder-only bring-up target | software_verified; manual action required | Dedicated TX-only 100 ms `OpenRF1_Encoder_Bringup` builds at 0 errors/0 warnings and has no motor path; measure A/B levels and pull-ups, select COM port, obtain explicit flash/port authorization, then rotate one unpowered raised wheel by hand |
+| Fail-disabled one-wheel motor target | software_verified; manual action required | Dedicated `OpenRF1_Motor_Bringup` builds at 0 errors/0 warnings, starts with CCR/CCER/MOE disabled, requires explicit connector/sign/duty-limit/watchdog plus ARM/RUN, and permits one CN only; complete electrical preflight and reviewed raised-wheel test card before separate flash/port/power/motion authorization |
 | Encoder electrical input levels and pull configuration | design_locked; output topology unknown | Encoder accepts 3.3-5 V and output high follows VCC; leave connector pin 2 unused, power blue wires at 3.3 V, add eight 10 kOhm A/B pull-ups |
 | Encoder sign per logical wheel | unknown | Verified wheel mounting and controlled rotation test |
 | Encoder 11 PPR interpretation | user_confirmed | 11 A cycles and 11 B cycles per motor-shaft revolution |
@@ -51,7 +54,8 @@ items below remain stop conditions where that checklist requires measurement.
 | Installed three-HC-SR04 demo profile | user_confirmed_current_demo_mapping | Left PB9/PB8, centre PB5/PB4, right PD2/PC11. This supersedes the earlier CN6-first proposal for the current demo target only. |
 | Current three-HC-SR04 ECHO protection | user_reported_operational; electrical safety unverified | All three ECHO paths are reported directly connected without dividers and functionally working. Measure ECHO-high voltage at PB8, PB4, and PC11 before electrical acceptance. |
 | Shared MPU6050/BMP280/BH1750 I2C concurrency | unverified | Combined-bus firmware and physical validation |
-| Final sensor mounting positions and axes | unknown | Mechanical assembly and measured offsets |
+| Hall physical mounting direction | user_confirmed_from_supplied_photograph | Hall module is mounted under the rover; top of the supplied photograph is rover-forward |
+| Final sensor mounting positions and axes | partially confirmed | Corrected Hall boundary clearances are front 185 mm, rear 135 mm, left/right 75 mm; axle-centre distances are front/rear 95 mm; sensing-point floor height is 65 mm. This establishes Hall x=0 mm, y=0 mm, z=+25.5 mm relative to the wheel-centre `base_link` using the supplied 39.5 mm loaded wheel radius, and x=-25 mm, y=0 mm from the 320 x 150 mm body-envelope centre. Hall sensing face plus remaining sensor offsets still require measurement |
 | Final power distribution and current budget | unknown | Battery/regulator ratings and measured startup/runtime load |
 
 Known software inputs from the current task, retained without converting them

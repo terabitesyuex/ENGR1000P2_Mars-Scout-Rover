@@ -563,3 +563,25 @@ Run:
 The Phase 4B verifier covers body-command validation; canonical and mixed Phase 4A targets; proportional desaturation; per-wheel acceleration limiting and reversal; derivative-on-measurement PID; positive/negative saturation and conditional anti-windup; recovery, disable, and reset; four independent controller states; supplied-timestamp watchdog boundaries; emergency, controller, communication, edge, ultrasonic, sensor-validity, and external-stop policies; deterministic stop/restart; all 12 synthetic scenarios; slow-wheel mismatch; JSONL parsing; recording conversion and inspection; CLI success/failure/overwrite behavior; Phase 4A and Phase 3 regression tests; the full PC suite; privacy/artifact scans; and source-level no-hardware-import checks.
 
 Phase 4B automated tests do not open COM ports, USB devices, GPIO, I2C, timers, encoders, motors, sensors, network sockets, Keil, FlyMcu, or flashing tools. Motor rotation, encoder acquisition, physical direction, PWM mapping, usable physical PID gains, roller orientation, trajectory following, stopping distance, and real closed-loop performance remain UNVERIFIED.
+
+VehicleDemo encoder software tests cover connector/timer mappings, TIM2 full
+remap with SWD retained, no encoder interrupts, 16-bit forward/reverse wrap,
+zero-interval rejection, bounded cumulative counts, exact JSONL fields,
+sequence/timestamp ordering, interval consistency, unexpected mapping/sign
+claims, CLI inspection, and isolation from motion decisions. Keil build
+verification is software-only. Tests do not open a serial port, flash the MCU,
+power encoder rails, rotate wheels, or claim real counter activity.
+
+The isolated encoder bring-up tests additionally require a dedicated relative
+Keil target containing only `main_encoder_bringup.c`,
+`platform_encoder_bringup.c`, and the pure encoder helper. Source checks reject
+TIM8, motor/sensor GPIO, command reception, and USART RX. The Keil ARM Compiler
+6.24 build must report zero errors and warnings. These checks still do not open
+a COM port, flash the MCU, energize motors, or rotate wheels.
+
+Phase 4C one-wheel motor tests cover zero/unconfigured defaults, configuration
+and sign rejection, explicit arming, configured duty ceiling, watchdog expiry,
+command/telemetry fail-stop calls, CCR/CCER/MOE double-disable, exactly-one
+channel enable, neutral encoder labels, independent Keil project contents, and
+generated-output ignore rules. Keil build verification is compile/link only;
+physical stop response and electrical safety remain manual.

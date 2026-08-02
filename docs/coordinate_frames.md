@@ -74,7 +74,9 @@ The Cartesian display is an image orientation, not a new coordinate frame. It pl
 ## Frame Names
 
 - `lidar_frame`: coordinate frame at the LiDAR optical rotation center.
-- `base_link`: future rover body frame.
+- `base_link`: rover body frame with origin at the centre of the rectangle formed
+  by the four wheel centres and `z=0` in the wheel-axle plane; `+x` forward,
+  `+y` left, and `+z` upward.
 - `odom`: future short-term local odometry frame.
 - `map`: future short-range accumulated mapping frame.
 
@@ -83,6 +85,12 @@ LiDAR ID is `c1_1`; its mounting position, height, yaw, and orientation remain
 UNVERIFIED.
 
 The physical LiDAR mounting translation and yaw from `lidar_frame` to `base_link` remain UNVERIFIED. Phase 2.2 provides only mathematical transform helpers and does not apply any physical mounting offset.
+
+For `hall_1`, corrected user-supplied boundary and axle-centre measurements
+establish planar `base_link x=0 mm, y=0 mm`. Its sensing-point height is supplied
+as 65 mm above the floor; combined with the supplied 39.5 mm loaded wheel radius,
+this derives `base_link z=+25.5 mm`. This mounting transform does not verify the
+Hall sensing face, magnetic polarity, triggering pole, or working distance.
 
 Phase 2.3 visualizations are single-frame synthetic scan views. Phase 2.4 recordings may include optional `rover_pose` records for replay metadata, but these records are not proof of encoder odometry and do not create a verified `odom` frame.
 

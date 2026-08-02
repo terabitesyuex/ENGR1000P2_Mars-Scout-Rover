@@ -57,6 +57,43 @@ This repository is the ENGR1000P2 Mars Scout Rover software and documentation ba
   UNVERIFIED. Hardware access,
   serial-port access, flashing, energizing motors, or issuing motion commands
   still require a separate explicit request and documented safety prerequisites.
+- VehicleDemo now has a SOFTWARE_VERIFIED, read-only connector encoder path:
+  CN1 TIM5 PA0/PA1, CN2 TIM3 PA6/PA7, CN3 TIM2 full remap PA15/PB3, and CN4
+  TIM4 PB6/PB7 are configured in encoder TI12 mode and sampled every 50 ms.
+  Telemetry preserves connector IDs, unsigned raw counters, modular deltas, and
+  cumulative counts only. CN-to-wheel tracing, external pull-up installation,
+  counter activity, counts per revolution, and all physical signs remain
+  UNVERIFIED. Encoder data does not alter motion or obstacle decisions.
+- Phase 4C now has a dedicated SOFTWARE_VERIFIED encoder-only observation
+  target under `firmware/openrf1/encoder_bringup/`. It enables only
+  USART1 TX, SysTick, AFIO/GPIOA/GPIOB, and TIM2/3/4/5; samples neutral
+  CN1-CN4 counters every 100 ms; and links with ARM Compiler 6 at zero errors
+  and warnings. It has no command receiver, TIM8, motor GPIO, ultrasonic, or
+  Hall path. Flashing, serial capture, real counter activity, CN-to-wheel
+  tracing, signs, and counts/revolution remain UNVERIFIED.
+- Phase 4C also has a dedicated SOFTWARE_VERIFIED fail-disabled one-wheel motor
+  target under `firmware/openrf1/motor_bringup/`. Startup clears all CCRs and
+  disables TIM8 CCER and BDTR/MOE. Runtime configuration must explicitly supply
+  one CN connector, motor and encoder signs, a user-reviewed duty ceiling, and
+  watchdog duration before ARM/RUN; malformed commands, serial faults,
+  telemetry failure, STOP/RESET, or timeout remove output. It links with ARM
+  Compiler 6.24 at 0 errors and warnings. This does not authorize flashing or
+  establish any safe physical duty, wheel identity, sign, stop behavior, or
+  motor/encoder operation.
+- A user-supplied 2026-08-02 underside photograph confirms that the Hall module
+  is physically mounted under the rover and that the top of that photograph is
+  the rover-front direction. The user subsequently supplied Hall sensing-point
+  corrected clearances of 185 mm to the front body boundary, 135 mm to the rear
+  boundary, and 75 mm to each side boundary. These imply a 320 x 150 mm body
+  envelope and a planar offset of x=-25 mm, y=0 mm from that envelope's centre
+  (`+x` forward, `+y` left). The user also reports 95 mm from the Hall sensing
+  point to each axle centre; with the supplied 190 mm wheelbase this places the
+  Hall at x=0 mm, y=0 mm in the wheel-centre `base_link` plane. Hall
+  sensing-point height above the floor is user-supplied as 65 mm. With the
+  supplied 39.5 mm loaded wheel radius and the wheel-centre plane as
+  `base_link z=0`, this derives z=+25.5 mm. Sensing face, wiring, active
+  polarity, triggering pole, working distance, and magnetic response remain
+  UNVERIFIED.
 
 ## Near-Term Handoff
 
@@ -67,8 +104,10 @@ This repository is the ENGR1000P2 Mars Scout Rover software and documentation ba
 - Do not merge `phase3.2e-hcsr04-bringup` tip `17c6cd5`; it adds generated Keil
   `Objects_HCSR04_Bringup` output only, while the source is already represented
   in `main`.
-- The first Phase 4C deliverable is an isolated, software-verified, fail-disabled
-  one-wheel-at-a-time motor/encoder bring-up target. It is not four-wheel motion.
+- The software-only encoder observation and fail-disabled one-wheel motor parts
+  of the first Phase 4C deliverable are software-verified. Manual power-off
+  encoder observation and all powered tests remain. This is not four-wheel
+  motion.
 
 ## Confirmed Inventory
 
@@ -131,7 +170,7 @@ Do not treat BH1750 communication failures as zero-lux readings; valid darkness 
 - Phase 3.2F: OpenRF1 ground-sensor-only firmware, tests, and isolated TCRT5000 evidence; voltage measurements, polarity semantics, black/white/drop classification, Hall behavior, long-duration operation, and full-hardware operation remain UNVERIFIED.
 - Phase 4A: software-only standard X-layout mecanum kinematics, explicit encoder conversion, deterministic body-twist estimation, and SE(2) odometry foundation; physical values and accuracy remain UNVERIFIED.
 - Phase 4B: software-only wheel-speed closed-loop control, command shaping, watchdog, safety arbitration, and deterministic synthetic plant foundation; physical motor/encoder behavior remains UNVERIFIED.
-- Phase 4C: future real motor and encoder hardware bring-up, direction discovery, electrical checks, and timer/interrupt/PWM validation; not started.
+- Phase 4C: dedicated encoder observation and fail-disabled one-wheel motor firmware are SOFTWARE_VERIFIED; real encoder observation, powered motor bring-up, direction discovery, electrical checks, and physical timer/interrupt/PWM validation have not started.
 - Later Phase 4 work: encoder hardware acquisition, measured geometry/signs, MPU6050 integration, motor control, closed-loop motion, calibration, and physical odometry validation.
 - Phase 5: STM32-ESP32-PC communication, WiFi transport, and one-C1 baseline integration. A second C1 is a future out-of-scope extension requiring a new inventory and feasibility review.
 - Phase 6: real-time PC visualization, rover trajectory, and short-range encoder/IMU-assisted accumulated 2D mapping.
