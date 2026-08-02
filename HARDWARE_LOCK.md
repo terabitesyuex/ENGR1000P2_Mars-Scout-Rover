@@ -134,6 +134,13 @@ OpenRF1 motor, encoder, and UART evidence added from the board schematic dated
   and ultrasonic 3 to H3 PD2/TRIG and PC11/ECHO. These are DESIGN_LOCKED
   project allocations, not vendor ultrasonic ports; each ECHO requires its own
   10 kOhm / 15 kOhm divider and firmware support.
+- USER_CONFIRMED_CURRENT_DEMO_MAPPING supersedes that proposal for the current
+  vehicle-demo target: US1 left PB9/PB8, US2 centre PB5/PB4, and US3 right
+  PD2/PC11. Historical isolated CN6 bring-up facts are unchanged.
+- USER_REPORTED_OPERATIONAL_DIRECT_ECHO: all three current demo ECHO paths are
+  directly connected without dividers and obstacle avoidance operates. This is
+  functional evidence only. ECHO-high voltage at PB8, PB4, and PC11 and
+  long-term electrical safety remain UNVERIFIED.
 
 The complete assembly harness and pre-power procedure are recorded in
 `docs/openrf1_rover_wiring_plan.md`.
@@ -365,6 +372,13 @@ PC planned responsibilities:
 - Verify ESP32 GPIO and UART assignment before live integration.
 - Verify STM32-ESP32 physical link before relying on rover sensor data.
 - Verify HC-SR04 level interface, TCRT5000 polarity, Hall polarity, shared-I2C operation, final MPU6050 mounting orientation, and sensor mounting offsets.
+- USER_CONFIRMED_CURRENT_DEMO_MAPPING: left PB9/PB8, centre PB5/PB4, and right
+  PD2/PC11. The confirmation screenshot SHA-256 is
+  `E018B695861391BFB3ED7EF4EA6F5560A13D6BBD409FBBF0FABCE86E6E16B3F0`.
+- USER_REPORTED_OPERATIONAL_DIRECT_ECHO: no divider is installed on the three
+  current demo ECHO paths and the user reports successful operation. Do not
+  infer voltage compatibility or electrical safety; measure ECHO high at PB8,
+  PB4, and PC11 before electrical acceptance.
 
 ## Phase 2.5 Software Boundary Status
 

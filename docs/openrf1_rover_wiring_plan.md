@@ -165,20 +165,24 @@ has 10 kOhm pull-ups to 3.3 V and the modules may add parallel pull-ups.
 
 ## Three Ultrasonic Harnesses
 
-All three HC-SR04 modules use 5 V power and one 10 kOhm / 15 kOhm divider per
-ECHO signal. Only ultrasonic 1 uses the vendor CN6 allocation. Ultrasonic 2 and
-3 use spare H3 signal pins selected by this plan.
+The user confirmed the current demo signal mapping on 2026-08-02. It uses all
+six H3 signal pins and supersedes the earlier CN6-first proposal for this demo
+target only.
 
-| Sensor | Proposed mounting role | VCC/GND | TRIG | ECHO after divider | Status |
-| --- | --- | --- | --- | --- | --- |
-| ultrasonic_1 | Front | CN6 pins 1/2 | CN6 pin 3, PA5 | CN6 pin 4, PA4 | Vendor path; physical validation required |
-| ultrasonic_2 | Left | CN5 5V/GND branch | H3 pin 1, PB9 | H3 pin 2, PB8 | DESIGN_LOCKED; firmware required |
-| ultrasonic_3 | Right | CN5 5V/GND branch | H3 pin 5, PD2 | H3 pin 6, PC11 | DESIGN_LOCKED; firmware required |
+| Sensor | Current mounting role | TRIG | ECHO | Status |
+| --- | --- | --- | --- | --- |
+| ultrasonic_1 | Left | H3 pin 1, PB9 | H3 pin 2, PB8 | USER_CONFIRMED_CURRENT_DEMO_MAPPING |
+| ultrasonic_2 | Centre | H3 pin 3, PB5 | H3 pin 4, PB4 | USER_CONFIRMED_CURRENT_DEMO_MAPPING |
+| ultrasonic_3 | Right | H3 pin 5, PD2 | H3 pin 6, PC11 | USER_CONFIRMED_CURRENT_DEMO_MAPPING |
 
-Leave H3 pins 3 and 4 unused. Trigger only one module at a time; do not fire
-the three sensors simultaneously.
+Trigger only one module at a time; do not fire the three sensors simultaneously.
+The user reports all three ECHO signals are directly connected without dividers
+and obstacle avoidance works. This is USER_REPORTED_OPERATIONAL_DIRECT_ECHO,
+not electrical acceptance. Actual ECHO-high voltages at PB8, PB4, and PC11 and
+the exact input-path limits remain UNVERIFIED.
 
-Each ECHO divider is wired as follows:
+The earlier conservative divider design remains available if measurements show
+it is required:
 
 ```text
 HC-SR04 ECHO ---- 10 kOhm ----+---- OpenRF1 ECHO input
@@ -321,9 +325,9 @@ charged voltage, and selected fuse rating before power-on.
   actual keyed connector.
 - One 6-pin tracking harness.
 - 2.54 mm female leads or keyed housings for H3, H4, H5, and H6.
-- Twelve 10 kOhm and four 15 kOhm resistors, 5 percent or better: four 10 kOhm
-  divider series resistors, four 15 kOhm divider shunts, and eight encoder A/B
-  pull-ups to 3.3 V.
+- Eight 10 kOhm encoder A/B pull-ups and one 10 kOhm / 15 kOhm Hall divider,
+  5 percent or better. Keep three additional divider pairs or suitable level
+  shifters available if measured HC-SR04 ECHO levels require protection.
 - One regulated 5.0 V buck supply with at least a 3 A design target and adequate
   transient response; validate output under load before connecting C1/ESP32.
 - Main fuse holder, branch protection, latching power switch or emergency
@@ -343,15 +347,19 @@ charged voltage, and selected fuse rating before power-on.
    encoder signal or encoder supply pin. Confirm connector pin 2 is unpopulated,
    every blue encoder wire reaches only 3.3 V, and all eight A/B pull-ups reach
    only 3.3 V.
-4. Measure each 10 kOhm and 15 kOhm divider in circuit.
+4. Measure the Hall 10 kOhm / 15 kOhm divider in circuit. Before accepting the
+   current direct ultrasonic wiring, measure ECHO-high at PB8, PB4, and PC11
+   against the exact board input limits; install protection if required.
 5. Disconnect motors, C1, ESP32, and sensors. Power only the regulator/board and
    measure 5 V, 3.3 V, and polarity.
 6. Measure the independent 5 V buck at no load and under a dummy load. C1 supply
    must remain within 4.8-5.2 V with acceptable ripple.
 7. Add one subsystem at a time in the repository bring-up order. Never attach
    all devices for the first power-on.
-8. Before connecting Hall S or any HC-SR04 ECHO input, measure the raw and divided
-   high levels and confirm the divided node does not exceed 3.3 V.
+8. Before connecting Hall S, measure its raw and divided high levels and confirm
+   the divided node does not exceed 3.3 V. Treat direct HC-SR04 ECHO electrical
+   acceptance as pending until the three current paths have equivalent voltage
+   evidence.
 9. Test one motor at a time with wheels clear of the bench. Confirm connector,
    wheel position, motor sign, encoder sign, brake, command timeout, and emergency
    stop before testing four-wheel motion.

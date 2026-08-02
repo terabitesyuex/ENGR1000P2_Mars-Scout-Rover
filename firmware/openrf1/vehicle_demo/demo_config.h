@@ -1,0 +1,66 @@
+#pragma once
+
+#include <stdint.h>
+
+/*
+ * User-confirmed current demo mapping, matching the supplied hardware-team
+ * source. This supersedes the earlier CN6-first assembly proposal for the
+ * current demo target only. Electrical ECHO voltage safety remains unverified.
+ */
+#define OPENRF1_DEMO_PIN_PROFILE "hardware_group_3us_user_confirmed"
+
+#define OPENRF1_DEMO_US_LEFT_TRIGGER_PIN "PB9"
+#define OPENRF1_DEMO_US_LEFT_ECHO_PIN "PB8"
+#define OPENRF1_DEMO_US_CENTER_TRIGGER_PIN "PB5"
+#define OPENRF1_DEMO_US_CENTER_ECHO_PIN "PB4"
+#define OPENRF1_DEMO_US_RIGHT_TRIGGER_PIN "PD2"
+#define OPENRF1_DEMO_US_RIGHT_ECHO_PIN "PC11"
+
+#define OPENRF1_DEMO_USART_BAUD_RATE ((uint32_t)115200u)
+#define OPENRF1_DEMO_COMMAND_BUFFER_BYTES ((uint16_t)32u)
+#define OPENRF1_DEMO_UART_RX_BUFFER_BYTES ((uint16_t)128u)
+#define OPENRF1_DEMO_UART_TX_BUFFER_BYTES ((uint16_t)512u)
+#define OPENRF1_DEMO_TELEMETRY_BUFFER_BYTES ((uint16_t)384u)
+
+#define OPENRF1_DEMO_PWM_PRESCALER ((uint16_t)1u)
+#define OPENRF1_DEMO_PWM_AUTO_RELOAD ((uint16_t)2000u)
+#define OPENRF1_DEMO_MOTION_DUTY_PERMILLE ((uint16_t)600u)
+#define OPENRF1_DEMO_ELECTRICAL_FORWARD_DUTY_PERMILLE ((uint16_t)650u)
+#define OPENRF1_DEMO_ELECTRICAL_REVERSE_DUTY_PERMILLE ((uint16_t)400u)
+#define OPENRF1_DEMO_CN1_SPEED_SCALE_PERMILLE ((uint16_t)1010u)
+#define OPENRF1_DEMO_CN2_SPEED_SCALE_PERMILLE ((uint16_t)1010u)
+#define OPENRF1_DEMO_CN3_SPEED_SCALE_PERMILLE ((uint16_t)750u)
+#define OPENRF1_DEMO_CN4_SPEED_SCALE_PERMILLE ((uint16_t)750u)
+
+#define OPENRF1_DEMO_FRONT_STOP_MM ((uint16_t)250u)
+#define OPENRF1_DEMO_SIDE_STOP_MM ((uint16_t)200u)
+#define OPENRF1_DEMO_HAZARD_CONFIRM_COUNT ((uint8_t)2u)
+#define OPENRF1_DEMO_STOP_CHECK_MS ((uint32_t)1000u)
+#define OPENRF1_DEMO_TURN_RIGHT_MS ((uint32_t)1500u)
+#define OPENRF1_DEMO_TURN_LEFT_MS ((uint32_t)700u)
+#define OPENRF1_DEMO_TURN_SETTLE_MS ((uint32_t)1000u)
+#define OPENRF1_DEMO_COMMAND_WATCHDOG_MS ((uint32_t)2000u)
+#define OPENRF1_DEMO_SENSOR_MAX_AGE_MS ((uint32_t)500u)
+
+#define OPENRF1_DEMO_TRIGGER_SETTLE_US ((uint32_t)2u)
+#define OPENRF1_DEMO_TRIGGER_PULSE_US ((uint32_t)10u)
+#define OPENRF1_DEMO_ECHO_TIMEOUT_US ((uint32_t)30000u)
+#define OPENRF1_DEMO_INTER_CHANNEL_GAP_US ((uint32_t)35000u)
+#define OPENRF1_DEMO_TIMER_TICK_HZ ((uint32_t)1000000u)
+
+#define OPENRF1_DEMO_STATUS_PERIOD_MS ((uint32_t)250u)
+
+#define OPENRF1_DEMO_STATIC_ASSERT(name, condition) typedef char name[(condition) ? 1 : -1]
+
+OPENRF1_DEMO_STATIC_ASSERT(
+    demo_watchdog_exceeds_sensor_age,
+    OPENRF1_DEMO_COMMAND_WATCHDOG_MS > OPENRF1_DEMO_SENSOR_MAX_AGE_MS
+);
+OPENRF1_DEMO_STATIC_ASSERT(
+    demo_trigger_is_at_least_10_us,
+    OPENRF1_DEMO_TRIGGER_PULSE_US >= 10u
+);
+OPENRF1_DEMO_STATIC_ASSERT(
+    demo_timeout_fits_modular_timer_contract,
+    OPENRF1_DEMO_ECHO_TIMEOUT_US < 32768u
+);

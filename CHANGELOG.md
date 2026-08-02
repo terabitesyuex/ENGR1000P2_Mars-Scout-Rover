@@ -1,5 +1,24 @@
 # Changelog
 
+## 2026-08-02 - Accelerated Vehicle Demo Obstacle Foundation
+
+- Audited the supplied hardware-team three-ultrasonic obstacle-avoidance source,
+  recorded its archive/HEX hashes and conflicting stale artifact hash, and
+  excluded generated outputs and private local paths.
+- Added an isolated `OpenRF1_VehicleDemo` target preserving the reported motor
+  direction and trim values while centralizing the user-confirmed three-sensor
+  pin profile.
+- Replaced fail-open timeout handling and blocking DWT-based measurements with
+  fail-closed safety, explicit ARM/START, a command heartbeat watchdog,
+  interrupt-driven USART rings, a nonblocking staggered HC-SR04 state machine,
+  and an overflow-extended TIM6 microsecond clock.
+- Added strict JSONL identity/status telemetry, null invalid distances, focused
+  tests, a dedicated ignored Keil output path, and an integration audit.
+- Recorded the user-confirmed left PB9/PB8, centre PB5/PB4, and right
+  PD2/PC11 mapping and the report that all three direct, undivided ECHO paths
+  operate on the current rover. Actual ECHO-high voltages, electrical safety,
+  obstacle performance, and the final linked Keil build remain unverified.
+
 ## 2026-07-23 - Vehicle Assembly And Mounting Evidence
 
 - Archived the supplied information-response DOCX, exterior/underside assembly

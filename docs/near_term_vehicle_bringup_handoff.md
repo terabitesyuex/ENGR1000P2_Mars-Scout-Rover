@@ -2,6 +2,16 @@
 
 Date: 2026-07-23
 
+Update 2026-08-02: the user has replaced the strictly sequential Phase 4C
+strategy with an accelerated approximately 20-working-hour demo objective. The
+software-prepared obstacle target and the supplied-source audit are documented
+in `vehicle_demo_obstacle_integration.md`. The safety and evidence gates in this
+handoff still apply. The user has now confirmed the current demo mapping as left
+PB9/PB8, centre PB5/PB4, and right PD2/PC11, superseding this handoff's earlier
+CN6-first proposal for the demo target. All three ECHO paths are reported to
+operate as direct connections without dividers; actual ECHO-high voltages and
+electrical safety remain unverified.
+
 This document hands the Mars Scout Rover from wiring preparation to the next
 software-development agent. A 2026-07-23 evidence batch now archives exterior
 and underside-sensor photographs, MPU6050 orientation photographs, CAD
@@ -37,9 +47,11 @@ evidence, not evidence that the following have passed:
 - battery and charger barrel polarity;
 - battery, OpenRF1 VIN, 5 V, 3.3 V, and independent-buck voltages;
 - BMS current limits, fuse selection, wire gauge, and transient margin;
-- four encoder pull-ups and four 10 kOhm / 15 kOhm divider networks;
+- eight encoder pull-ups, the Hall divider, and direct HC-SR04 ECHO voltages;
 - motor and encoder wheel identities or signs;
-- shared I2C, three-HC-SR04 operation, USART2, USART3, or full-rover operation.
+- shared I2C, repository safety-firmware operation, USART2, USART3, or
+  full-rover operation. Hardware-team three-HC-SR04 obstacle operation is
+  user-reported, not repository-captured evidence.
 
 Recorded supplied values:
 
@@ -116,9 +128,12 @@ remains disabled so 39.5 mm radius and 108.5 mm half-track are not rounded.
 ### Sensors And Communications
 
 - I2C: PB1/SCL and PC3/SDA. BH1750 `0x23`, MPU6050 `0x68`, BMP280 `0x76`.
-- HC-SR04 1: PA5 TRIG / PA4 ECHO through its own divider.
-- HC-SR04 2: PB9 TRIG / PB8 ECHO through its own divider.
-- HC-SR04 3: PD2 TRIG / PC11 ECHO through its own divider.
+- Current demo US1 left: PB9 TRIG / PB8 ECHO, user-confirmed.
+- Current demo US2 centre: PB5 TRIG / PB4 ECHO, user-confirmed.
+- Current demo US3 right: PD2 TRIG / PC11 ECHO, user-confirmed.
+- All three current ECHO paths are user-reported direct and operational without
+  dividers. Voltage compatibility remains unverified; the isolated CN6 divider
+  design remains historical Phase 3.2E guidance.
 - TCRT5000: PC4/X1 and PC5/X2, powered from 3.3 V.
 - Hall: PB0/X3 after its own divider, Hall module powered from 5 V.
 - C1: H5 USART2, PA2/TX2 to C1 RX and PA3/RX2 from C1 TX, 460800 8N1.

@@ -12,10 +12,11 @@ vehicle front, installed C1/GY-521, 79 mm wheel diameter, 190 mm wheelbase,
 217 mm track width, and an 85.8 mm C1 scan-plane height above the chassis upper
 surface. Electrical acceptance, controller wiring, signs, calibration, and
 controlled operation remain UNVERIFIED.
-The next software scope is Phase 4C; see
-[`docs/near_term_vehicle_bringup_handoff.md`](docs/near_term_vehicle_bringup_handoff.md)
-and the ready-to-copy
-[`docs/phase4c_agent_prompt.md`](docs/phase4c_agent_prompt.md).
+The current accelerated scope is a presentation-ready vehicle demo. A supplied
+hardware-team obstacle target is being integrated through the fail-closed
+[`vehicle demo obstacle guide`](docs/vehicle_demo_obstacle_integration.md).
+Formal Phase 4C background remains in
+[`docs/near_term_vehicle_bringup_handoff.md`](docs/near_term_vehicle_bringup_handoff.md).
 
 ## Repository Layout
 
@@ -51,6 +52,13 @@ The repository root is the single source of truth. Historical nested repository 
 - Phase 4A: standard X-layout mecanum kinematics, explicit wheel-side encoder conversion, body-twist estimation, exact SE(2) odometry integration, deterministic simulation, version-1 telemetry/recording compatibility, tests, documentation, and verifier support complete as a software-only foundation. Supplied geometry is recorded at 0.1 mm precision; encoder resolution/signs, roller orientation, hardware acquisition, geometry tolerance, and physical odometry accuracy remain UNVERIFIED.
 - Phase 4B: validated body-motion commands, proportional wheel desaturation, acceleration limiting, four independent PID controllers, command watchdog, local safety arbitration, deterministic synthetic wheel plants, version-1 telemetry/recording additions, CLI, tests, documentation, and verifier support complete as a software-only foundation. Real motor/encoder behavior, PWM mapping, physical PID tuning, stopping distance, and closed-loop performance remain UNVERIFIED.
 - OpenRF1 rover-control firmware boundary: centralized UNKNOWN hardware mappings, injected four-channel Motor and Encoder HALs, fixed-point mecanum inverse kinematics, and an isolated ARM Compiler 6 compile target are present. The target uses inert backends and must not be flashed as operational rover firmware; real PWM, encoder acquisition, motion, and hardware integration remain UNVERIFIED.
+- Accelerated vehicle-demo obstacle foundation: isolated real TIM8 motor output,
+  nonblocking staggered three-HC-SR04 acquisition, explicit ARM/START,
+  fail-closed sensor handling, command heartbeat watchdog, strict JSONL, focused
+  tests, and a dedicated Keil project are present. The current demo mapping is
+  user-confirmed as left PB9/PB8, centre PB5/PB4, and right PD2/PC11. All three
+  ECHO paths are user-reported operational without dividers, but their actual
+  voltages and electrical safety remain unverified.
 
 Phases 4A and 4B do not implement real motor/PWM control, encoder GPIO/timers/interrupts, ESP32 WiFi firmware, mapping, SLAM, navigation, obstacle avoidance, C1 electrical/calibration/integrated-rover validation, MPU6050 fusion, physical closed-loop motion, or full multisensor hardware integration. Automated tests do not access real COM ports, USB devices, GPIO, timer peripherals, I2C, encoders, motors, flashing tools, WiFi, or sensors.
 

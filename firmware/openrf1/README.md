@@ -71,6 +71,20 @@ The physical inventory contains three HC-SR04 modules, but this target is for on
 
 The three modules may be validated sequentially, one at a time, on the single CN6 path. GPIO, connector, and timer resources for two additional simultaneous paths are UNVERIFIED and are not implemented by this target. Each future simultaneous ECHO path requires its own divider; divider midpoints must not be shared. Physical wiring, pulses, real distance data, timeout behavior, accuracy, staggered triggering, cross-talk, and simultaneous three-module operation remain UNVERIFIED. See the [hardware materials BOM](../../docs/hardware_materials_bom.md) and [HC-SR04 bring-up guide](../../docs/openrf1_hcsr04_bringup.md) before procurement or wiring.
 
+The accelerated vehicle-demo target is separate from isolated bring-up work:
+
+- Source: `firmware/openrf1/vehicle_demo/`.
+- Keil project: `firmware/openrf1/keil/OpenRF1_VehicleDemo.uvprojx`.
+- Generated output: `Objects_VehicleDemo/OpenRF1_VehicleDemo.hex` (ignored).
+- Safety: stopped at boot, explicit `ARM` then `START`, `HEARTBEAT` watchdog,
+  fail-closed sensor handling, nonblocking staggered pings, JSONL telemetry.
+
+Its current demo pin profile is USER_CONFIRMED as left PB9/PB8, centre PB5/PB4,
+and right PD2/PC11. The user reports all three ECHO paths operate as direct
+connections without dividers. That is functional evidence only: actual ECHO
+voltages and electrical safety remain unverified. See
+`docs/vehicle_demo_obstacle_integration.md`.
+
 Phase 3.2F adds a separate ground-sensor-only bring-up target:
 
 - Ground-sensor bring-up source: `firmware/openrf1/ground_sensors_bringup/`.

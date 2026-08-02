@@ -47,10 +47,16 @@ This repository is the ENGR1000P2 Mars Scout Rover software and documentation ba
 - Phase 4A software work is complete: typed standard X-layout mecanum kinematics, explicit wheel-side encoder conversion and signs, forward body-twist estimation, exact constant-twist SE(2) integration, deterministic scenarios, version-1 telemetry/recording additions, documentation, tests, and verifier support are implemented. Supplied as-built geometry is recorded at 0.1 mm precision, but encoder resolution, counter width, signs, roller orientation, acquisition timing, wheel slip, motor behavior, dimensional tolerance, and physical odometry accuracy remain UNVERIFIED.
 - Phase 4B software work is complete: validated body commands, proportional four-wheel desaturation, angular-acceleration limiting, independent discrete PID controllers with conditional anti-windup, deterministic reset/disable, command watchdog, explicit local safety arbitration, synthetic first-order wheel plants, version-1 telemetry/recording additions, CLI, tests, documentation, and verifier support are implemented. Motor rotation, encoder acquisition, physical directions, PWM mapping, usable physical gains, roller orientation, trajectory following, stopping distance, and real closed-loop performance remain UNVERIFIED.
 - The OpenRF1 rover-control firmware boundary is present under `firmware/openrf1/app/`: centralized mappings and supplied geometry records, injected Motor and Encoder HALs, fixed-point mecanum inverse kinematics, and an inert ARM Compiler 6 link target are SOFTWARE_VERIFIED. It still does not provide operational GPIO/PWM/timer backends or physical signs and must not be flashed as operational rover firmware.
-- Phase 4C software-only motor/encoder bring-up preparation is the immediate
-  next development scope. Hardware access, serial-port access, flashing,
-  energizing motors, or issuing motion commands still require a separate
-  explicit request and the documented hardware-safety prerequisites.
+- The user has accelerated the immediate scope toward a complete vehicle demo.
+  `firmware/openrf1/vehicle_demo/` now contains a software-prepared fail-closed
+  obstacle target derived from user-supplied hardware-team source. Its
+  left PB9/PB8, centre PB5/PB4, right PD2/PC11 profile is USER_CONFIRMED for the
+  current demo and supersedes the earlier CN6-first proposal for this target.
+  All three ECHO paths are user-reported as operational direct connections
+  without dividers; their actual high voltages and electrical safety remain
+  UNVERIFIED. Hardware access,
+  serial-port access, flashing, energizing motors, or issuing motion commands
+  still require a separate explicit request and documented safety prerequisites.
 
 ## Near-Term Handoff
 

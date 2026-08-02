@@ -6,6 +6,10 @@ This is the authoritative scope document for the ENGR1000P2 Mars Scout Rover rep
 
 Build a low-cost Mars Scout Rover using an STM32 mecanum-wheel chassis, an ESP32 communication layer, multiple sensors, and PC visualization tools. The system must support safe beginner integration, reproducible test evidence, and clear separation between verified hardware facts, planned responsibilities, and unverified implementation details.
 
+The 2026-08 delivery strategy prioritizes a complete demonstrable rover within
+approximately 20 working hours. Work may integrate later-phase baseline
+functions earlier, but safety gates and evidence labels remain mandatory.
+
 ## Mandatory Requirements
 
 - Detect nearby obstacles.
@@ -157,6 +161,14 @@ These facts do not verify the wiring, mounting, serial identifier, revision, or 
 - Phase 6: real-time computer visualization, rover trajectory, and short-range encoder/IMU-assisted accumulated 2D mapping.
 - Phase 7: local autonomous obstacle stop/turn behavior.
 - Phase 8: full Mars-like venue integration, environmental experiments, validation, reliability testing, and final presentation evidence.
+
+Accelerated demo integration currently adds a software-prepared three-HC-SR04
+stop/turn target with explicit arming, fail-closed sensor handling, a command
+watchdog, and real TIM8 motor outputs. It does not change prior phase evidence
+states. The current demo pin profile is USER_CONFIRMED as left PB9/PB8, centre
+PB5/PB4, and right PD2/PC11, superseding the earlier CN6-first proposal for this
+target only. Direct ECHO operation without dividers is user-reported functional;
+actual ECHO voltages and electrical safety remain unverified.
 
 ## Phase 2.4 Acceptance Philosophy
 

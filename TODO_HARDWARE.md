@@ -47,7 +47,9 @@ items below remain stop conditions where that checklist requires measurement.
 | ESP32 STM32 UART and pins | authoritative_vendor_documented | H6 pin 3 PB11/RX3, pin 4 PB10/TX3; physical ESP32 link still unverified |
 | ESP32-C3 SuperMini model and UART pins | user_confirmed | GPIO21 TX and GPIO20 RX; installed link still needs physical validation |
 | ESP32-C3 SuperMini LDO | unverified | Physical regulator marking or exact board schematic; AMS1117-class rating is provisional |
-| Two additional HC-SR04 paths | design_locked; firmware required | H3 PB9 TRIG/PB8 ECHO and PD2 TRIG/PC11 ECHO, one 10 kOhm/15 kOhm divider per ECHO |
+| Earlier two-additional-HC-SR04 proposal | historical design; superseded for current demo | H3 PB9/PB8 and PD2/PC11 remain in use, but the current user-confirmed three-sensor mapping replaces the earlier CN6-first allocation for this demo target |
+| Installed three-HC-SR04 demo profile | user_confirmed_current_demo_mapping | Left PB9/PB8, centre PB5/PB4, right PD2/PC11. This supersedes the earlier CN6-first proposal for the current demo target only. |
+| Current three-HC-SR04 ECHO protection | user_reported_operational; electrical safety unverified | All three ECHO paths are reported directly connected without dividers and functionally working. Measure ECHO-high voltage at PB8, PB4, and PC11 before electrical acceptance. |
 | Shared MPU6050/BMP280/BH1750 I2C concurrency | unverified | Combined-bus firmware and physical validation |
 | Final sensor mounting positions and axes | unknown | Mechanical assembly and measured offsets |
 | Final power distribution and current budget | unknown | Battery/regulator ratings and measured startup/runtime load |
